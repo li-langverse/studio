@@ -108,6 +108,27 @@ Duplicate workspace frame — reinforces brand but **no URL, logo, or CTA overla
 
 ---
 
+## Wave 2 addressed (studio-ux-19, 2026-05-25)
+
+**Reel:** `docs/demo/media/studio-x-demo.mp4` (~38s) — five scenes from `lic` `deploy/studio-demo` Wave 2 HTML (`01`–`05`).  
+**Provenance:** `capture-provenance.json` with `wave: 2` and scene list including `04-studio-command-palette`, `05-studio-end-cta`.
+
+| Critique item (pre-Wave 2) | Wave 2 mock / reel change | Still open |
+|----------------------------|---------------------------|------------|
+| P0 Agent invoke absent | `02` task input + Send; `01` running + `lic_build` tool trace | Native `li-studio` compose wiring (PH-AGENT) |
+| P0 Error recovery decorative | `03` Retry / Report logs / Dismiss + mock JS toasts/modal | Real `lic_check` / log bundle in product |
+| P1 No outliner | `01`/`02` outliner column + selection sync copy | Native scene graph / `world.li` tree |
+| P1 Triplicate error UI | Single `agent-error-strip`; inspector detail only | Compose error model in `li-studio` |
+| P1 Dock icon-only | Dock text labels on `01` | Full WCAG in native chrome |
+| P2 Palette never opens | `04` full-screen ⌘K palette scene in reel | Native palette &lt;100 ms (PH-UX) |
+| P1 Static reel | CSS motion on `01` (`data-reel-motion`); 5-beat timeline | Native playhead / viewport motion |
+| P2 End CTA not in-frame | `05` end card with URL placeholder | Optional ffmpeg burn-in when libfreetype available |
+| **P0 Mock ≠ product** | Mock banner + provenance `native_window: false` | **PH-GD-5** wgpu host window — **unchanged** |
+
+**Assessment (target):** UX-06 agent chrome and UX-08 error recovery should read stronger in the next plan-loop iteration report; UX-12 mock honesty remains 3.0 with explicit capture mode.
+
+---
+
 ## Evidence commands
 
 ```bash

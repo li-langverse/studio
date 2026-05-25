@@ -1,16 +1,12 @@
 {
-  "captured_at": "2026-05-25T12:41:13Z",
+  "captured_at": "2026-05-25T13:20:51Z",
   "capture_mode": "html_mock_playwright_chrome",
-  "lic_root": "/Users/julian/Documents/coding-projects/studio/../lic",
-  "lic_ref": "origin/main",
-  "lic_sha": "98cdd7c684dd88f734356eca71bfc35cfd584557",
-  "studio_sha": "fd596b72eb5764cfc5c82bcb35a36aa0ed0fad4b",
-  "chrome": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  "scenes": [
-    "01-studio-workspace",
-    "02-studio-empty-viewport",
-    "03-studio-agent-error"
-  ],
+  "lic_root": "/Users/julian/Documents/coding-projects/lic",
+  "lic_ref": "worktree+8acba3c9",
+  "lic_sha": "ec18d2a9ec2c6a327ad1a06093c78a5be1fa15eb",
+  "studio_sha": "7f16bbbe2fc9388b228ffd6119dddb6ad6614ae1",
+  "scenes": ["01-studio-workspace", "02-studio-empty-viewport", "04-studio-command-palette", "03-studio-agent-error", "05-studio-end-cta"],
+  "wave": 2,
   "native_window": false,
-  "notes": "Marketing mocks; playwright PNG; not li-studio-demo/wgpu shell."
+  "notes": "Wave 2 mocks; Chrome PNG for 04/05; playwright blocked on launch timeout."
 }

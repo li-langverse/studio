@@ -82,19 +82,22 @@ capture_pngs() {
 capture_pngs
 
 LIST="$MEDIA/ffmpeg-scenes.txt"
+# Wave 2 reel order: workspace → empty/agent invoke → palette → error recovery → end CTA
 cat >"$LIST" <<EOF
 file '${PNG}/01-studio-workspace.png'
-duration 10
-file '${PNG}/02-studio-empty-viewport.png'
-duration 7
-file '${PNG}/03-studio-agent-error.png'
 duration 8
-file '${PNG}/01-studio-workspace.png'
+file '${PNG}/02-studio-empty-viewport.png'
+duration 6
+file '${PNG}/04-studio-command-palette.png'
 duration 5
-file '${PNG}/01-studio-workspace.png'
+file '${PNG}/03-studio-agent-error.png'
+duration 7
+file '${PNG}/05-studio-end-cta.png'
+duration 6
+file '${PNG}/05-studio-end-cta.png'
 EOF
 
-echo "record-studio-x-demo: encoding MP4 (~37s)"
+echo "record-studio-x-demo: encoding MP4 (~32s + hold)"
 ffmpeg -y -f concat -safe 0 -i "$LIST" \
   -vf "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2" \
   -c:v libx264 -pix_fmt yuv420p -r 30 \
@@ -109,7 +112,7 @@ cat >"$PROV" <<EOF
   "lic_sha": "$lic_sha",
   "studio_sha": "$studio_sha",
   "chrome": "$CHROME",
-  "scenes": ["01-studio-workspace", "02-studio-empty-viewport", "03-studio-agent-error"],
+  "scenes": ["01-studio-workspace", "02-studio-empty-viewport", "04-studio-command-palette", "03-studio-agent-error", "05-studio-end-cta"],
   "native_window": false,
   "notes": "Marketing mocks with mock-banner; not li-studio-demo/wgpu shell."
 }
