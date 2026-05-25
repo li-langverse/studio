@@ -2,11 +2,15 @@
 
 ## [Unreleased]
 
+Synced from lic `feat/ph-hw-multi-vendor` @ `6ca38be9b2b236eb92f7e3b54f61d39d0abf7675` (org studio parity PR).
+
 ### Added
 
-- **Studio X demo** — `docs/demo/studio-x-demo-script.md`, `docs/demo/RECORDING.md`, `docs/demo/media/studio-x-demo.mp4`, `scripts/record-studio-x-demo.sh` (HTML mocks from `lic` `deploy/studio-demo`).
-- **Agent chrome (UX-06)** — `StudioAgentChromeCompose` with task states (idle/running/blocked/failed/done), cancel rect, error strip; `studio_paint_agent` + `studio_compose_shell_agent`.
-- **Panel compose** — `StudioDockCompose`, `StudioTimelineCompose`, `StudioInspectorCompose` from `li-ui` shell layout.
-- **Paint decomposition** — `studio_paint_dock`, `studio_paint_timeline`, `studio_paint_inspector` (playhead + track + selection header).
-- **Shell frame** — `studio_shell_frame` wires compose panels with topbar, viewport grid, and agent strip.
-- **Panel switch** — `studio_panel_switch_inspector` / `studio_panel_switch_timeline` on `GuiPanelState`.
+- **`li-studio-demo` binary** — `[[bin]]` in `li.toml`, `src/main.li`, `examples/studio_shell_demo.toml`.
+- **`li-sim` dependency** — profile/scene stubs aligned with lic monorepo package graph.
+- **README** — PH-HW syntax line: viewport host uses **`import lig`** (replaces `import gpu`).
+
+### Changed
+
+- **Manifest** — parity with lic `packages/li-studio/li-tests/manifest.toml` (12 smokes).
+- **src/lib.li**, smokes, fixtures, bench — byte-match lic `packages/li-studio` at sync SHA.

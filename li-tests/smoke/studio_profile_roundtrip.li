@@ -1,0 +1,29 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 4:
+    return 1
+  var game: int = studio_profile_from_name("game")
+  if game != studio_profile_game():
+    return 2
+  var rl: int = studio_profile_from_name("sim_rl")
+  if rl != studio_profile_sim_rl():
+    return 3
+  var parsed: int = studio_parse_toml_profile_line("profile = \"sim_additive\"")
+  if parsed != studio_profile_sim_additive():
+    return 4
+  var engine_line: int = studio_parse_toml_profile_line("[engine] profile = \"game\"")
+  if engine_line != studio_profile_game():
+    return 5
+  var compose: StudioShellCompose = studio_compose_shell_profile(1280.0, 720.0, 0, 0, rl)
+  if studio_active_profile(compose) != studio_profile_sim_rl():
+    return 6
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_topbar_profile(frame, compose.layout.topbar, studio_active_profile(compose))
+  if frame.last_rect.h != studio_profile_paint_tag_h(studio_profile_sim_rl()):
+    return 7
+  return 0

@@ -8,6 +8,11 @@ description = "Li World Studio — compose dock, timeline, and inspector from li
 [dependencies]
 li-gui = { path = "../li-gui" }
 li-ui = { path = "../li-ui" }
+li-sim = { path = "../li-sim" }
+
+[[bin]]
+name = "li-studio-demo"
+path = "src/main.li"
 
 [package.metadata.li]
 github_repo = "li-studio"
