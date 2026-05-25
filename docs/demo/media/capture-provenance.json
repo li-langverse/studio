@@ -1,18 +1,12 @@
 {
-  "captured_at": "2026-05-25T13:20:51Z",
-  "capture_mode": "html_mock_playwright_chrome",
+  "captured_at": "2026-05-25T13:56:22Z",
+  "capture_mode": "html_mock_headless_chrome",
   "lic_root": "/Users/julian/Documents/coding-projects/lic",
-  "lic_ref": "feat/studio-ux-wave2-p0",
-  "lic_sha": "ec18d2a9ec2c6a327ad1a06093c78a5be1fa15eb",
-  "studio_sha": "6e2313bf82b07d11e0d168eeca19e22ba38d4c47",
-  "scenes": [
-    "01-studio-workspace",
-    "02-studio-empty-viewport",
-    "04-studio-command-palette",
-    "03-studio-agent-error",
-    "05-studio-end-cta"
-  ],
-  "wave": 2,
+  "lic_ref": "origin/main",
+  "lic_sha": "7c0c37370259ddc2be0b9d720ac0dfb44c3a738e",
+  "studio_sha": "2996ed249192abc4a9ed625b0ce034834e639167",
+  "chrome": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "scenes": ["01-studio-workspace", "02-studio-empty-viewport", "04-studio-command-palette", "03-studio-agent-error", "05-studio-end-cta"],
   "native_window": false,
-  "notes": "Wave 2 mocks; Chrome PNG for 04/05; playwright blocked on launch timeout."
+  "notes": "Marketing mocks with mock-banner; not li-studio-demo/wgpu shell."
 }
