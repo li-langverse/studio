@@ -15,4 +15,6 @@ panel_switch_budget_ms = 100
 dock_cmds = 2
 timeline_cmds = 3
 inspector_cmds_selected = 3
-inspector_cmds_empty = 2
+viewport_cmds_empty = 3
+viewport_cmds_scene = 1
+inspector_cmds_empty = 4
