@@ -1,11 +1,11 @@
-# Publish metadata — PKG-studio
+# Publish metadata — PKG-li-studio
 
 | Field | Value |
 |-------|--------|
-| **PKG id** | `PKG-studio` |
-| **Registry name** | `studio` (lip, phase 8d) |
+| **PKG id** | `PKG-li-studio` |
+| **Registry name** | `li-studio` (lip, phase 8d) |
 | **Maintainer** | li-langverse |
-| **Repository** | https://github.com/li-langverse/studio |
+| **Repository** | https://github.com/li-langverse/li-studio |
 | **License** | Apache-2.0 OR MIT (SPDX) |
 
 ## Exports (v1)
