@@ -1,13 +1,25 @@
 # li-studio
 
-Li World Studio product shell: composes **dock**, **timeline**, and **inspector** panels from `li-ui` layout IR and `li-gui` paint primitives.
+World Studio shell — composes `import ui` chrome hooks, `import gui` paint IR, `import render` viewport swapchain, and `import world` GameWorld (`studio_compose_ui_gui_render_world`).
 
-Import: `import studio`
+## Build
 
-## Compose API
+```bash
+lic build src/lib.li -o li-studio
+```
 
-- `studio_compose_shell` — layout + dock/timeline/inspector structs + panel state
-- `studio_paint_compose_panels` — paint dock slots, timeline track/playhead, inspector chrome
-- `studio_shell_frame` — full editor chrome (panels + topbar + viewport grid + agent chrome)
-- `studio_compose_agent_chrome` / `studio_paint_agent` — task status, cancel button, error strip (UX-06)
-- `studio_panel_switch_inspector` / `studio_panel_switch_timeline` — PH-UX panel switch hooks
+From the monorepo root, ensure `lic` is built: `./scripts/build.sh`.
+
+## Traceability
+
+| ID | Link |
+|----|------|
+| Package | `PKG-li-studio` |
+| Org repo | https://github.com/li-langverse/li-studio |
+| Governance | [Ecosystem governance](https://li-langverse.github.io/li-language/ecosystem/governance/) |
+
+See `PUBLISH.md` and `docs/traceability.md`.
+
+## License
+
+Apache-2.0 OR MIT

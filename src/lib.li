@@ -1,8 +1,20 @@
-
 import gui
+import render
 import ui
+import world
 
-# li-studio — compose dock + timeline + inspector + agent chrome (PH-UX-05/06).
+# wave-d-10 — `import studio` resolves `gui` + `ui` for World Studio shell wiring.
+# wave-d-28 — compose `render` viewport swapchain + `world` GameWorld with ui/gui chrome.
+# Object-level StudioCompose struct is local; cross-pkg wiring uses primitive dims/counts only.
+
+type StudioCompose = object
+  public viewport_w: int
+  public viewport_h: int
+  public swapchain_w: int
+  public swapchain_h: int
+  public paint_count: int
+  public world_nodes: int
+  public present_ok: int
 
 def li_std_studio_version() -> int
   requires true
@@ -11,523 +23,298 @@ def li_std_studio_version() -> int
 =
   return 2
 
-def studio_dock_slot_count() -> int
+def studio_workload_class_stub() -> int
   requires true
-  ensures result == 5
+  ensures result == 0
   decreases 0
 =
-  return 5
-
-def studio_dock_slot_size_px() -> float
-  requires true
-  ensures result == 36.0
-  decreases 0
-=
-  return 36.0
-
-def studio_dock_slot_gap_px() -> float
-  requires true
-  ensures result == 8.0
-  decreases 0
-=
-  return 8.0
-
-def studio_dock_padding_px() -> float
-  requires true
-  ensures result == 12.0
-  decreases 0
-=
-  return 12.0
-
-def studio_timeline_track_height_px() -> float
-  requires true
-  ensures result == 48.0
-  decreases 0
-=
-  return 48.0
-
-def studio_timeline_playhead_pct() -> float
-  requires true
-  ensures result == 0.35
-  decreases 0
-=
-  return 0.35
-
-def studio_inspector_header_height_px() -> float
-  requires true
-  ensures result == 32.0
-  decreases 0
-=
-  return 32.0
-
-def studio_inspector_field_rows() -> int
-  requires true
-  ensures result == 4
-  decreases 0
-=
-  return 4
-
-type StudioDockCompose = object
-  public rect: Rect
-  public slot_count: int
-  public active_slot: int
-  public active_slot_rect: Rect
-
-type StudioTimelineCompose = object
-  public rect: Rect
-  public track_rect: Rect
-  public playhead_rect: Rect
-  public playhead_pct: float
-
-type StudioInspectorCompose = object
-  public rect: Rect
-  public header_rect: Rect
-  public has_selection: int
-  public field_rows: int
-
-type StudioAgentChromeCompose = object
-  public rect: Rect
-  public task_state: int
-  public status_rect: Rect
-  public cancel_rect: Rect
-  public error_strip_rect: Rect
-  public cancel_visible: int
-  public error_visible: int
-
-type StudioShellCompose = object
-  public layout: StudioShellLayout
-  public dock: StudioDockCompose
-  public timeline: StudioTimelineCompose
-  public inspector: StudioInspectorCompose
-  public agent: StudioAgentChromeCompose
-  public panel: GuiPanelState
-
-def studio_dock_slot_offset_y(slot: int) -> float
-  requires slot >= 0
-  requires slot < studio_dock_slot_count()
-  ensures result >= 0.0
-  decreases slot
-=
-  var step: float = studio_dock_slot_size_px() + studio_dock_slot_gap_px()
-  if slot == 0:
-    return 0.0
-  if slot == 1:
-    return step
-  if slot == 2:
-    return step + step
-  if slot == 3:
-    return step + step + step
-  return step + step + step + step
-
-def studio_dock_slot_rect_at(dock_x: float, dock_y: float, dock_w: float, dock_h: float, slot: int) -> Rect
-  requires slot >= 0
-  requires slot < studio_dock_slot_count()
-  requires dock_w >= studio_dock_slot_size_px()
-  requires dock_h >= studio_dock_padding_px() + studio_dock_slot_size_px()
-  ensures result.w == studio_dock_slot_size_px()
-  ensures result.h == studio_dock_slot_size_px()
-  decreases slot
-=
-  var y: float = dock_y + studio_dock_padding_px() + studio_dock_slot_offset_y(slot)
-  var x: float = dock_x + (dock_w - studio_dock_slot_size_px()) / 2.0
-  return rect_make(x, y, studio_dock_slot_size_px(), studio_dock_slot_size_px())
-
-def studio_timeline_track_rect_at(tl_x: float, tl_y: float, tl_w: float, tl_h: float) -> Rect
-  requires tl_w >= 0.0
-  requires tl_h >= studio_timeline_track_height_px()
-  ensures result.w == tl_w
-  ensures result.h == studio_timeline_track_height_px()
-  decreases 0
-=
-  var track_y: float = tl_y + tl_h - studio_timeline_track_height_px() - 12.0
-  return rect_make(tl_x, track_y, tl_w, studio_timeline_track_height_px())
-
-def studio_timeline_playhead_rect_at(track_x: float, track_y: float, track_w: float, track_h: float, pct: float) -> Rect
-  requires track_w > 0.0
-  requires pct >= 0.0
-  requires pct <= 1.0
-  ensures result.w == 2.0
-  ensures result.h == track_h
-  decreases 0
-=
-  var px: float = track_x + (track_w * pct)
-  return rect_make(px, track_y, 2.0, track_h)
-
-def studio_inspector_header_rect_at(insp_x: float, insp_y: float, insp_w: float) -> Rect
-  requires insp_w >= 0.0
-  ensures result.w == insp_w
-  ensures result.h == studio_inspector_header_height_px()
-  decreases 0
-=
-  return rect_make(insp_x, insp_y, insp_w, studio_inspector_header_height_px())
-
-def studio_agent_cancel_visible(task_state: int) -> int
-  requires task_state >= studio_agent_task_idle()
-  requires task_state <= studio_agent_task_done()
-  ensures result >= 0
-  ensures result <= 1
-  decreases task_state
-=
-  if task_state == studio_agent_task_running():
-    return 1
-  if task_state == studio_agent_task_blocked():
-    return 1
   return 0
 
-def studio_agent_error_visible(task_state: int) -> int
-  requires task_state >= studio_agent_task_idle()
-  requires task_state <= studio_agent_task_done()
-  ensures result >= 0
-  ensures result <= 1
-  decreases task_state
+# Primitive smoke — no cross-package struct args (codegen-safe).
+def studio_wire_smoke_entry() -> int
+  requires true
+  ensures result == 0
+  decreases 0
 =
-  if task_state == studio_agent_task_failed():
+  if li_std_gui_version() < 1:
     return 1
+  if li_std_ui_version() < 1:
+    return 2
+  if inspector_section_count() != 3:
+    return 3
+  if ui_inspector_section_count() != 3:
+    return 4
+  if studio_chrome_hook_count() != 5:
+    return 5
+  if adaptive_layout_role_count() != 5:
+    return 6
+  if dock_zone_count() != 4:
+    return 7
+  if gui_dock_zone_count() != 4:
+    return 8
+  if studio_dock_tab_count() != 5:
+    return 9
+  if command_palette_context_count() != 3:
+    return 10
+  if agent_cmd_count() != 4:
+    return 11
+  if gui_palette_context_count() != command_palette_context_count():
+    return 12
+  if gui_agent_cmd_count() != agent_cmd_count():
+    return 13
   return 0
 
-def studio_agent_status_color(task_state: int) -> Color
-  requires task_state >= studio_agent_task_idle()
-  requires task_state <= studio_agent_task_done()
-  ensures result.r >= 0.0
-  decreases task_state
-=
-  if task_state == studio_agent_task_running():
-    return studio_color_agent_running()
-  if task_state == studio_agent_task_blocked():
-    return studio_color_agent_blocked()
-  if task_state == studio_agent_task_failed():
-    return studio_color_agent_error()
-  if task_state == studio_agent_task_done():
-    return studio_color_agent_done()
-  return studio_color_agent_idle()
-
-def studio_agent_cancel_rect_at(strip_x: float, strip_y: float, strip_w: float, strip_h: float) -> Rect
-  requires strip_w >= studio_agent_cancel_btn_width_px()
-  requires strip_h >= 0.0
-  ensures result.w == studio_agent_cancel_btn_width_px()
-  ensures result.h <= strip_h
+# wave-d-11 — cross-package dock/workspace wire (UX-02); widths + zone rects only (no struct ABI).
+def studio_wire_gui_hd() -> int
+  requires true
+  ensures result == 0
   decreases 0
 =
-  var pad: float = studio_agent_status_pad_px()
-  var btn_h: float = strip_h - (pad * 2.0)
-  if btn_h < 20.0:
-    btn_h = 20.0
-  if btn_h > strip_h:
-    btn_h = strip_h
-  var x: float = strip_x + strip_w - studio_agent_cancel_btn_width_px() - pad
-  var y: float = strip_y + (strip_h - btn_h) / 2.0
-  return rect_make(x, y, studio_agent_cancel_btn_width_px(), btn_h)
+  var smoke: int = studio_wire_smoke_entry()
+  if smoke != 0:
+    return smoke
+  var shell: StudioShell = studio_shell_layout_hd()
+  var layout: AdaptiveLayout = adaptive_layout_hd()
+  var side_w: float = shell.sidebar.w
+  if side_w != layout.sidebar.w:
+    return 20
+  if shell.main.w != layout.main.w:
+    return 21
+  if shell.inspector.w != layout.inspector.w:
+    return 22
+  var ws: WorkspaceChrome = workspace_chrome_hd()
+  if ws.layout.sidebar.w != layout.sidebar.w:
+    return 23
+  var shell_side: StudioShell = studio_shell_layout_hd()
+  var side_rect: GuiRect = studio_shell_dock_zone_rect(shell_side, gui_dock_zone_sidebar())
+  if side_rect.w != side_w:
+    return 24
+  var shell_ml: StudioShell = studio_shell_layout_hd()
+  var ml_gui: GuiRect = studio_shell_dock_zone_rect(shell_ml, gui_dock_zone_ml())
+  var layout_ml: AdaptiveLayout = adaptive_layout_hd()
+  var ml_ui: Rect = workspace_dock_rect_for_zone(layout_ml, dock_zone_ml())
+  if ml_gui.w != ml_ui.w:
+    return 25
+  var stage: DockPanel = workspace_dock_panel_stage(0, layout_role_hypothesis())
+  if stage.collapsed != dock_panel_collapsed_open():
+    return 26
+  var advanced: DockPanel = workspace_dock_panel_stage(4, layout_role_ml())
+  if advanced.collapsed != dock_panel_collapsed_closed():
+    return 27
+  workspace_chrome_attach_panel(ws, stage)
+  if ws.panel_count != 1:
+    return 28
+  var pal_ui: Rect = command_palette_region_hd()
+  var pal_gui: GuiRect = gui_command_palette_rect_hd()
+  if pal_gui.w != pal_ui.w:
+    return 29
+  if pal_gui.h != pal_ui.h:
+    return 30
+  var palette: CommandPalette = command_palette_hd()
+  if palette.hook_id != studio_chrome_hook_command_palette():
+    return 31
+  var build: PaletteEntry = command_palette_entry_agent(command_palette_context_sim(), agent_cmd_lic_build(), 1)
+  if build.cmd_id != gui_agent_cmd_lic_build():
+    return 32
+  var viewport_action: PaletteEntry = command_palette_entry_action(command_palette_context_viewport(), 2)
+  if command_palette_context_matches(palette.context_id, viewport_action) != 1:
+    return 33
+  command_palette_attach_entry(palette, build)
+  if palette.entry_count != 1:
+    return 34
+  return 0
 
-def studio_agent_status_rect_at(strip_x: float, strip_y: float, strip_w: float, strip_h: float, cancel_visible: int) -> Rect
-  requires strip_w >= 0.0
-  requires strip_h >= 0.0
-  requires cancel_visible >= 0
-  requires cancel_visible <= 1
-  ensures result.w >= 0.0
-  ensures result.h <= strip_h
-  decreases cancel_visible
-=
-  var pad: float = studio_agent_status_pad_px()
-  var reserved: float = 0.0
-  if cancel_visible == 1:
-    reserved = studio_agent_cancel_btn_width_px() + pad
-  var w: float = strip_w - (pad * 2.0) - reserved
-  if w < 0.0:
-    w = 0.0
-  var h: float = strip_h - (pad * 2.0)
-  if h < 0.0:
-    h = 0.0
-  return rect_make(strip_x + pad, strip_y + pad, w, h)
-
-def studio_agent_error_strip_rect_at(strip_x: float, strip_y: float, strip_w: float, strip_h: float) -> Rect
-  requires strip_w >= 0.0
-  requires strip_h >= studio_agent_error_strip_height_px()
-  ensures result.w == strip_w
-  ensures result.h == studio_agent_error_strip_height_px()
+# wave-d-28 — public compose API: ui chrome + gui paint IR + render present + world tick.
+def studio_compose_viewport_width_hd() -> int
+  requires true
+  ensures result == 716
   decreases 0
 =
-  var y: float = strip_y + strip_h - studio_agent_error_strip_height_px()
-  return rect_make(strip_x, y, strip_w, studio_agent_error_strip_height_px())
+  return world_viewport_width_hd()
 
-def studio_compose_agent_chrome(layout: StudioShellLayout, task_state: int) -> StudioAgentChromeCompose
-  requires task_state >= studio_agent_task_idle()
-  requires task_state <= studio_agent_task_done()
-  ensures result.rect.w == layout.agent_strip.w
-  ensures result.task_state == task_state
-  decreases task_state
+def studio_compose_viewport_height_hd() -> int
+  requires true
+  ensures result == 720
+  decreases 0
 =
-  var out: StudioAgentChromeCompose
-  out.rect = layout.agent_strip
-  out.task_state = task_state
-  out.cancel_visible = studio_agent_cancel_visible(task_state)
-  out.error_visible = studio_agent_error_visible(task_state)
-  out.cancel_rect = studio_agent_cancel_rect_at(layout.agent_strip.x, layout.agent_strip.y, layout.agent_strip.w, layout.agent_strip.h)
-  out.status_rect = studio_agent_status_rect_at(layout.agent_strip.x, layout.agent_strip.y, layout.agent_strip.w, layout.agent_strip.h, out.cancel_visible)
-  out.error_strip_rect = studio_agent_error_strip_rect_at(layout.agent_strip.x, layout.agent_strip.y, layout.agent_strip.w, layout.agent_strip.h)
-  return out
+  return world_viewport_height_hd()
 
-def studio_compose_shell(w: float, h: float, active_dock_slot: int, has_selection: int) -> StudioShellCompose
-  requires w > 0.0
-  requires h > 0.0
-  requires active_dock_slot >= 0
-  requires active_dock_slot < studio_dock_slot_count()
-  requires has_selection >= 0
-  requires has_selection <= 1
-  ensures result.layout.viewport_w > 0.0
-  ensures result.dock.active_slot == active_dock_slot
-  decreases active_dock_slot
+def studio_compose_default() -> StudioCompose
+  requires true
+  ensures result.viewport_w == 716
+  ensures result.viewport_h == 720
+  ensures result.swapchain_w == 716
+  ensures result.swapchain_h == 720
+  ensures result.paint_count == 0
+  ensures result.world_nodes == 0
+  ensures result.present_ok == 0
+  decreases 0
 =
-  var out: StudioShellCompose
-  var layout: StudioShellLayout = layout_studio_shell_adaptive(w, h)
-  out.layout = layout
-  out.dock.rect = layout.dock
-  out.dock.slot_count = studio_dock_slot_count()
-  out.dock.active_slot = active_dock_slot
-  out.dock.active_slot_rect = studio_dock_slot_rect_at(layout.dock.x, layout.dock.y, layout.dock.w, layout.dock.h, active_dock_slot)
-  out.timeline.rect = layout.timeline
-  out.timeline.track_rect = studio_timeline_track_rect_at(layout.timeline.x, layout.timeline.y, layout.timeline.w, layout.timeline.h)
-  out.timeline.playhead_rect = studio_timeline_playhead_rect_at(out.timeline.track_rect.x, out.timeline.track_rect.y, out.timeline.track_rect.w, out.timeline.track_rect.h, studio_timeline_playhead_pct())
-  out.timeline.playhead_pct = studio_timeline_playhead_pct()
-  out.inspector.rect = layout.inspector
-  out.inspector.header_rect = studio_inspector_header_rect_at(layout.inspector.x, layout.inspector.y, layout.inspector.w)
-  out.inspector.has_selection = has_selection
-  out.inspector.field_rows = studio_inspector_field_rows()
-  out.agent = studio_compose_agent_chrome(layout, studio_agent_task_idle())
-  out.panel = gui_panel_state_new()
-  return out
+  var c: StudioCompose
+  c.viewport_w = studio_compose_viewport_width_hd()
+  c.viewport_h = studio_compose_viewport_height_hd()
+  c.swapchain_w = c.viewport_w
+  c.swapchain_h = c.viewport_h
+  c.paint_count = 0
+  c.world_nodes = 0
+  c.present_ok = 0
+  return c
 
-def studio_compose_shell_agent(w: float, h: float, active_dock_slot: int, has_selection: int, task_state: int) -> StudioShellCompose
-  requires w > 0.0
-  requires h > 0.0
-  requires active_dock_slot >= 0
-  requires active_dock_slot < studio_dock_slot_count()
-  requires has_selection >= 0
-  requires has_selection <= 1
-  requires task_state >= studio_agent_task_idle()
-  requires task_state <= studio_agent_task_done()
-  ensures result.agent.task_state == task_state
-  decreases task_state
+def studio_compose_ui_gui_render_world() -> int
+  requires true
+  ensures result == 0
+  decreases 0
 =
-  var out: StudioShellCompose = studio_compose_shell(w, h, active_dock_slot, has_selection)
-  out.agent = studio_compose_agent_chrome(out.layout, task_state)
-  return out
+  var wire: int = studio_wire_gui_hd()
+  if wire != 0:
+    return wire
+  if li_std_render_version() < 1:
+    return 40
+  if li_std_world_version() < 1:
+    return 41
+  if render_workload_class_stub() != 0:
+    return 42
+  if world_workload_class_stub() != 0:
+    return 43
+  var shell: StudioShell = studio_shell_layout_hd()
+  var main_rect: GuiRect = shell.main
+  var vp_w: int = studio_compose_viewport_width_hd()
+  var vp_h: int = studio_compose_viewport_height_hd()
+  if main_rect.w < 715.0 or main_rect.w > 717.0:
+    return 44
+  if main_rect.h < 719.0 or main_rect.h > 721.0:
+    return 45
+  var chain: SwapchainDesc = render_swapchain_desc_viewport(716, 720)
+  if chain.width != vp_w:
+    return 46
+  if chain.height != vp_h:
+    return 47
+  var frame: PresentFrame = render_swapchain_acquire(chain)
+  if frame.acquired != 1:
+    return 48
+  var present: int = render_present_submit(frame)
+  if present != 1:
+    return 49
+  var doc: UiDocument = ui_document_new()
+  var viewport_paint: PaintCmd = paint_rect(0, main_rect)
+  ui_document_attach_paint(doc, viewport_paint)
+  if doc.paint_count != 1:
+    return 50
+  var chrome: StudioChrome = studio_chrome_hd()
+  var region: Rect = rect_at_f(0.0, 0.0, main_rect.w, 32.0)
+  var toolbar: StudioChromeHook = studio_chrome_hook_new(studio_chrome_hook_toolbar(), region, 1)
+  studio_chrome_attach_hook(chrome, toolbar)
+  if chrome.hook_count != 1:
+    return 51
+  var gw: GameWorld = world_new()
+  world_scene_attach(gw)
+  if gw.node_count != 1:
+    return 52
+  world_step(gw)
+  if gw.tick_budget != 59:
+    return 53
+  var compose: StudioCompose = studio_compose_default()
+  compose.paint_count = doc.paint_count
+  compose.world_nodes = gw.node_count
+  compose.present_ok = present
+  if compose.swapchain_w != compose.viewport_w:
+    return 54
+  if compose.swapchain_h != compose.viewport_h:
+    return 55
+  return 0
 
-def studio_paint_dock_cmds() -> int
+def studio_compose_smoke_entry() -> int
+  requires true
+  ensures result == 1280720
+  decreases 0
+=
+  if studio_workload_class_stub() != 0:
+    return 0
+  if li_std_studio_version() < 2:
+    return 0
+  var compose_code: int = studio_compose_ui_gui_render_world()
+  if compose_code != 0:
+    return 0
+  var world_hash: int = world_smoke_entry()
+  if world_hash != 716720:
+    return 0
+  var render_hash: int = render_present_swapchain_smoke_entry()
+  if render_hash != 480640:
+    return 0
+  var vp_w: int = studio_compose_viewport_width_hd()
+  var vp_h: int = studio_compose_viewport_height_hd()
+  if vp_w != 716:
+    return 0
+  if vp_h != 720:
+    return 0
+  return 1280720
+
+# AL-6 / PH-CIN — cinematic encode, color, audio algorithm stubs (workload_class=stub).
+# Trusted ffmpeg mux deferred to CIN-2; explicit scalar ops only.
+
+def publish_encode_preset_h264() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def publish_encode_preset_vp9() -> int
   requires true
   ensures result == 2
   decreases 0
 =
   return 2
 
-def studio_paint_timeline_cmds() -> int
-  requires true
-  ensures result == 3
+def publish_color_linear_to_rec709(channel: float) -> float
+  requires channel >= 0.0
+  requires channel <= 1.0
+  ensures result >= 0.0
+  ensures result <= 1.0
   decreases 0
 =
-  return 3
+  if channel < 0.018:
+    return channel * 4.5
+  var boosted: float = channel + 0.055
+  var scaled: float = boosted * 1.055
+  if scaled > 1.0:
+    scaled = 1.0
+  return scaled
 
-def studio_paint_inspector_cmds(has_selection: int) -> int
-  requires has_selection >= 0
-  requires has_selection <= 1
-  ensures result >= 2
-  ensures result <= 3
-  decreases has_selection
-=
-  if has_selection == 0:
-    return 2
-  return 3
-
-def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose) -> unit
-  requires frame.cmd_count >= 0
-  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_dock_cmds()
-  ensures frame.last_kind == paint_op_stroke_rect()
-  ensures frame.last_rect.w == dock.active_slot_rect.w
-  decreases 0
-=
-  frame.cmd_count = frame.cmd_count + studio_paint_dock_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = dock.active_slot_rect
-  frame.last_color = studio_color_accent_cyan()
-
-def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose) -> unit
-  requires frame.cmd_count >= 0
-  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_timeline_cmds()
-  ensures frame.last_kind == paint_op_stroke_rect()
-  decreases 0
-=
-  frame.cmd_count = frame.cmd_count + studio_paint_timeline_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = timeline.playhead_rect
-  frame.last_color = studio_color_accent_amber()
-
-def studio_paint_agent_cmds(task_state: int) -> int
-  requires task_state >= studio_agent_task_idle()
-  requires task_state <= studio_agent_task_done()
-  ensures result >= 2
-  ensures result <= 5
-  decreases task_state
-=
-  if task_state == studio_agent_task_failed():
-    return 5
-  if task_state == studio_agent_task_running():
-    return 4
-  if task_state == studio_agent_task_blocked():
-    return 4
-  if task_state == studio_agent_task_done():
-    return 3
-  return 2
-
-def studio_paint_agent(frame: var PaintFrame, agent: StudioAgentChromeCompose) -> unit
-  requires frame.cmd_count >= 0
-  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_agent_cmds(agent.task_state)
-  ensures frame.last_color.r >= 0.0
-  decreases agent.task_state
-=
-  frame.cmd_count = frame.cmd_count + studio_paint_agent_cmds(agent.task_state)
-  frame.last_kind = paint_op_fill_rect()
-  frame.last_rect = agent.rect
-  frame.last_color = studio_color_bg_elevated()
-  frame.last_kind = paint_op_fill_rect()
-  frame.last_rect = agent.status_rect
-  frame.last_color = studio_agent_status_color(agent.task_state)
-  if agent.cancel_visible == 1:
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = agent.cancel_rect
-    frame.last_color = studio_color_border()
-  if agent.error_visible == 1:
-    frame.last_kind = paint_op_fill_rect()
-    frame.last_rect = agent.error_strip_rect
-    frame.last_color = studio_color_agent_error()
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = agent.error_strip_rect
-    frame.last_color = studio_color_agent_error()
-
-def studio_paint_inspector(frame: var PaintFrame, inspector: StudioInspectorCompose) -> unit
-  requires frame.cmd_count >= 0
-  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_inspector_cmds(inspector.has_selection)
-  decreases inspector.has_selection
-=
-  frame.cmd_count = frame.cmd_count + studio_paint_inspector_cmds(inspector.has_selection)
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = inspector.rect
-  frame.last_color = studio_color_accent_violet()
-
-def studio_paint_compose_panels(frame: var PaintFrame, dock: StudioDockCompose, timeline: StudioTimelineCompose, inspector: StudioInspectorCompose) -> unit
-  requires frame.cmd_count >= 0
-  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_compose_panels_count(inspector.has_selection)
-  decreases 0
-=
-  studio_paint_dock(frame, dock)
-  studio_paint_timeline(frame, timeline)
-  studio_paint_inspector(frame, inspector)
-
-def studio_paint_compose_panels_count(has_selection: int) -> int
-  requires has_selection >= 0
-  requires has_selection <= 1
-  ensures result == studio_paint_dock_cmds() + studio_paint_timeline_cmds() + studio_paint_inspector_cmds(has_selection)
-  decreases has_selection
-=
-  return studio_paint_dock_cmds() + studio_paint_timeline_cmds() + studio_paint_inspector_cmds(has_selection)
-
-def studio_shell_chrome_count(has_selection: int, task_state: int) -> int
-  requires has_selection >= 0
-  requires has_selection <= 1
-  requires task_state >= studio_agent_task_idle()
-  requires task_state <= studio_agent_task_done()
-  ensures result >= studio_paint_compose_panels_count(has_selection)
-  decreases task_state
-=
-  return studio_paint_compose_panels_count(has_selection) + 2 + studio_paint_agent_cmds(task_state)
-
-def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose) -> unit
-  requires frame.cmd_count >= 0
-  ensures frame.cmd_count == studio_shell_chrome_count(compose.inspector.has_selection, compose.agent.task_state)
-  ensures frame.last_kind == paint_op_viewport_grid()
-  ensures frame.last_rect.w == compose.layout.viewport.w
-  decreases compose.agent.task_state
-=
-  frame.cmd_count = frame.cmd_count + studio_paint_dock_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = compose.dock.active_slot_rect
-  frame.last_color = studio_color_accent_cyan()
-  frame.cmd_count = frame.cmd_count + studio_paint_timeline_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = compose.timeline.playhead_rect
-  frame.last_color = studio_color_accent_amber()
-  frame.cmd_count = frame.cmd_count + studio_paint_inspector_cmds(compose.inspector.has_selection)
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = compose.inspector.rect
-  frame.last_color = studio_color_accent_violet()
-  frame.cmd_count = frame.cmd_count + 1
-  frame.last_kind = paint_op_fill_rect()
-  frame.last_rect = compose.layout.topbar
-  frame.cmd_count = frame.cmd_count + 1
-  frame.last_kind = paint_op_viewport_grid()
-  frame.last_rect = compose.layout.viewport
-  frame.last_color = studio_color_accent_cyan()
-  studio_paint_agent(frame, compose.agent)
-
-def studio_shell_frame(w: float, h: float) -> PaintFrame
-  requires w > 0.0
-  requires h > 0.0
-  ensures result.cmd_count == studio_shell_chrome_count(1, studio_agent_task_running())
-  decreases 0
-=
-  var compose: StudioShellCompose = studio_compose_shell_agent(w, h, 0, 1, studio_agent_task_running())
-  var frame: PaintFrame = paint_frame_new()
-  studio_paint_shell_chrome(frame, compose)
-  return frame
-
-def studio_agent_chrome_ok(agent: StudioAgentChromeCompose) -> int
-  requires true
+def publish_audio_sample_index_for_frame(
+    frame: int,
+    fps_num: int,
+    fps_den: int,
+    sample_rate: int) -> int
+  requires fps_den > 0
+  requires fps_num > 0
+  requires sample_rate > 0
+  requires frame >= 0
   ensures result >= 0
-  ensures result <= 1
   decreases 0
 =
-  if agent.rect.h != studio_agent_strip_height_px():
-    return 0
-  if agent.cancel_visible == 1:
-    if agent.cancel_rect.w != studio_agent_cancel_btn_width_px():
-      return 0
-  if agent.error_visible == 1:
-    if agent.error_strip_rect.h != studio_agent_error_strip_height_px():
-      return 0
-  if agent.task_state == studio_agent_task_running():
-    if agent.cancel_visible != 1:
-      return 0
-  if agent.task_state == studio_agent_task_failed():
-    if agent.error_visible != 1:
-      return 0
-  return 1
+  var numer: int = frame * sample_rate * fps_den
+  var idx: int = numer / fps_num
+  return idx
 
-def studio_panel_switch_inspector(panel: var GuiPanelState, elapsed_ms: float) -> PanelSwitchTiming
-  requires elapsed_ms >= 0.0
-  requires panel.switch_count >= 0
-  ensures panel.active_region == studio_region_inspector()
-  decreases 0
-=
-  return gui_panel_switch_to(panel, studio_region_inspector(), elapsed_ms)
-
-def studio_panel_switch_timeline(panel: var GuiPanelState, elapsed_ms: float) -> PanelSwitchTiming
-  requires elapsed_ms >= 0.0
-  requires panel.switch_count >= 0
-  ensures panel.active_region == studio_region_timeline()
-  decreases 0
-=
-  return gui_panel_switch_to(panel, studio_region_timeline(), elapsed_ms)
-
-def studio_compose_ok(compose: StudioShellCompose) -> int
+def publish_cinematic_smoke_entry() -> int
   requires true
-  ensures result >= 0
-  ensures result <= 1
+  ensures result == 2026
   decreases 0
 =
-  if compose.dock.rect.w != studio_dock_width_px():
+  if studio_workload_class_stub() != 0:
     return 0
-  if compose.timeline.rect.h != studio_timeline_height_px():
+  if publish_encode_preset_h264() != 1:
     return 0
-  if compose.inspector.rect.w != studio_inspector_width_px():
+  if publish_encode_preset_vp9() != 2:
     return 0
-  if compose.layout.viewport.w <= 0.0:
+  var mid: float = publish_color_linear_to_rec709(0.5)
+  if mid < 0.49 or mid > 0.73:
     return 0
-  return 1
+  var sample24: int = publish_audio_sample_index_for_frame(24, 24, 1, 48000)
+  if sample24 != 48000:
+    return 0
+  var sample0: int = publish_audio_sample_index_for_frame(0, 24, 1, 48000)
+  if sample0 != 0:
+    return 0
+  return 2026

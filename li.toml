@@ -3,11 +3,14 @@ name = "li-studio"
 version = "0.1.0"
 edition = "2026"
 license = "Apache-2.0 OR MIT"
-description = "Li World Studio — compose dock, timeline, and inspector from li-ui/li-gui composables"
+description = "World Studio shell — compose ui+gui+render+world public API (stub until PH-GD-1)"
 
 [dependencies]
-li-gui = { path = "../li-gui" }
 li-ui = { path = "../li-ui" }
+li-gui = { path = "../li-gui" }
+li-render = { path = "../li-render" }
+li-world = { path = "../li-world" }
+# registry = "1.0.0"             # lip 8d+
 
 [package.metadata.li]
 github_repo = "li-studio"
@@ -15,10 +18,6 @@ import_name = "studio"
 min_lic = "0.1.0"
 maintainer = "li-langverse"
 pkg_id = "PKG-li-studio"
-
-[package.metadata.studio]
-compose_panels = ["dock", "timeline", "inspector"]
-panel_switch_budget_ms = 100
 
 [package.repository]
 url = "https://github.com/li-langverse/li-studio"

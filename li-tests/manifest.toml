@@ -1,17 +1,7 @@
+# Package-local tests — also register in monorepo li-tests/manifest.toml when integrated.
+
 [[tests]]
 suite = "smoke"
 file = "smoke/builds.li"
 outcome = "verify_ok"
 note = "T-PKG-li-studio-smoke"
-
-[[tests]]
-suite = "smoke"
-file = "smoke/studio_compose_panels.li"
-outcome = "compile_open_ok"
-note = "T-PKG-li-studio-compose-panels"
-
-[[tests]]
-suite = "smoke"
-file = "smoke/studio_agent_chrome.li"
-outcome = "compile_open_ok"
-note = "T-PKG-li-studio-agent-chrome"
