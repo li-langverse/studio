@@ -60,6 +60,12 @@ note = "T-PKG-li-studio-profile-roundtrip PH-UX-05 PH-SIM"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_vertical_profile_roundtrip.li"
+outcome = "compile_open_ok"
+note = "T-PKG-li-studio-vertical-profile-roundtrip UX-14 vertical demos"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_shell_loading.li"
 outcome = "compile_open_ok"
 note = "T-PKG-li-studio-shell-loading-ux10-ux11"
@@ -69,3 +75,15 @@ suite = "smoke"
 file = "smoke/studio_shell_demo.li"
 outcome = "compile_open_ok"
 note = "T-PKG-li-studio-shell-demo PH-GD-1"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_host_present.li"
+outcome = "compile_open_ok"
+note = "T-PKG-li-studio-host-present PH-HW-HW-1"
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_mcp_tools.li"
+outcome = "compile_open_ok"
+note = "T-PKG-li-studio-mcp-tools PH-AGENT"
+

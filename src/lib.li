@@ -2,6 +2,7 @@
 import gui
 import ui
 import sim
+import lig
 
 # li-studio — compose dock + timeline + inspector + agent chrome (PH-UX-05/06/07).
 
@@ -32,6 +33,79 @@ extern proc li_rt_studio_viewport_error_retry() raises IO -> int
   ensures result >= 0
   decreases 0
 
+# PH-HW WP3 — shell input + present host bridge (SDL/wgpu on aarch64-apple-darwin).
+extern proc li_rt_studio_shell_input_pointer_down() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+
+extern proc li_rt_studio_shell_input_pointer_x() -> float
+  requires true
+  ensures true
+  decreases 0
+
+extern proc li_rt_studio_shell_input_pointer_y() -> float
+  requires true
+  ensures true
+  decreases 0
+
+extern proc li_rt_studio_shell_input_key_escape() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+
+extern proc li_rt_studio_shell_input_key_cmd_k() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+
+extern proc li_rt_studio_shell_input_key_digit() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 5
+  decreases 0
+
+extern proc li_rt_studio_host_present_tick(viewport_w: int, viewport_h: int) -> int
+  requires viewport_w >= 0
+  requires viewport_h >= 0
+  ensures result >= 0
+  ensures result <= 1
+  decreases viewport_w
+
+
+# UX-02 — timeline playback mock.
+extern proc li_rt_studio_timeline_playing() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+
+extern proc li_rt_studio_timeline_toggle_play() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+
+extern proc li_rt_studio_timeline_tick_frame() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+
+extern proc li_rt_studio_timeline_reset_mock() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+
+extern proc li_rt_studio_timeline_playhead_pct() -> float
+  requires true
+  ensures result >= 0.0
+  ensures result <= 1.0
+  decreases 0
+
 
 # PH-AGENT — MCP tool ID table (contracts only; lis server in AGENT-1).
 extern proc li_rt_studio_mcp_tool_from_name(name: str) raises IO, Alloc -> int
@@ -41,6 +115,7 @@ extern proc li_rt_studio_mcp_tool_from_name(name: str) raises IO, Alloc -> int
 
 extern proc li_rt_studio_mcp_tool_name(tool_id: int) raises IO, Alloc -> str
   requires true
+  ensures result != ""
   decreases tool_id
 
 def studio_profile_unknown() -> int
@@ -306,7 +381,7 @@ def studio_mcp_tool_from_name(name: str) raises IO, Alloc -> int
 
 def studio_mcp_tool_name(tool_id: int) raises IO, Alloc -> str
   requires studio_mcp_tool_id_valid(tool_id) == 1
-  ensures true
+  ensures result != ""
   decreases tool_id
 =
   return li_rt_studio_mcp_tool_name(tool_id)
@@ -380,10 +455,10 @@ def studio_agent_tool_request_none() -> StudioAgentToolRequest
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 5
+  ensures result == 6
   decreases 0
 =
-  return 5
+  return 6
 
 def studio_agent_context_none() -> int
   requires true
@@ -569,7 +644,7 @@ def studio_timeline_play_btn_pad_px() -> float
 =
   return 8.0
 
-def studio_timeline_playing() -> int
+def studio_timeline_playing() raises IO -> int
   requires true
   ensures result >= 0
   ensures result <= 1
@@ -577,7 +652,7 @@ def studio_timeline_playing() -> int
 =
   return li_rt_studio_timeline_playing()
 
-def studio_timeline_toggle_play() -> int
+def studio_timeline_toggle_play() raises IO -> int
   requires true
   ensures result >= 0
   ensures result <= 1
@@ -585,7 +660,7 @@ def studio_timeline_toggle_play() -> int
 =
   return li_rt_studio_timeline_toggle_play()
 
-def studio_timeline_tick_frame() -> int
+def studio_timeline_tick_frame() raises IO -> int
   requires true
   ensures result >= 0
   ensures result <= 1
@@ -593,7 +668,7 @@ def studio_timeline_tick_frame() -> int
 =
   return li_rt_studio_timeline_tick_frame()
 
-def studio_timeline_reset_mock() -> int
+def studio_timeline_reset_mock() raises IO -> int
   requires true
   ensures result == 0
   decreases 0
@@ -609,7 +684,7 @@ def studio_timeline_play_btn_rect_at(tl_x: float, tl_y: float, tl_h: float) -> R
   var y: float = tl_y + (tl_h - studio_timeline_play_btn_size_px()) / 2.0
   return rect_make(tl_x + studio_timeline_play_btn_pad_px(), y, studio_timeline_play_btn_size_px(), studio_timeline_play_btn_size_px())
 
-def studio_timeline_playhead_pct() -> float
+def studio_timeline_playhead_pct() raises IO -> float
   requires true
   ensures result >= 0.0
   ensures result <= 1.0
@@ -715,7 +790,7 @@ def studio_viewport_error_retry_height_px() -> float
 =
   return 32.0
 
-def studio_viewport_error_kind() -> int
+def studio_viewport_error_kind() raises IO -> int
   requires true
   ensures result >= studio_viewport_error_none()
   ensures result <= studio_err_missing_asset()
@@ -723,7 +798,7 @@ def studio_viewport_error_kind() -> int
 =
   return li_rt_studio_viewport_error_kind()
 
-def studio_viewport_error_set_mock(kind: int) -> int
+def studio_viewport_error_set_mock(kind: int) raises IO -> int
   requires kind >= studio_viewport_error_none()
   requires kind <= studio_err_missing_asset()
   ensures result == kind
@@ -731,7 +806,7 @@ def studio_viewport_error_set_mock(kind: int) -> int
 =
   return li_rt_studio_viewport_error_set_mock(kind)
 
-def studio_viewport_error_retry() -> int
+def studio_viewport_error_retry() raises IO -> int
   requires true
   ensures result == studio_viewport_error_none()
   ensures studio_viewport_error_kind() == studio_viewport_error_none()
@@ -960,7 +1035,10 @@ def studio_skeleton_inspector_field_rect(panel: Rect, row: int) -> Rect
   var pad: float = 12.0
   var row_h: float = 20.0
   var gap: float = 8.0
-  var y: float = panel.y + pad + (row * (row_h + gap))
+  var row0: int = row
+  var y: float = panel.y + pad
+  if row0 == 1:
+    y = y + row_h + gap
   var w: float = panel.w - (pad * 2.0)
   if w < 0.0:
     w = 0.0
@@ -1081,6 +1159,18 @@ def studio_apply_profile_to_sim(config: StudioProjectConfig, sim_out: var SimSes
   var prof0: int = config.active_profile
   sim_session_apply_studio_profile(prof0, sim_out)
 
+# PH-SIM SIM-1 — sync studio profile then advance stub tick (no duplicate physics).
+def studio_sim_step_hook(config: StudioProjectConfig, sim_out: var SimSessionStub, dt: float) -> int
+  requires studio_profile_id_valid(config.active_profile) == 1
+  requires sim_out.tick >= 0
+  ensures sim_out.studio_profile_id == config.active_profile
+  ensures sim_out.sim_contract_id == li_sim_profile_from_studio_id(config.active_profile)
+  ensures sim_out.output_detail == sim_output_detail_for_studio_profile(config.active_profile)
+  decreases config.active_profile
+=
+  studio_apply_profile_to_sim(config, sim_out)
+  return sim_step(sim_out, dt)
+
 def studio_scene_is_empty(scene_entity_count: int) -> int
   requires scene_entity_count >= 0
   ensures result >= 0
@@ -1196,19 +1286,31 @@ def studio_inspector_field_at(insp_x: float, insp_y: float, insp_w: float, row: 
   requires insp_w >= studio_inspector_field_label_width_px()
   requires row >= 0
   requires row <= 1
+  ensures result.label_rect.w == studio_inspector_field_label_width_px()
+  ensures result.value_rect.w >= 0.0
   decreases row
 =
   var pad: float = 12.0
   var row_h: float = 20.0
   var gap: float = 8.0
-  var y: float = insp_y + studio_inspector_header_height_px() + pad + (row * (row_h + gap))
+  var row0: int = row
+  var y: float = insp_y + studio_inspector_header_height_px() + pad
+  if row0 == 1:
+    y = y + row_h + gap
   var label_w: float = studio_inspector_field_label_width_px()
   var value_w: float = insp_w - label_w - (pad * 3.0)
   if value_w < 0.0:
     value_w = 0.0
   var out: StudioInspectorField
-  out.label_rect = rect_make(insp_x + pad, y, label_w, row_h)
-  out.value_rect = rect_make(insp_x + pad + label_w + pad, y, value_w, row_h)
+  var lx: float = insp_x + pad
+  var ly: float = y
+  var lw: float = label_w
+  var lh0: float = row_h
+  var vx: float = insp_x + pad + label_w + pad
+  var vy: float = y
+  var lh1: float = row_h
+  out.label_rect = rect_make(lx, ly, lw, lh0)
+  out.value_rect = rect_make(vx, vy, value_w, lh1)
   return out
 
 def studio_compose_inspector_selected(layout: StudioShellLayout) -> StudioInspectorCompose
@@ -1223,12 +1325,21 @@ def studio_compose_inspector_selected(layout: StudioShellLayout) -> StudioInspec
   var insp_w: float = lay.inspector.w
   var out: StudioInspectorCompose
   out.rect = lay.inspector
-  out.header_rect = studio_inspector_header_rect_at(insp_x, insp_y, insp_w)
+  var hx: float = lay.inspector.x
+  var hy: float = lay.inspector.y
+  var hw: float = lay.inspector.w
+  out.header_rect = studio_inspector_header_rect_at(hx, hy, hw)
   out.has_selection = 1
   out.field_rows = studio_inspector_field_rows()
   out.field_count = studio_inspector_selection_field_count()
-  out.field0 = studio_inspector_field_at(insp_x, insp_y, insp_w, 0)
-  out.field1 = studio_inspector_field_at(insp_x, insp_y, insp_w, 1)
+  var f0x: float = lay.inspector.x
+  var f0y: float = lay.inspector.y
+  var f0w: float = lay.inspector.w
+  var f1x: float = lay.inspector.x
+  var f1y: float = lay.inspector.y
+  var f1w: float = lay.inspector.w
+  out.field0 = studio_inspector_field_at(f0x, f0y, f0w, 0)
+  out.field1 = studio_inspector_field_at(f1x, f1y, f1w, 1)
   out.empty_visible = 0
   out.hint_line1_rect = rect_make(0.0, 0.0, 0.0, 0.0)
   out.hint_line2_rect = rect_make(0.0, 0.0, 0.0, 0.0)
@@ -1247,8 +1358,9 @@ def studio_compose_timeline(layout: StudioShellLayout) -> StudioTimelineCompose
   out.rect = lay.timeline
   out.track_rect = studio_timeline_track_rect_at(lay.timeline.x, lay.timeline.y, lay.timeline.w, lay.timeline.h)
   out.play_btn_rect = studio_timeline_play_btn_rect_at(lay.timeline.x, lay.timeline.y, lay.timeline.h)
+  var pct1: float = studio_timeline_playhead_pct()
   out.playhead_rect = studio_timeline_playhead_rect_at(out.track_rect.x, out.track_rect.y, out.track_rect.w, out.track_rect.h, pct0)
-  out.playhead_pct = pct0
+  out.playhead_pct = pct1
   return out
 
 def studio_compose_empty_inspector(layout: StudioShellLayout) -> StudioInspectorCompose
@@ -1263,9 +1375,19 @@ def studio_compose_empty_inspector(layout: StudioShellLayout) -> StudioInspector
   out.has_selection = 0
   out.field_rows = 0
   out.empty_visible = 1
-  out.hint_line1_rect = studio_inspector_empty_hint_line_rect_at(lay.inspector.x, lay.inspector.y, lay.inspector.w, 0)
-  out.hint_line2_rect = studio_inspector_empty_hint_line_rect_at(lay.inspector.x, lay.inspector.y, lay.inspector.w, 1)
-  out.hint_box_rect = studio_inspector_empty_hint_box_rect_at(lay.inspector.x, lay.inspector.y, lay.inspector.w, lay.inspector.h)
+  var h1x: float = layout.inspector.x
+  var h1y: float = layout.inspector.y
+  var h1w: float = layout.inspector.w
+  var h2x: float = layout.inspector.x
+  var h2y: float = layout.inspector.y
+  var h2w: float = layout.inspector.w
+  var hbx: float = layout.inspector.x
+  var hby: float = layout.inspector.y
+  var hbw: float = layout.inspector.w
+  var hbh: float = layout.inspector.h
+  out.hint_line1_rect = studio_inspector_empty_hint_line_rect_at(h1x, h1y, h1w, 0)
+  out.hint_line2_rect = studio_inspector_empty_hint_line_rect_at(h2x, h2y, h2w, 1)
+  out.hint_box_rect = studio_inspector_empty_hint_box_rect_at(hbx, hby, hbw, hbh)
   out.field_row_rect = rect_make(0.0, 0.0, 0.0, 0.0)
   return out
 
@@ -2360,8 +2482,12 @@ def studio_shell_loading_frame(w: float, h: float) -> PaintFrame
   ensures result.cmd_count > 0
   decreases 0
 =
-  var compose: StudioShellCompose = studio_compose_shell_loading(w, h, 0, 0, studio_shell_loading_on())
-  var idle: StudioShellCompose = studio_compose_shell(w, h, 0, 0)
+  var w0: float = w
+  var h0: float = h
+  var w1: float = w
+  var h1: float = h
+  var compose: StudioShellCompose = studio_compose_shell_loading(w0, h0, 0, 0, 0, studio_shell_loading_on())
+  var idle: StudioShellCompose = studio_compose_shell(w1, h1, 0, 0, 0)
   var frame: PaintFrame = paint_frame_new()
   var idle_frame: PaintFrame = paint_frame_new()
   studio_paint_shell_chrome(idle_frame, idle)
@@ -2500,4 +2626,62 @@ def studio_shell_viewport_error_visible(compose: StudioShellCompose) -> int
   decreases 0
 =
   return compose.viewport_error.visible
+
+# PH-HW WP3 — InputState from studio-shell-input-bridge runtime (SDL or mock).
+def studio_shell_input_from_host() -> InputState raises IO
+  requires true
+  ensures result.pointer_down >= 0
+  ensures result.pointer_down <= 1
+  ensures result.key_escape >= 0
+  ensures result.key_escape <= 1
+  ensures result.key_cmd_k >= 0
+  ensures result.key_cmd_k <= 1
+  ensures result.key_digit >= 0
+  ensures result.key_digit <= 5
+  decreases 0
+=
+  var s: InputState = input_default()
+  s.pointer_down = li_rt_studio_shell_input_pointer_down()
+  s.pointer_x = li_rt_studio_shell_input_pointer_x()
+  s.pointer_y = li_rt_studio_shell_input_pointer_y()
+  s.key_escape = li_rt_studio_shell_input_key_escape()
+  s.key_cmd_k = li_rt_studio_shell_input_key_cmd_k()
+  s.key_digit = li_rt_studio_shell_input_key_digit()
+  return s
+
+def studio_shell_host_present_loop_tick(vp_w: float, vp_h: float, frame_id: int) -> LigPresentFrame raises IO
+  requires vp_w >= 0.0
+  requires vp_h >= 0.0
+  requires frame_id >= 0
+  ensures result.frame_id >= 0
+  decreases frame_id
+=
+  var iw: int = 1280
+  var ih: int = 720
+  if vp_w < 64.0:
+    iw = 0
+  if vp_h < 36.0:
+    ih = 0
+  var _host: int = li_rt_studio_host_present_tick(iw, ih)
+  var swap: LigSwapchain = lig_present_swapchain_create(vp_w, vp_h)
+  return lig_present_frame(swap, frame_id)
+
+def studio_shell_host_frame(compose: StudioShellCompose, frame_id: int) -> int raises IO
+  requires frame_id >= 0
+  requires frame_id <= 4
+  ensures result >= 0
+  decreases frame_id
+=
+  var input: InputState = studio_shell_input_from_host()
+  var key_compose: StudioShellCompose = compose
+  var _action: int = studio_handle_studio_key(key_compose, input)
+  var vp: ViewportRegion = gui_viewport_region_from_layout(compose.layout)
+  var _presented: LigPresentFrame = studio_shell_host_present_loop_tick(vp.w, vp.h, frame_id)
+  if _presented.presented != 1:
+    return 20
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame, compose)
+  if frame.cmd_count < 1:
+    return 30
+  return 0
 

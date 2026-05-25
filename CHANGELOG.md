@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-Synced from lic `feat/ph-hw-multi-vendor` @ `6ca38be9b2b236eb92f7e3b54f61d39d0abf7675` (org studio parity PR).
+Synced from lic `main` @ `3984cbf3820ee508e4eae90a6162aa0abd2093c8` (PH-HW #224 merged; lig present + vertical demos).
 
 ### Added
 

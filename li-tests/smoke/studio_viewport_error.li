@@ -5,31 +5,39 @@ def main() -> int
   ensures result == 0
   decreases 0
 =
-  if li_std_studio_version() < 5:
+  if li_std_studio_version() < 6:
     return 1
   if studio_viewport_error_kind() != studio_viewport_error_none():
     return 2
-  var layout: StudioShellLayout = layout_studio_shell_adaptive(1280.0, 720.0)
+  var layout0: StudioShellLayout = layout_studio_shell_adaptive(1280.0, 720.0)
   if studio_viewport_error_set_mock(studio_err_gpu()) != studio_err_gpu():
     return 3
   if studio_viewport_error_kind() != studio_err_gpu():
     return 4
-  var overlay: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout, studio_err_gpu())
-  if studio_viewport_error_overlay_visible_flag(overlay) != 1:
+  var layout_ov: StudioShellLayout = layout0
+  var overlay_vis: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout_ov, studio_err_gpu())
+  var vis_flag: int = overlay_vis.visible
+  if vis_flag != 1:
     return 5
-  if studio_viewport_error_ok(overlay) != 1:
+  var layout_kind: StudioShellLayout = layout0
+  var overlay_kind: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout_kind, studio_err_gpu())
+  var err_kind0: int = overlay_kind.error_kind
+  if err_kind0 != studio_err_gpu():
     return 6
   if studio_paint_viewport_error_cmds() != 2:
     return 7
-  var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 0, 1)
-  if studio_shell_viewport_error_kind_is(shell, studio_err_gpu()) != 1:
+  var shell0: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 0, 1)
+  if shell0.viewport_error.error_kind != studio_err_gpu():
     return 8
-  if studio_shell_viewport_error_visible(shell) != 1:
+  if shell0.viewport_error.visible != 1:
     return 9
+  var layout_paint: StudioShellLayout = layout0
+  var overlay_paint: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout_paint, studio_err_gpu())
   var frame: PaintFrame = paint_frame_new()
-  studio_paint_viewport_error(frame, overlay)
+  studio_paint_viewport_error(frame, overlay_paint)
   var frame_shell: PaintFrame = paint_frame_new()
-  studio_paint_shell_chrome(frame_shell, shell)
+  var shell_paint: StudioShellCompose = shell0
+  studio_paint_shell_chrome(frame_shell, shell_paint)
   if studio_viewport_error_set_mock(studio_err_missing_asset()) != studio_err_missing_asset():
     return 10
   if studio_viewport_error_kind() != studio_err_missing_asset():
@@ -38,7 +46,9 @@ def main() -> int
     return 12
   if studio_viewport_error_kind() != studio_viewport_error_none():
     return 13
-  var cleared: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout, studio_viewport_error_kind())
-  if studio_viewport_error_overlay_visible_flag(cleared) != 0:
+  var layout_clr: StudioShellLayout = layout0
+  var cleared: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout_clr, studio_viewport_error_kind())
+  var cleared_vis: int = cleared.visible
+  if cleared_vis != 0:
     return 14
   return 0

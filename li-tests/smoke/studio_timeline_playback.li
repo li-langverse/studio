@@ -5,7 +5,7 @@ def main() -> int
   ensures result == 0
   decreases 0
 =
-  if li_std_studio_version() < 5:
+  if li_std_studio_version() < 6:
     return 1
   studio_timeline_reset_mock()
   if studio_timeline_playing() != 0:
