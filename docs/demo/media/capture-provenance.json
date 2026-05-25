@@ -1,0 +1,16 @@
+{
+  "captured_at": "2026-05-25T12:41:13Z",
+  "capture_mode": "html_mock_playwright_chrome",
+  "lic_root": "/Users/julian/Documents/coding-projects/studio/../lic",
+  "lic_ref": "origin/main",
+  "lic_sha": "98cdd7c684dd88f734356eca71bfc35cfd584557",
+  "studio_sha": "fd596b72eb5764cfc5c82bcb35a36aa0ed0fad4b",
+  "chrome": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "scenes": [
+    "01-studio-workspace",
+    "02-studio-empty-viewport",
+    "03-studio-agent-error"
+  ],
+  "native_window": false,
+  "notes": "Marketing mocks; playwright PNG; not li-studio-demo/wgpu shell."
+}

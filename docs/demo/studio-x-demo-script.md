@@ -1,8 +1,9 @@
 # Li World Studio — X demo script (~37s)
 
 **Audience:** X (Twitter) — technical builders, game/sim engineers, agent-native tooling curious.  
-**Visual source:** Marketing mocks from `lic` branch `cursor/studio-ui-ux-plan-loop` (`deploy/studio-demo/screenshots/`). **Not** the shipped native `li-studio` binary — production UI is `studio` + `ui` + `render` (wgpu) on Li Engine.  
-**Video artifact:** `docs/demo/media/studio-x-demo.mp4` (silent reel; add VO in post or record live with this script).
+**Visual source:** Marketing mocks from `lic` **`main`** (`deploy/studio-demo/screenshots/`, archived by recorder). **Not** the shipped native `li-studio` window — production stack is `studio` + `ui` + `render` (`lig`/wgpu); `li-studio-demo` is headless compose/paint only.  
+**Video artifact:** `docs/demo/media/studio-x-demo.mp4` + `capture-provenance.json` (SHAs, capture mode).  
+**Regenerate:** `STUDIO_DEMO_REFRESH=1 ./scripts/record-studio-x-demo.sh`
 
 ---
 

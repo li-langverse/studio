@@ -8,7 +8,7 @@
 | **Agent-first UI** | [li-langverse/ui](https://github.com/li-langverse/ui) | Command palette, agent dock, `UiAgentAction` |
 | **Viewport / GPU** | [li-langverse/render](https://github.com/li-langverse/render) | wgpu bridge (PH-GD-5) |
 | **World data** | [li-langverse/world](https://github.com/li-langverse/world) | `world.li` scenes |
-| **Marketing mocks** | `lic` → `deploy/studio-demo/` on branch `cursor/studio-ui-ux-plan-loop` | Static HTML + SDL capture stub |
+| **Marketing mocks** | `lic` → `deploy/studio-demo/` on **`main`** | Static HTML + SDL capture stub |
 
 **Render stack (target):** native desktop shell → `li-ui` / `li-gui` chrome → `li-render` / wgpu viewport. **Not** a browser app.
 
@@ -35,7 +35,8 @@ docs/demo/media/studio-x-demo.mp4
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `LIC_ROOT` | `../lic` | lic checkout for `git archive` of studio-demo |
-| `LIC_STUDIO_BRANCH` | `origin/cursor/studio-ui-ux-plan-loop` | Branch with `deploy/studio-demo` |
+| `LIC_STUDIO_BRANCH` | `origin/main` | Ref for `git archive deploy/studio-demo` |
+| `STUDIO_DEMO_REFRESH` | `0` | Set `1` to re-extract mocks before capture |
 | `CHROME` | macOS Google Chrome or `google-chrome` | Headless PNG capture |
 | `STUDIO_DEMO_CACHE` | `.demo-cache` | Extracted assets (gitignored) |
 
@@ -48,6 +49,10 @@ cd .demo-cache/deploy/studio-demo/native
 ```
 
 On headless Linux CI: `xvfb-run` (see `native/capture.sh`).
+
+### Playwright PNG capture (macOS default)
+
+Chrome `--screenshot` may hang; recorder uses `scripts/capture-studio-demo-png.mjs` (`npx -y playwright` ok).
 
 ### macOS screen capture (future, full native app)
 
@@ -63,7 +68,7 @@ screencapture -v ~/Desktop/studio-native.mov
 
 | Blocker | Mitigation |
 |---------|------------|
-| `lic` `main` lacks `deploy/studio-demo` | Archive from `cursor/studio-ui-ux-plan-loop` |
+| Native `li-studio` has no host window | HTML mocks + honest banner; screen-record when PH-GD-5 ships |
 | No `ffmpeg` initially | `brew install ffmpeg` |
 | `drawtext` filter missing | VO/script captions instead of burn-in |
 | `DISPLAY` unset in agent shell | HTML mock reel shipped; native PPM deferred to human desktop |
@@ -71,7 +76,7 @@ screencapture -v ~/Desktop/studio-native.mov
 
 ## Org reference (full pipeline)
 
-On `lic` branch `cursor/studio-ui-ux-plan-loop`:
+On `lic` `main` (plan loop scripts):
 
 - `./scripts/studio-ui-ux-capture-progress.sh` — PNG + MP4 + GitHub release `studio-ui-ux-progress`
 - `STUDIO_UI_UX_CAPTURE_DRY=1` for gate-only runs
