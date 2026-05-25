@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Docs:** Agent rule `li-def-not-proc.mdc`; README syntax line — teach **`def`** only (see `lic` `docs/release-notes/2026-05-25-studio-def-not-proc-docs.md`).
+
 ### Added
 
 - **Studio X demo** — `docs/demo/studio-x-demo-script.md`, `docs/demo/RECORDING.md`, `docs/demo/media/studio-x-demo.mp4`, `scripts/record-studio-x-demo.sh` (HTML mocks from `lic` `deploy/studio-demo`).

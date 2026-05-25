@@ -4,6 +4,10 @@ Li World Studio product shell: composes **dock**, **timeline**, and **inspector*
 
 Import: `import studio`
 
+## Syntax
+
+Use **`def`** for functions; do not add bare **`proc`**. **`extern proc`** only for FFI. See `lic/docs/game-dev/world-studio-vision.md` and `.cursor/rules/li-def-not-proc.mdc`.
+
 ## Compose API
 
 - `studio_compose_shell` — layout + dock/timeline/inspector structs + panel state

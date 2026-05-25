@@ -1,0 +1,33 @@
+---
+description: Li surface syntax uses def, not proc, for function definitions
+globs: "**/*.li,src/**/*.li,li-tests/**/*.li,docs/**"
+alwaysApply: true
+---
+
+# Li definitions: use `def`, not `proc`
+
+## Required
+
+User-facing Li functions are declared with **`def`**:
+
+```nim
+def callee(x: int) -> int
+  requires x >= 0
+  ensures result == x
+  decreases 0
+=
+  return x
+```
+
+## Forbidden in new code and docs
+
+- Bare **`proc`** for Li definitions (rejected by the compiler; use **`def`**).
+- Documentation or examples that teach `proc f(...)` as the primary Li syntax.
+
+## Allowed exception
+
+- **`extern proc`** for FFI/runtime stubs only (C ABI), with full `requires` / `ensures` / `decreases`.
+
+## Agents
+
+When writing `.li` files, release notes, or language docs, say **`def`** / **`extern proc`**. Do not introduce new `proc` examples unless documenting the rejection error. Canonical policy: `lic/.cursor/rules/li-def-not-proc.mdc` and `lic/docs/game-dev/world-studio-vision.md`.
