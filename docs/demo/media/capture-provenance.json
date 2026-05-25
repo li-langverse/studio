@@ -2,10 +2,16 @@
   "captured_at": "2026-05-25T13:20:51Z",
   "capture_mode": "html_mock_playwright_chrome",
   "lic_root": "/Users/julian/Documents/coding-projects/lic",
-  "lic_ref": "worktree+8acba3c9",
+  "lic_ref": "feat/studio-ux-wave2-p0",
   "lic_sha": "ec18d2a9ec2c6a327ad1a06093c78a5be1fa15eb",
-  "studio_sha": "7f16bbbe2fc9388b228ffd6119dddb6ad6614ae1",
-  "scenes": ["01-studio-workspace", "02-studio-empty-viewport", "04-studio-command-palette", "03-studio-agent-error", "05-studio-end-cta"],
+  "studio_sha": "6e2313bf82b07d11e0d168eeca19e22ba38d4c47",
+  "scenes": [
+    "01-studio-workspace",
+    "02-studio-empty-viewport",
+    "04-studio-command-palette",
+    "03-studio-agent-error",
+    "05-studio-end-cta"
+  ],
   "wave": 2,
   "native_window": false,
   "notes": "Wave 2 mocks; Chrome PNG for 04/05; playwright blocked on launch timeout."
