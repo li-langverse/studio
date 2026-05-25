@@ -42,6 +42,12 @@ note = "T-PKG-li-studio-empty-states"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_viewport_error.li"
+outcome = "compile_open_ok"
+note = "T-PKG-li-studio-viewport-error UX-08"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_command_palette.li"
 outcome = "compile_open_ok"
 note = "T-PKG-li-studio-command-palette-ux04"
@@ -63,3 +69,10 @@ suite = "smoke"
 file = "smoke/studio_shell_demo.li"
 outcome = "compile_open_ok"
 note = "T-PKG-li-studio-shell-demo PH-GD-1"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_mcp_tools.li"
+outcome = "compile_open_ok"
+note = "T-PKG-li-studio-mcp-tools PH-AGENT"
+

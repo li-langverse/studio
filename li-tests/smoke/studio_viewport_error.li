@@ -1,0 +1,44 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 5:
+    return 1
+  if studio_viewport_error_kind() != studio_viewport_error_none():
+    return 2
+  var layout: StudioShellLayout = layout_studio_shell_adaptive(1280.0, 720.0)
+  if studio_viewport_error_set_mock(studio_err_gpu()) != studio_err_gpu():
+    return 3
+  if studio_viewport_error_kind() != studio_err_gpu():
+    return 4
+  var overlay: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout, studio_err_gpu())
+  if studio_viewport_error_overlay_visible_flag(overlay) != 1:
+    return 5
+  if studio_viewport_error_ok(overlay) != 1:
+    return 6
+  if studio_paint_viewport_error_cmds() != 2:
+    return 7
+  var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 0, 1)
+  if studio_shell_viewport_error_kind_is(shell, studio_err_gpu()) != 1:
+    return 8
+  if studio_shell_viewport_error_visible(shell) != 1:
+    return 9
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_viewport_error(frame, overlay)
+  var frame_shell: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame_shell, shell)
+  if studio_viewport_error_set_mock(studio_err_missing_asset()) != studio_err_missing_asset():
+    return 10
+  if studio_viewport_error_kind() != studio_err_missing_asset():
+    return 11
+  if studio_viewport_error_retry() != studio_viewport_error_none():
+    return 12
+  if studio_viewport_error_kind() != studio_viewport_error_none():
+    return 13
+  var cleared: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout, studio_viewport_error_kind())
+  if studio_viewport_error_overlay_visible_flag(cleared) != 0:
+    return 14
+  return 0
