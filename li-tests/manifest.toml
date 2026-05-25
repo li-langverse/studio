@@ -60,9 +60,9 @@ note = "T-PKG-li-studio-profile-roundtrip PH-UX-05 PH-SIM"
 
 [[tests]]
 suite = "smoke"
-file = "smoke/studio_vertical_profile_roundtrip.li"
+file = "smoke/studio_sim_step_by_profile.li"
 outcome = "compile_open_ok"
-note = "T-PKG-li-studio-vertical-profile-roundtrip UX-14 vertical demos"
+note = "PH-SIM vertical gap #4: studio_sim_step_hook game + sim_scientific"
 
 [[tests]]
 suite = "smoke"
@@ -78,12 +78,18 @@ note = "T-PKG-li-studio-shell-demo PH-GD-1"
 
 [[tests]]
 suite = "smoke"
-file = "smoke/studio_host_present.li"
-outcome = "compile_open_ok"
-note = "T-PKG-li-studio-host-present PH-HW-HW-1"
-[[tests]]
-suite = "smoke"
 file = "smoke/studio_mcp_tools.li"
 outcome = "compile_open_ok"
 note = "T-PKG-li-studio-mcp-tools PH-AGENT"
 
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_mcp_extended.li"
+outcome = "compile_open_ok"
+note = "T-PKG-li-studio-mcp-extended PH-AGENT gap-6-7"
+
+
+[[test]]
+file = "smoke/studio_vertical_demo_env.li"
+tier = "smoke"
+note = "STUDIO_DEMO_PROFILE vertical demo frames + optional LIG_HOST_PRESENT"

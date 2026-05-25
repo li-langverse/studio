@@ -7,7 +7,7 @@ def main() -> int
 =
   if li_std_studio_version() < 6:
     return 1
-  if studio_mcp_tool_count() != 5:
+  if studio_mcp_tool_count() != 8:
     return 2
   if studio_mcp_tool_id_valid(studio_mcp_world_scaffold()) != 1:
     return 3
