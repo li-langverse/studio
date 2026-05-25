@@ -1,0 +1,43 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 5:
+    return 1
+  studio_timeline_reset_mock()
+  var w: float = 1280.0
+  var h: float = 720.0
+  var f: int = 0
+  while f < 3:
+    var palette_open: int = studio_palette_closed_flag()
+    var compose: StudioShellCompose = studio_compose_shell_palette(w, h, 0, 1, 1, palette_open)
+    var input: InputState = input_default()
+    if f == 1:
+      if studio_timeline_playing() == 0:
+        var _play: int = studio_timeline_toggle_play()
+      var _tick: int = studio_timeline_tick_frame()
+    if f == 2:
+      input.key_cmd_k = 1
+    var _key: int = studio_handle_studio_key(compose, input)
+    var frame: PaintFrame = paint_frame_new()
+    studio_paint_shell_chrome(frame, compose)
+    var expected: int = studio_shell_chrome_count_palette(
+      compose.inspector.has_selection,
+      compose.scene_entity_count,
+      compose.agent.task_state,
+      compose.palette.is_open,
+      compose.agent.agent_context_label)
+    if frame.cmd_count != expected:
+      return 10 + f
+    if f == 1:
+      if compose.timeline.playhead_pct != studio_timeline_playhead_pct():
+        return 21
+    if f == 2:
+      if studio_compose_ok(compose) != 1:
+        return 32
+    f = f + 1
+  return 0

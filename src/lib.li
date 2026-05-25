@@ -45,10 +45,10 @@ def studio_profile_sim_automotive() -> int
 
 def studio_profile_sim_robotics() -> int
   requires true
-  ensures result == 4
+  ensures result == 5
   decreases 0
 =
-  return 4
+  return 5
 
 def studio_profile_sim_additive() -> int
   requires true
@@ -150,13 +150,14 @@ def studio_profile_chip_rect_at(topbar: Rect, profile_id: int) -> Rect
   requires topbar.h >= studio_profile_chip_height_px()
   requires studio_profile_id_valid(profile_id) == 1
   ensures result.w == studio_profile_chip_width_px()
-  ensures result.h == studio_profile_paint_tag_h(profile_id)
   decreases profile_id
 =
+  var pid0: int = profile_id
+  var tag_h: float = studio_profile_paint_tag_h(pid0)
   var pad: float = 12.0
   var x: float = topbar.x + topbar.w - studio_profile_chip_width_px() - pad
   var y: float = topbar.y + (topbar.h - studio_profile_chip_height_px()) / 2.0
-  return rect_make(x, y, studio_profile_chip_width_px(), studio_profile_paint_tag_h(profile_id))
+  return rect_make(x, y, studio_profile_chip_width_px(), tag_h)
 
 def studio_profile_color(profile_id: int) -> Color
   requires studio_profile_id_valid(profile_id) == 1
@@ -183,21 +184,21 @@ def studio_paint_topbar_profile(frame: var PaintFrame, topbar: Rect, profile_id:
   requires studio_profile_id_valid(profile_id) == 1
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_topbar_profile_cmds()
   ensures frame.last_kind == paint_op_stroke_rect()
-  ensures frame.last_rect.h == studio_profile_paint_tag_h(profile_id)
   decreases profile_id
 =
+  var pid0: int = profile_id
   frame.cmd_count = frame.cmd_count + studio_paint_topbar_profile_cmds()
   frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = studio_profile_chip_rect_at(topbar, profile_id)
-  frame.last_color = studio_profile_color(profile_id)
+  frame.last_rect = studio_profile_chip_rect_at(topbar, pid0)
+  frame.last_color = studio_profile_color(pid0)
 
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 4
+  ensures result == 5
   decreases 0
 =
-  return 4
+  return 5
 
 def studio_agent_context_none() -> int
   requires true
@@ -276,6 +277,91 @@ def studio_dock_padding_px() -> float
 =
   return 12.0
 
+
+def studio_outliner_max_nodes() -> int
+  requires true
+  ensures result == 8
+  decreases 0
+=
+  return 8
+
+def studio_outliner_demo_node_count() -> int
+  requires true
+  ensures result == 3
+  decreases 0
+=
+  return 3
+
+def studio_outliner_row_height_px() -> float
+  requires true
+  ensures result == 18.0
+  decreases 0
+=
+  return 18.0
+
+def studio_outliner_row_gap_px() -> float
+  requires true
+  ensures result == 2.0
+  decreases 0
+=
+  return 2.0
+
+def studio_outliner_below_slots_gap_px() -> float
+  requires true
+  ensures result == 8.0
+  decreases 0
+=
+  return 8.0
+
+def studio_outliner_label_root() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_outliner_label_camera() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_outliner_label_mesh() -> int
+  requires true
+  ensures result == 3
+  decreases 0
+=
+  return 3
+
+def studio_outliner_id_root() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  return 0
+
+def studio_outliner_id_camera() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_outliner_id_mesh() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_outliner_selected_demo() -> int
+  requires true
+  ensures result == studio_outliner_id_camera()
+  decreases 0
+=
+  return studio_outliner_id_camera()
+
 def studio_timeline_track_height_px() -> float
   requires true
   ensures result == 48.0
@@ -352,6 +438,23 @@ type StudioDockCompose = object
   public active_slot: int
   public active_slot_rect: Rect
 
+
+type StudioOutlinerNode = object
+  public id: int
+  public depth: int
+  public label_id: int
+
+type StudioOutlinerCompose = object
+  public rect: Rect
+  public node_count: int
+  public selected_node: int
+  public node0: StudioOutlinerNode
+  public node1: StudioOutlinerNode
+  public node2: StudioOutlinerNode
+  public row0_rect: Rect
+  public row1_rect: Rect
+  public row2_rect: Rect
+
 type StudioTimelineCompose = object
   public rect: Rect
   public track_rect: Rect
@@ -402,6 +505,7 @@ type StudioShellCompose = object
   public layout: StudioShellLayout
   public config: StudioProjectConfig
   public dock: StudioDockCompose
+  public outliner: StudioOutlinerCompose
   public timeline: StudioTimelineCompose
   public inspector: StudioInspectorCompose
   public viewport_empty: StudioViewportEmptyCompose
@@ -583,6 +687,128 @@ def studio_dock_slot_rect_at(dock_x: float, dock_y: float, dock_w: float, dock_h
   var y: float = dock_y + studio_dock_padding_px() + studio_dock_slot_offset_y(slot)
   var x: float = dock_x + (dock_w - studio_dock_slot_size_px()) / 2.0
   return rect_make(x, y, studio_dock_slot_size_px(), studio_dock_slot_size_px())
+
+
+def studio_dock_last_slot_index() -> int
+  requires studio_dock_slot_count() > 0
+  ensures result == studio_dock_slot_count() - 1
+  decreases 0
+=
+  return studio_dock_slot_count() - 1
+
+def studio_dock_slots_bottom_y(dock_y: float) -> float
+  requires dock_y >= 0.0
+  ensures result >= dock_y
+  decreases 0
+=
+  var last_slot: int = studio_dock_last_slot_index()
+  return dock_y + studio_dock_padding_px() + studio_dock_slot_offset_y(last_slot) + studio_dock_slot_size_px()
+
+def studio_outliner_strip_rect_at(dock: Rect) -> Rect
+  requires dock.w >= 0.0
+  requires dock.h >= studio_dock_padding_px() + studio_dock_slot_size_px()
+  ensures result.x == dock.x
+  ensures result.w == dock.w
+  decreases 0
+=
+  var top: float = studio_dock_slots_bottom_y(dock.y) + studio_outliner_below_slots_gap_px()
+  var h: float = dock.h - (top - dock.y)
+  if h < 0.0:
+    h = 0.0
+  return rect_make(dock.x, top, dock.w, h)
+
+def studio_outliner_row_step_px() -> float
+  requires true
+  ensures result == studio_outliner_row_height_px() + studio_outliner_row_gap_px()
+  decreases 0
+=
+  return studio_outliner_row_height_px() + studio_outliner_row_gap_px()
+
+def studio_outliner_row_rect_at(strip: Rect, row_index: int) -> Rect
+  requires row_index >= 0
+  requires row_index < studio_outliner_max_nodes()
+  requires strip.h >= studio_outliner_row_height_px()
+  ensures result.h == studio_outliner_row_height_px()
+  decreases row_index
+=
+  var step: float = studio_outliner_row_step_px()
+  var y: float = strip.y
+  if row_index == 1:
+    y = strip.y + step
+  if row_index == 2:
+    y = strip.y + step + step
+  if row_index == 3:
+    y = strip.y + step + step + step
+  if row_index == 4:
+    y = strip.y + step + step + step + step
+  if row_index == 5:
+    y = strip.y + step + step + step + step + step
+  if row_index == 6:
+    y = strip.y + step + step + step + step + step + step
+  if row_index == 7:
+    y = strip.y + step + step + step + step + step + step + step
+  var x: float = strip.x + 6.0
+  var w: float = strip.w - 12.0
+  if w < 0.0:
+    w = 0.0
+  return rect_make(x, y, w, studio_outliner_row_height_px())
+
+def studio_outliner_row_rect_for_node(strip: Rect, node: StudioOutlinerNode, row_index: int) -> Rect
+  requires row_index >= 0
+  requires row_index < studio_outliner_max_nodes()
+  requires node.depth >= 0
+  requires node.depth <= 3
+  ensures result.h == studio_outliner_row_height_px()
+  decreases row_index
+=
+  var base: Rect = studio_outliner_row_rect_at(strip, row_index)
+  var indent: float = 6.0
+  if node.depth == 1:
+    indent = 14.0
+  if node.depth == 2:
+    indent = 22.0
+  var w: float = base.w - indent + 6.0
+  if w < 0.0:
+    w = 0.0
+  return rect_make(base.x + indent - 6.0, base.y, w, base.h)
+
+def studio_outliner_node_make(id: int, depth: int, label_id: int) -> StudioOutlinerNode
+  requires id >= 0
+  requires depth >= 0
+  requires depth <= 3
+  requires label_id >= 0
+  ensures result.id == id
+  ensures result.depth == depth
+  ensures result.label_id == label_id
+  decreases id
+=
+  var n: StudioOutlinerNode
+  n.id = id
+  n.depth = depth
+  n.label_id = label_id
+  return n
+
+def studio_compose_outliner(dock: Rect, active_dock_slot: int) -> StudioOutlinerCompose
+  requires active_dock_slot >= 0
+  requires active_dock_slot < studio_dock_slot_count()
+  requires dock.w >= 0.0
+  requires dock.h >= studio_dock_padding_px() + studio_dock_slot_size_px()
+  ensures result.node_count == studio_outliner_demo_node_count()
+  ensures result.node_count <= studio_outliner_max_nodes()
+  ensures result.selected_node == studio_outliner_selected_demo()
+  decreases active_dock_slot
+=
+  var out: StudioOutlinerCompose
+  out.rect = studio_outliner_strip_rect_at(dock)
+  out.node_count = studio_outliner_demo_node_count()
+  out.selected_node = studio_outliner_selected_demo()
+  out.node0 = studio_outliner_node_make(studio_outliner_id_root(), 0, studio_outliner_label_root())
+  out.node1 = studio_outliner_node_make(studio_outliner_id_camera(), 1, studio_outliner_label_camera())
+  out.node2 = studio_outliner_node_make(studio_outliner_id_mesh(), 2, studio_outliner_label_mesh())
+  out.row0_rect = studio_outliner_row_rect_for_node(out.rect, out.node0, 0)
+  out.row1_rect = studio_outliner_row_rect_for_node(out.rect, out.node1, 1)
+  out.row2_rect = studio_outliner_row_rect_for_node(out.rect, out.node2, 2)
+  return out
 
 def studio_timeline_track_rect_at(tl_x: float, tl_y: float, tl_w: float, tl_h: float) -> Rect
   requires tl_w >= 0.0
@@ -846,16 +1072,18 @@ def studio_paint_agent_cmds(task_state: int, agent_context_label: int) -> int
   ensures result <= 7
   decreases task_state
 =
+  var ts0: int = task_state
+  var ctx0: int = agent_context_label
   var n: int = 2
-  if studio_agent_context_visible(agent_context_label) == 1:
+  if studio_agent_context_visible(ctx0) == 1:
     n = n + 1
-  if studio_agent_cancel_visible(task_state) == 1:
+  if studio_agent_cancel_visible(ts0) == 1:
     n = n + 1
-  if studio_agent_progress_visible(task_state) == 1:
+  if studio_agent_progress_visible(ts0) == 1:
     n = n + 1
-  if studio_agent_error_visible(task_state) == 1:
+  if studio_agent_error_visible(ts0) == 1:
     n = n + 2
-  if studio_agent_retry_visible(task_state) == 1:
+  if studio_agent_retry_visible(ts0) == 1:
     n = n + 1
   return n
 
@@ -867,22 +1095,23 @@ def studio_compose_agent_chrome(layout: StudioShellLayout, task_state: int, agen
   ensures result.rect.w == layout.agent_strip.w
   ensures result.task_state == task_state
   ensures result.agent_context_label == agent_context_label
-  ensures result.progress.visible == studio_agent_progress_visible(task_state)
   decreases task_state
 =
+  var ts0: int = task_state
+  var ctx0: int = agent_context_label
   var out: StudioAgentChromeCompose
   out.rect = layout.agent_strip
-  out.task_state = task_state
-  out.agent_context_label = agent_context_label
-  out.cancel_visible = studio_agent_cancel_visible(task_state)
-  out.error_visible = studio_agent_error_visible(task_state)
-  out.retry_visible = studio_agent_retry_visible(task_state)
+  out.task_state = ts0
+  out.agent_context_label = ctx0
+  out.cancel_visible = studio_agent_cancel_visible(ts0)
+  out.error_visible = studio_agent_error_visible(ts0)
+  out.retry_visible = studio_agent_retry_visible(ts0)
   out.cancel_rect = studio_agent_cancel_rect_at(layout.agent_strip.x, layout.agent_strip.y, layout.agent_strip.w, layout.agent_strip.h)
   out.status_rect = studio_agent_status_rect_at(layout.agent_strip.x, layout.agent_strip.y, layout.agent_strip.w, layout.agent_strip.h, out.cancel_visible)
   out.error_strip_rect = studio_agent_error_strip_rect_at(layout.agent_strip.x, layout.agent_strip.y, layout.agent_strip.w, layout.agent_strip.h)
-  out.progress = studio_compose_agent_progress(task_state, out.status_rect)
+  out.progress = studio_compose_agent_progress(ts0, out.status_rect)
   out.context_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  if studio_agent_context_visible(agent_context_label) == 1:
+  if studio_agent_context_visible(ctx0) == 1:
     out.context_rect = studio_agent_context_rect_at(out.status_rect)
   out.retry_hint_rect = rect_make(0.0, 0.0, 0.0, 0.0)
   if out.retry_visible == 1:
@@ -910,6 +1139,7 @@ def studio_compose_shell_profile(w: float, h: float, active_dock_slot: int, has_
   out.dock.slot_count = studio_dock_slot_count()
   out.dock.active_slot = active_dock_slot
   out.dock.active_slot_rect = studio_dock_slot_rect_at(layout.dock.x, layout.dock.y, layout.dock.w, layout.dock.h, active_dock_slot)
+  out.outliner = studio_compose_outliner(layout.dock, active_dock_slot)
   out.timeline.rect = layout.timeline
   out.timeline.track_rect = studio_timeline_track_rect_at(layout.timeline.x, layout.timeline.y, layout.timeline.w, layout.timeline.h)
   out.timeline.playhead_rect = studio_timeline_playhead_rect_at(out.timeline.track_rect.x, out.timeline.track_rect.y, out.timeline.track_rect.w, out.timeline.track_rect.h, studio_timeline_playhead_pct())
@@ -968,6 +1198,7 @@ def studio_compose_shell(w: float, h: float, active_dock_slot: int, has_selectio
   out.dock.slot_count = studio_dock_slot_count()
   out.dock.active_slot = slot0
   out.dock.active_slot_rect = studio_dock_slot_rect_at(out.layout.dock.x, out.layout.dock.y, out.layout.dock.w, out.layout.dock.h, slot0)
+  out.outliner = studio_compose_outliner(out.layout.dock, slot0)
   out.timeline.rect = out.layout.timeline
   out.timeline.track_rect = studio_timeline_track_rect_at(out.layout.timeline.x, out.layout.timeline.y, out.layout.timeline.w, out.layout.timeline.h)
   out.timeline.playhead_rect = studio_timeline_playhead_rect_at(out.timeline.track_rect.x, out.timeline.track_rect.y, out.timeline.track_rect.w, out.timeline.track_rect.h, studio_timeline_playhead_pct())
@@ -1005,6 +1236,22 @@ def studio_compose_shell(w: float, h: float, active_dock_slot: int, has_selectio
   return out
 
 
+def studio_compose_shell_palette(w: float, h: float, active_dock_slot: int, has_selection: int, palette_open: int) -> StudioShellCompose
+  requires w > 0.0
+  requires h > 0.0
+  requires active_dock_slot >= 0
+  requires active_dock_slot < studio_dock_slot_count()
+  requires has_selection >= 0
+  requires has_selection <= 1
+  requires palette_open >= studio_palette_closed_flag()
+  requires palette_open <= studio_palette_open_flag()
+  ensures result.palette.is_open == palette_open
+  decreases palette_open
+=
+  var out: StudioShellCompose = studio_compose_shell(w, h, active_dock_slot, has_selection, 0)
+  out.palette = studio_compose_palette(out.layout.viewport_w, out.layout.viewport_h, palette_open)
+  return out
+
 def studio_compose_shell_agent(w: float, h: float, active_dock_slot: int, has_selection: int, scene_entity_count: int, task_state: int) -> StudioShellCompose
   requires w > 0.0
   requires h > 0.0
@@ -1012,14 +1259,62 @@ def studio_compose_shell_agent(w: float, h: float, active_dock_slot: int, has_se
   requires active_dock_slot < studio_dock_slot_count()
   requires has_selection >= 0
   requires has_selection <= 1
+  requires scene_entity_count >= 0
   requires task_state >= studio_agent_task_idle()
   requires task_state <= studio_agent_task_done()
   ensures result.agent.task_state == task_state
   decreases task_state
 =
-  var out: StudioShellCompose = studio_compose_shell(w, h, active_dock_slot, has_selection)
-  out.agent = studio_compose_agent_chrome(out.layout, task_state, studio_agent_context_for_shell(has_selection, task_state))
+  var sel0: int = has_selection
+  var scene0: int = scene_entity_count
+  var task0: int = task_state
+  var ctx_sel0: int = has_selection
+  var ctx_task0: int = task_state
+  var out: StudioShellCompose = studio_compose_shell(w, h, active_dock_slot, sel0, scene0)
+  out.agent = studio_compose_agent_chrome(out.layout, task0, studio_agent_context_for_shell(ctx_sel0, ctx_task0))
   return out
+
+
+def studio_paint_outliner_cmds(node_count: int) -> int
+  requires node_count >= 0
+  requires node_count <= studio_outliner_max_nodes()
+  ensures result == node_count
+  decreases node_count
+=
+  return node_count
+
+
+def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose) -> unit
+  requires frame.cmd_count >= 0
+  requires outliner.node_count >= 0
+  requires outliner.node_count <= studio_outliner_max_nodes()
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_outliner_cmds(outliner.node_count)
+  decreases outliner.node_count
+=
+  if outliner.node_count > 0:
+    frame.cmd_count = frame.cmd_count + 1
+    frame.last_kind = paint_op_stroke_rect()
+    frame.last_rect = outliner.row0_rect
+    if outliner.selected_node == outliner.node0.id:
+      frame.last_color = studio_color_accent_mint()
+    if outliner.selected_node != outliner.node0.id:
+      frame.last_color = studio_color_border()
+  if outliner.node_count > 1:
+    frame.cmd_count = frame.cmd_count + 1
+    frame.last_kind = paint_op_stroke_rect()
+    frame.last_rect = outliner.row1_rect
+    if outliner.selected_node == outliner.node1.id:
+      frame.last_color = studio_color_accent_mint()
+    if outliner.selected_node != outliner.node1.id:
+      frame.last_color = studio_color_border()
+  if outliner.node_count > 2:
+    frame.cmd_count = frame.cmd_count + 1
+    frame.last_kind = paint_op_stroke_rect()
+    frame.last_rect = outliner.row2_rect
+    if outliner.selected_node == outliner.node2.id:
+      frame.last_color = studio_color_accent_mint()
+    if outliner.selected_node != outliner.node2.id:
+      frame.last_color = studio_color_border()
 
 def studio_paint_dock_cmds() -> int
   requires true
@@ -1167,36 +1462,52 @@ def studio_paint_inspector(frame: var PaintFrame, inspector: StudioInspectorComp
     frame.last_color = studio_color_bg_elevated()
 
 
-def studio_paint_compose_panels(frame: var PaintFrame, dock: StudioDockCompose, timeline: StudioTimelineCompose, inspector: StudioInspectorCompose) -> unit
+def studio_paint_compose_panels(frame: var PaintFrame, dock: StudioDockCompose, outliner: StudioOutlinerCompose, timeline: StudioTimelineCompose, inspector: StudioInspectorCompose) -> unit
   requires frame.cmd_count >= 0
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_compose_panels_count(inspector.has_selection)
   decreases 0
 =
   studio_paint_dock(frame, dock)
+  studio_paint_outliner(frame, outliner)
   studio_paint_timeline(frame, timeline)
   studio_paint_inspector(frame, inspector)
 
 def studio_paint_compose_panels_count(has_selection: int) -> int
   requires has_selection >= 0
   requires has_selection <= 1
-  ensures result == studio_paint_dock_cmds() + studio_paint_timeline_cmds() + studio_paint_inspector_cmds(has_selection)
+  ensures result == studio_paint_dock_cmds() + studio_paint_outliner_cmds(studio_outliner_demo_node_count()) + studio_paint_timeline_cmds() + studio_paint_inspector_cmds(has_selection)
   decreases has_selection
 =
-  return studio_paint_dock_cmds() + studio_paint_timeline_cmds() + studio_paint_inspector_cmds(has_selection)
+  return studio_paint_dock_cmds() + studio_paint_outliner_cmds(studio_outliner_demo_node_count()) + studio_paint_timeline_cmds() + studio_paint_inspector_cmds(has_selection)
 
-def studio_shell_chrome_count(has_selection: int, task_state: int) -> int
+def studio_shell_viewport_cmds(scene_entity_count: int) -> int
+  requires scene_entity_count >= 0
+  ensures result >= 1
+  ensures result <= 3
+  decreases scene_entity_count
+=
+  if scene_entity_count == 0:
+    return studio_paint_viewport_empty_cmds()
+  return studio_paint_viewport_scene_cmds()
+
+def studio_shell_chrome_count(has_selection: int, scene_entity_count: int, task_state: int) -> int
   requires has_selection >= 0
   requires has_selection <= 1
+  requires scene_entity_count >= 0
   requires task_state >= studio_agent_task_idle()
   requires task_state <= studio_agent_task_done()
   ensures result >= studio_paint_compose_panels_count(has_selection)
   decreases task_state
 =
-  return studio_shell_chrome_count_palette(has_selection, task_state, studio_palette_closed_flag(), studio_agent_context_for_shell(has_selection, task_state))
+  var sel0: int = has_selection
+  var scene0: int = scene_entity_count
+  var ts0: int = task_state
+  return studio_shell_chrome_count_palette(sel0, scene0, ts0, studio_palette_closed_flag(), studio_agent_context_for_shell(sel0, ts0))
 
-def studio_shell_chrome_count_palette(has_selection: int, task_state: int, palette_open: int, agent_context_label: int) -> int
+def studio_shell_chrome_count_palette(has_selection: int, scene_entity_count: int, task_state: int, palette_open: int, agent_context_label: int) -> int
   requires has_selection >= 0
   requires has_selection <= 1
+  requires scene_entity_count >= 0
   requires task_state >= studio_agent_task_idle()
   requires task_state <= studio_agent_task_done()
   requires palette_open >= studio_palette_closed_flag()
@@ -1206,35 +1517,75 @@ def studio_shell_chrome_count_palette(has_selection: int, task_state: int, palet
   ensures result >= studio_paint_compose_panels_count(has_selection)
   decreases task_state
 =
-  return studio_paint_compose_panels_count(has_selection) + 2 + studio_paint_agent_cmds(task_state, agent_context_label) + studio_paint_palette_cmds(palette_open)
+  var sel0: int = has_selection
+  var scene0: int = scene_entity_count
+  var ts0: int = task_state
+  var pal0: int = palette_open
+  var ctx0: int = agent_context_label
+  return studio_paint_compose_panels_count(sel0) + 1 + studio_paint_topbar_profile_cmds() + studio_shell_viewport_cmds(scene0) + studio_paint_agent_cmds(ts0, ctx0) + studio_paint_palette_cmds(pal0)
+
+def studio_paint_viewport_empty(frame: var PaintFrame, viewport_empty: StudioViewportEmptyCompose) -> unit
+  requires frame.cmd_count >= 0
+  requires viewport_empty.empty_visible == 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_empty_cmds()
+  decreases 0
+=
+  frame.cmd_count = frame.cmd_count + studio_paint_viewport_empty_cmds()
+  frame.last_kind = paint_op_stroke_rect()
+  frame.last_rect = viewport_empty.frame_rect
+  frame.last_color = studio_color_border()
+  frame.last_kind = paint_op_fill_rect()
+  frame.last_rect = viewport_empty.title_rect
+  frame.last_color = studio_color_border()
+  frame.last_kind = paint_op_stroke_rect()
+  frame.last_rect = viewport_empty.cta_rect
+  frame.last_color = studio_color_border()
+
+def studio_paint_viewport_empty(frame: var PaintFrame, viewport_empty: StudioViewportEmptyCompose) -> unit
+  requires frame.cmd_count >= 0
+  requires viewport_empty.empty_visible == 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_empty_cmds()
+  decreases 0
+=
+  frame.cmd_count = frame.cmd_count + studio_paint_viewport_empty_cmds()
+  frame.last_kind = paint_op_stroke_rect()
+  frame.last_rect = viewport_empty.frame_rect
+  frame.last_color = studio_color_border()
+  frame.last_kind = paint_op_fill_rect()
+  frame.last_rect = viewport_empty.title_rect
+  frame.last_color = studio_color_border()
+  frame.last_kind = paint_op_stroke_rect()
+  frame.last_rect = viewport_empty.cta_rect
+  frame.last_color = studio_color_border()
 
 def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose) -> unit
   requires frame.cmd_count >= 0
-  ensures frame.cmd_count == studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label)
-  ensures frame.last_kind == paint_op_viewport_grid()
-  ensures frame.last_rect.w == compose.layout.viewport.w
+  ensures frame.cmd_count == studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label)
   decreases compose.agent.task_state
 =
   frame.cmd_count = frame.cmd_count + studio_paint_dock_cmds()
   frame.last_kind = paint_op_stroke_rect()
   frame.last_rect = compose.dock.active_slot_rect
   frame.last_color = studio_color_accent_cyan()
+  studio_paint_outliner(frame, compose.outliner)
   frame.cmd_count = frame.cmd_count + studio_paint_timeline_cmds()
   frame.last_kind = paint_op_stroke_rect()
   frame.last_rect = compose.timeline.playhead_rect
   frame.last_color = studio_color_accent_amber()
-  frame.cmd_count = frame.cmd_count + studio_paint_inspector_cmds(compose.inspector.has_selection)
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = compose.inspector.rect
-  frame.last_color = studio_color_accent_violet()
+  studio_paint_inspector(frame, compose.inspector)
   frame.cmd_count = frame.cmd_count + 1
   frame.last_kind = paint_op_fill_rect()
   frame.last_rect = compose.layout.topbar
-  studio_paint_topbar_profile(frame, compose.layout.topbar, studio_active_profile(compose))
-  frame.cmd_count = frame.cmd_count + 1
-  frame.last_kind = paint_op_viewport_grid()
-  frame.last_rect = compose.layout.viewport
-  frame.last_color = studio_color_accent_cyan()
+  frame.last_color = studio_color_bg_elevated()
+  var prof0: int = compose.config.active_profile
+  studio_paint_topbar_profile(frame, compose.layout.topbar, prof0)
+  if compose.scene_entity_count == 0:
+    studio_paint_viewport_empty(frame, compose.viewport_empty)
+  if compose.scene_entity_count > 0:
+    frame.cmd_count = frame.cmd_count + studio_paint_viewport_scene_cmds()
+    frame.last_kind = paint_op_viewport_grid()
+    frame.last_rect = compose.layout.viewport
+    frame.last_color = studio_color_accent_cyan()
   studio_paint_agent(frame, compose.agent)
   paint_studio_palette(frame, compose.palette)
 
@@ -1314,6 +1665,10 @@ def studio_compose_ok(compose: StudioShellCompose) -> int
   decreases 0
 =
   if compose.dock.rect.w != studio_dock_width_px():
+    return 0
+  if compose.outliner.node_count != studio_outliner_demo_node_count():
+    return 0
+  if compose.outliner.node_count > studio_outliner_max_nodes():
     return 0
   if compose.timeline.rect.h != studio_timeline_height_px():
     return 0

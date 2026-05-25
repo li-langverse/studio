@@ -24,6 +24,12 @@ note = "T-PKG-li-studio-compose-panels"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_outliner.li"
+outcome = "compile_open_ok"
+note = "T-PKG-li-studio-outliner PH-GD-1"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_agent_chrome.li"
 outcome = "compile_open_ok"
 note = "T-PKG-li-studio-agent-chrome"
@@ -48,6 +54,12 @@ note = "T-PKG-li-studio-profile-roundtrip PH-UX-05 PH-SIM"
 
 [[tests]]
 suite = "smoke"
-file = "smoke/studio_profile_roundtrip.li"
+file = "smoke/studio_shell_loading.li"
 outcome = "compile_open_ok"
-note = "T-PKG-li-studio-profile-roundtrip PH-UX-05 PH-SIM"
+note = "T-PKG-li-studio-shell-loading-ux10-ux11"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_shell_demo.li"
+outcome = "compile_open_ok"
+note = "T-PKG-li-studio-shell-demo PH-GD-1"
