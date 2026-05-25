@@ -1,0 +1,34 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 2:
+    return 1
+  var idle: StudioAgentChromeCompose = studio_compose_agent_chrome(layout_studio_shell_adaptive(1280.0, 720.0), studio_agent_task_idle())
+  if studio_agent_chrome_ok(idle) != 1:
+    return 2
+  if studio_paint_agent_cmds(studio_agent_task_idle()) != 2:
+    return 3
+  var running: StudioAgentChromeCompose = studio_compose_agent_chrome(layout_studio_shell_adaptive(1280.0, 720.0), studio_agent_task_running())
+  if studio_agent_cancel_visible(studio_agent_task_running()) != 1:
+    return 4
+  if studio_agent_chrome_ok(running) != 1:
+    return 5
+  if studio_paint_agent_cmds(studio_agent_task_running()) != 4:
+    return 6
+  var failed: StudioAgentChromeCompose = studio_compose_agent_chrome(layout_studio_shell_adaptive(1280.0, 720.0), studio_agent_task_failed())
+  if studio_agent_error_visible(studio_agent_task_failed()) != 1:
+    return 7
+  if studio_agent_chrome_ok(failed) != 1:
+    return 8
+  if studio_paint_agent_cmds(studio_agent_task_failed()) != 5:
+    return 9
+  var shell_fail: StudioShellCompose = studio_compose_shell_agent(1920.0, 1080.0, 0, 0, studio_agent_task_failed())
+  var frame_fail: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame_fail, shell_fail)
+  if frame_fail.cmd_count != studio_shell_chrome_count(0, studio_agent_task_failed()):
+    return 10
+  return 0
