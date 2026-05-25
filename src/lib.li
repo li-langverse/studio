@@ -1,738 +1,533 @@
-# PKG-li-studio — World Studio shell API (PH-GD-1).
 
-type StudioProject = object
-  public name: int
-  public playing: int
-  public viewport_ticks: int
-  public outliner_count: int
+import gui
+import ui
 
-def li_studio_version() -> int
-  requires true
-  ensures result == 17
-  decreases 0
-=
-  return 17
+# li-studio — compose dock + timeline + inspector + agent chrome (PH-UX-05/06).
 
-def studio_project_new() -> StudioProject
-  requires true
-  ensures result.playing == 0
-  ensures result.viewport_ticks == 0
-  ensures result.outliner_count == 0
-  decreases 0
-=
-  var p: StudioProject
-  p.name = 0
-  p.playing = 0
-  p.viewport_ticks = 0
-  p.outliner_count = 0
-  return p
-
-def studio_play(project: StudioProject) -> unit
-  requires true
-  ensures project.playing == 1
-  decreases 0
-=
-  project.playing = 1
-
-def studio_pause(project: StudioProject) -> unit
-  requires true
-  ensures project.playing == 0
-  decreases 0
-=
-  project.playing = 0
-
-# Short names for authors and agents.
-def start_playing(project: StudioProject) -> unit
-  requires true
-  decreases 0
-=
-  studio_play(project)
-
-def stop_playing(project: StudioProject) -> unit
-  requires true
-  decreases 0
-=
-  studio_pause(project)
-
-def tick_viewport(project: StudioProject) -> unit
-  requires project.playing == 1
-  decreases project.viewport_ticks
-=
-  studio_viewport_tick(project)
-
-def studio_viewport_tick(project: StudioProject) -> unit
-  requires project.playing == 1
-  ensures project.viewport_ticks >= 1
-  decreases project.viewport_ticks
-=
-  project.viewport_ticks = project.viewport_ticks + 1
-
-def studio_outliner_set_count(project: StudioProject, count: int) -> unit
-  requires count >= 0
-  ensures project.outliner_count == count
-  decreases count
-=
-  project.outliner_count = count
-
-# PH-DRUG / PH-UX — adaptive panels (studio.adaptive path TBD).
-def studio_adaptive_panel_for_stage(stage_id: int) -> int
-  requires stage_id >= 0
-  requires stage_id <= 3
-  ensures result == stage_id
-  decreases stage_id
-=
-  return stage_id
-
-def studio_adaptive_layout_reset(project: StudioProject) -> unit
-  requires true
-  ensures project.playing == project.playing
-  decreases 0
-=
-  project.name = project.name
-
-# PH-PUB-0 — publication export hooks (studio.publish path TBD).
-def studio_publish_figure_stub(dpi: int) -> int
-  requires dpi >= 72
-  requires dpi <= 600
-  ensures result == dpi
-  decreases dpi
-=
-  return dpi
-
-def studio_publish_bundle_stub(file_count: int) -> int
-  requires file_count > 0
-  ensures result == file_count
-  decreases file_count
-=
-  return file_count
-
-# PH-PUB — publication bundle with content hash (repro bundles).
-type PublishBundle = object
-  public file_count: int
-  public content_hash: int
-  public dpi: int
-
-def studio_publish_bundle_hash_stub(file_count: int, dpi: int) -> PublishBundle
-  requires file_count > 0
-  requires dpi >= 72
-  requires dpi <= 600
-  ensures result.file_count == file_count
-  ensures result.dpi == dpi
-  ensures result.content_hash >= 0
-  decreases file_count
-=
-  var b: PublishBundle
-  b.file_count = file_count
-  b.dpi = dpi
-  b.content_hash = file_count * 997 + dpi
-  return b
-
-def studio_pub_bioeng_bundle_stub(scorecard_beats: int, file_count: int) -> int
-  requires scorecard_beats >= 0
-  requires scorecard_beats <= 1
-  requires file_count > 0
-  ensures result >= 0
-  decreases file_count
-=
-  var b: PublishBundle = studio_publish_bundle_hash_stub(file_count, 300)
-  return b.content_hash + scorecard_beats
-
-def studio_publish_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  var b: PublishBundle = studio_publish_bundle_hash_stub(3, 300)
-  if b.content_hash != 3291:
-    return 1
-  if studio_publish_figure_stub(b.dpi) != 300:
-    return 2
-  return 0
-
-def publish_field_checkpoint(manifest_hash: int, file_count: int) -> int
-  requires manifest_hash >= 0
-  requires file_count > 0
-  ensures result > 0
-  decreases file_count
-=
-  var b: PublishBundle = studio_publish_bundle_hash_stub(file_count, 300)
-  return b.content_hash + manifest_hash
-
-def publish_repro(manifest_hash: int, file_count: int) -> int
-  requires manifest_hash >= 0
-  requires file_count > 0
-  decreases file_count
-=
-  return publish_field_checkpoint(manifest_hash, file_count)
-
-def studio_game_frame_tag(realm_id: int, width: int, height: int) -> int
-  requires realm_id >= 0
-  requires width > 0
-  requires height > 0
-  ensures result > 0
-  decreases width
-=
-  return realm_id + width + height + 3000
-
-def studio_sim_frame_tag(field_id: int, steps: int) -> int
-  requires field_id >= 0
-  requires steps > 0
-  ensures result > 0
-  decreases steps
-=
-  return field_id + steps + 4000
-
-# One call: play + game frame tag + sim frame tag (agents copy this first).
-def run_play_session(
-    project: StudioProject,
-    realm_id: int,
-    width: int,
-    height: int,
-    field_id: int,
-    sim_steps: int) -> int
-  requires realm_id >= 0
-  requires width > 0
-  requires height > 0
-  requires field_id >= 0
-  requires sim_steps > 0
-  ensures result > 0
-  decreases width
-=
-  start_playing(project)
-  tick_viewport(project)
-  var tag: int = studio_game_frame_tag(realm_id, width, height)
-  tag = tag + studio_sim_frame_tag(field_id, sim_steps)
-  return tag
-
-def run_play_session_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  var p: StudioProject = studio_project_new()
-  if run_play_session(p, 1, 1280, 720, 0, 4) < 7000:
-    return 1
-  return 0
-
-def studio_play_mode_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if run_play_session_smoke() != 0:
-    return 1
-  if publish_repro(42, 2) <= 0:
-    return 2
-  return 0
-
-def studio_preflight_140_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_postmerge_smoke() != 0:
-    return 1
-  if studio_merge_to_main_smoke() != 0:
-    return 2
-  return run_play_session_smoke()
-
-def studio_milestone_composable_target_140_stub() -> int
-  requires true
-  ensures result == 140
-  decreases 0
-=
-  return 140
-
-def studio_milestone_140_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_milestone_composable_target_140_stub() != 140:
-    return 1
-  if studio_spinup_template_count_stub() != 12:
-    return 2
-  return studio_preflight_140_smoke()
-
-def studio_milestone_composable_target_145_stub() -> int
-  requires true
-  ensures result == 145
-  decreases 0
-=
-  return 145
-
-def studio_milestone_145_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_milestone_composable_target_145_stub() != 145:
-    return 1
-  if studio_spinup_template_count_stub() != 12:
-    return 2
-  return studio_milestone_140_smoke()
-
-def studio_milestone_composable_target_150_stub() -> int
-  requires true
-  ensures result == 150
-  decreases 0
-=
-  return 150
-
-def studio_milestone_150_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_milestone_composable_target_150_stub() != 150:
-    return 1
-  if studio_spinup_template_count_stub() != 12:
-    return 2
-  return studio_milestone_145_smoke()
-
-def studio_milestone_composable_target_155_stub() -> int
-  requires true
-  ensures result == 155
-  decreases 0
-=
-  return 155
-
-def studio_milestone_155_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_milestone_composable_target_155_stub() != 155:
-    return 1
-  if studio_spinup_template_count_stub() != 12:
-    return 2
-  return studio_milestone_150_smoke()
-
-def studio_milestone_composable_target_160_stub() -> int
-  requires true
-  ensures result == 160
-  decreases 0
-=
-  return 160
-
-def studio_milestone_160_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_milestone_composable_target_160_stub() != 160:
-    return 1
-  if studio_spinup_template_count_stub() != 12:
-    return 2
-  return studio_milestone_155_smoke()
-
-def studio_milestone_composable_target_165_stub() -> int
-  requires true
-  ensures result == 165
-  decreases 0
-=
-  return 165
-
-def studio_milestone_165_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_milestone_composable_target_165_stub() != 165:
-    return 1
-  if studio_spinup_template_count_stub() != 12:
-    return 2
-  return studio_milestone_160_smoke()
-
-def studio_milestone_composable_target_121_stub() -> int
-  requires true
-  ensures result == 121
-  decreases 0
-=
-  return 121
-
-def studio_milestone_121_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_milestone_composable_target_121_stub() != 121:
-    return 1
-  return studio_play_mode_smoke()
-
-# PH-MMO-3 — deploy wizard status (pairs with deploy/mmo/realm.toml).
-def studio_render_scene_hook_stub(viewport_frames: int, scene_nodes: int) -> int
-  requires viewport_frames >= 0
-  requires scene_nodes >= 0
-  ensures result == viewport_frames + scene_nodes
-  decreases viewport_frames
-=
-  return viewport_frames + scene_nodes
-
-# PH-GD-5 — studio shell binds render viewport (composable with import render).
-def studio_viewport_bind_render_stub(width: int, height: int, scene_nodes: int) -> int
-  requires width > 0
-  requires height > 0
-  requires scene_nodes >= 0
-  ensures result == width + height + scene_nodes
-  decreases width
-=
-  return width + height + scene_nodes
-
-def studio_render_viewport_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_viewport_bind_render_stub(1280, 720, 4) != 2004:
-    return 1
-  if studio_render_scene_hook_stub(1, 4) != 5:
-    return 2
-  return 0
-
-def studio_mmo_deploy_status_stub(profile: int, shard_count: int) -> int
-  requires profile >= 0
-  requires profile <= 1
-  requires shard_count > 0
-  ensures result == shard_count
-  decreases shard_count
-=
-  return shard_count
-
-# PH-GD-4 / studio.gen — procedural asset generation hook (pairs with import assets).
-def studio_gen_asset_hook_stub(asset_hook_id: int, gen_kind: int) -> int
-  requires asset_hook_id > 0
-  requires gen_kind >= 0
-  requires gen_kind <= 2
-  ensures result == asset_hook_id
-  decreases asset_hook_id
-=
-  return asset_hook_id
-
-def studio_gen_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_gen_asset_hook_stub(42, 0) != 42:
-    return 1
-  return 0
-
-# PH-UX / PH-DRUG — adaptive panel id for drug LITL stage (composable gate).
-def studio_adaptive_for_drug_stage_stub(drug_stage_id: int) -> int
-  requires drug_stage_id >= 0
-  requires drug_stage_id <= 2
-  ensures result == drug_stage_id
-  decreases drug_stage_id
-=
-  return studio_adaptive_panel_for_stage(drug_stage_id)
-
-def studio_adaptive_drug_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_adaptive_for_drug_stage_stub(0) != 0:
-    return 1
-  if studio_adaptive_for_drug_stage_stub(2) != 2:
-    return 2
-  return 0
-
-# PH-GD-1 — native shell tick (pairs with li-render bridge; binary: studio_main.li).
-def studio_native_project_tick_stub() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  var p: StudioProject = studio_project_new()
-  studio_play(p)
-  studio_viewport_tick(p)
-  if p.playing != 1:
-    return 1
-  if p.viewport_ticks != 1:
-    return 2
-  return 0
-
-def studio_native_shell_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  return studio_native_project_tick_stub()
-
-# PH-UX — command palette (≤3 clicks: play, pause, lic build gate).
-def studio_cmd_play() -> int
-  requires true
-  ensures result == 1
-  decreases 0
-=
-  return 1
-
-def studio_cmd_pause() -> int
+def li_std_studio_version() -> int
   requires true
   ensures result == 2
   decreases 0
 =
   return 2
 
-def studio_cmd_lic_build() -> int
-  requires true
-  ensures result == 3
-  decreases 0
-=
-  return 3
-
-def studio_command_execute(project: StudioProject, cmd_id: int) -> int
-  requires cmd_id >= 1
-  requires cmd_id <= 3
-  ensures result == cmd_id
-  decreases cmd_id
-=
-  if cmd_id == studio_cmd_play():
-    start_playing(project)
-    tick_viewport(project)
-    return studio_cmd_play()
-  if cmd_id == studio_cmd_pause():
-    stop_playing(project)
-    return studio_cmd_pause()
-  return studio_cmd_lic_build()
-
-def studio_command_palette_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  var p: StudioProject = studio_project_new()
-  if studio_command_execute(p, studio_cmd_play()) != 1:
-    return 1
-  if p.playing != 1:
-    return 2
-  if studio_command_execute(p, studio_cmd_pause()) != 2:
-    return 3
-  if p.playing != 0:
-    return 4
-  if studio_command_execute(p, studio_cmd_lic_build()) != 3:
-    return 5
-  return 0
-
-# PH-UX — bridge to li-ui agent-first layout (composable with import ui).
-def studio_ui_layout_agent_first_tag_stub() -> int
-  requires true
-  ensures result == 1
-  decreases 0
-=
-  return 1
-
-def studio_ui_cmd_bridge_stub(ui_cmd_id: int) -> int
-  requires ui_cmd_id >= 1
-  requires ui_cmd_id <= 5
-  ensures result == ui_cmd_id
-  decreases ui_cmd_id
-=
-  if ui_cmd_id == studio_cmd_play():
-    return studio_cmd_play()
-  if ui_cmd_id == studio_cmd_pause():
-    return studio_cmd_pause()
-  return studio_cmd_lic_build()
-
-def studio_ui_agent_stack_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_ui_layout_agent_first_tag_stub() != 1:
-    return 1
-  if studio_ui_cmd_bridge_stub(studio_cmd_play()) != studio_cmd_play():
-    return 2
-  if studio_command_palette_smoke() != 0:
-    return 3
-  return 0
-
-# PH-GD-5 — native binary viewport bridge (pairs with li-render in studio_main.li).
-def studio_native_viewport_bridge_tick_stub(width: int, height: int, scene_nodes: int) -> int
-  requires width > 0
-  requires height > 0
-  requires scene_nodes >= 0
-  ensures result == width + height + scene_nodes
-  decreases width
-=
-  var p: StudioProject = studio_project_new()
-  studio_play(p)
-  studio_viewport_tick(p)
-  if p.viewport_ticks != 1:
-    return 0
-  return studio_viewport_bind_render_stub(width, height, scene_nodes)
-
-def studio_native_viewport_bridge_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_native_viewport_bridge_tick_stub(1280, 720, 4) != 2004:
-    return 1
-  if studio_render_viewport_smoke() != 0:
-    return 2
-  return 0
-
-# PH-GD-5 / PH-HW — GPU viewport bind (pairs with render_gpu_* in composable/binary).
-def studio_bind_gpu_viewport_stub(width: int, height: int, backend_id: int) -> int
-  requires width > 0
-  requires height > 0
-  requires backend_id >= 0
-  requires backend_id <= 2
-  ensures result == width + height + backend_id + 1000
-  decreases width
-=
-  return width + height + backend_id + 1000
-
-def studio_gpu_viewport_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_bind_gpu_viewport_stub(1280, 720, 1) != 3001:
-    return 1
-  if studio_native_viewport_bridge_smoke() != 0:
-    return 2
-  return 0
-
-# PH-GD spin-up registry (deploy/world-studio-spinup/spinup.toml template count).
-def studio_spinup_template_count_stub() -> int
-  requires true
-  ensures result == 12
-  decreases 0
-=
-  return 12
-
-def studio_spinup_registry_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_spinup_template_count_stub() != 12:
-    return 1
-  if studio_native_shell_smoke() != 0:
-    return 2
-  return 0
-
-# PH-GD milestone — composable gate target (impl-32).
-def studio_milestone_composable_target_stub() -> int
-  requires true
-  ensures result == 100
-  decreases 0
-=
-  return 100
-
-def studio_milestone_100_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_milestone_composable_target_stub() != 100:
-    return 1
-  if studio_binary_runtime_tag_stub() != 8288:
-    return 2
-  if studio_spinup_template_count_stub() != 12:
-    return 3
-  return 0
-
-def studio_milestone_composable_target_130_stub() -> int
-  requires true
-  ensures result == 130
-  decreases 0
-=
-  return 130
-
-def studio_milestone_130_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_milestone_composable_target_130_stub() != 130:
-    return 1
-  if studio_spinup_template_count_stub() != 12:
-    return 2
-  return studio_play_mode_smoke()
-
-def studio_merge_ready_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_milestone_121_smoke() != 0:
-    return 1
-  if studio_spinup_registry_smoke() != 0:
-    return 2
-  if studio_binary_runtime_tag_stub() != 8288:
-    return 3
-  return 0
-
-def studio_merge_to_main_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_merge_ready_smoke() != 0:
-    return 1
-  if studio_milestone_130_smoke() != 0:
-    return 2
-  if studio_portable_targets_smoke() != 0:
-    return 3
-  return studio_play_mode_smoke()
-
-def studio_postmerge_smoke() -> int
-  requires true
-  ensures result == 0
-  decreases 0
-=
-  if studio_merge_to_main_smoke() != 0:
-    return 1
-  if studio_spinup_template_count_stub() != 12:
-    return 2
-  return studio_publish_smoke()
-
-# PH-GD-1 — binary runtime tag (impl-28; verify-world-studio-binary.sh).
-def studio_binary_runtime_tag_stub() -> int
-  requires true
-  ensures result == 8288
-  decreases 0
-=
-  return 8288
-
-# PH-PORT-0 — portable triple registry (targets/manifest.toml tier-1/2 count).
-def studio_portable_target_count_stub() -> int
+def studio_dock_slot_count() -> int
   requires true
   ensures result == 5
   decreases 0
 =
   return 5
 
-def studio_portable_targets_smoke() -> int
+def studio_dock_slot_size_px() -> float
   requires true
-  ensures result == 0
+  ensures result == 36.0
   decreases 0
 =
-  if studio_portable_target_count_stub() != 5:
-    return 1
-  if studio_publish_smoke() != 0:
-    return 2
-  return 0
+  return 36.0
 
-# PH-PORT-1 — tier-2 Windows desktop triple (targets/manifest.toml index 4).
-def studio_port_windows_target_id_stub() -> int
+def studio_dock_slot_gap_px() -> float
+  requires true
+  ensures result == 8.0
+  decreases 0
+=
+  return 8.0
+
+def studio_dock_padding_px() -> float
+  requires true
+  ensures result == 12.0
+  decreases 0
+=
+  return 12.0
+
+def studio_timeline_track_height_px() -> float
+  requires true
+  ensures result == 48.0
+  decreases 0
+=
+  return 48.0
+
+def studio_timeline_playhead_pct() -> float
+  requires true
+  ensures result == 0.35
+  decreases 0
+=
+  return 0.35
+
+def studio_inspector_header_height_px() -> float
+  requires true
+  ensures result == 32.0
+  decreases 0
+=
+  return 32.0
+
+def studio_inspector_field_rows() -> int
   requires true
   ensures result == 4
   decreases 0
 =
   return 4
 
-def studio_port_windows_target_smoke() -> int
-  requires true
-  ensures result == 0
+type StudioDockCompose = object
+  public rect: Rect
+  public slot_count: int
+  public active_slot: int
+  public active_slot_rect: Rect
+
+type StudioTimelineCompose = object
+  public rect: Rect
+  public track_rect: Rect
+  public playhead_rect: Rect
+  public playhead_pct: float
+
+type StudioInspectorCompose = object
+  public rect: Rect
+  public header_rect: Rect
+  public has_selection: int
+  public field_rows: int
+
+type StudioAgentChromeCompose = object
+  public rect: Rect
+  public task_state: int
+  public status_rect: Rect
+  public cancel_rect: Rect
+  public error_strip_rect: Rect
+  public cancel_visible: int
+  public error_visible: int
+
+type StudioShellCompose = object
+  public layout: StudioShellLayout
+  public dock: StudioDockCompose
+  public timeline: StudioTimelineCompose
+  public inspector: StudioInspectorCompose
+  public agent: StudioAgentChromeCompose
+  public panel: GuiPanelState
+
+def studio_dock_slot_offset_y(slot: int) -> float
+  requires slot >= 0
+  requires slot < studio_dock_slot_count()
+  ensures result >= 0.0
+  decreases slot
+=
+  var step: float = studio_dock_slot_size_px() + studio_dock_slot_gap_px()
+  if slot == 0:
+    return 0.0
+  if slot == 1:
+    return step
+  if slot == 2:
+    return step + step
+  if slot == 3:
+    return step + step + step
+  return step + step + step + step
+
+def studio_dock_slot_rect_at(dock_x: float, dock_y: float, dock_w: float, dock_h: float, slot: int) -> Rect
+  requires slot >= 0
+  requires slot < studio_dock_slot_count()
+  requires dock_w >= studio_dock_slot_size_px()
+  requires dock_h >= studio_dock_padding_px() + studio_dock_slot_size_px()
+  ensures result.w == studio_dock_slot_size_px()
+  ensures result.h == studio_dock_slot_size_px()
+  decreases slot
+=
+  var y: float = dock_y + studio_dock_padding_px() + studio_dock_slot_offset_y(slot)
+  var x: float = dock_x + (dock_w - studio_dock_slot_size_px()) / 2.0
+  return rect_make(x, y, studio_dock_slot_size_px(), studio_dock_slot_size_px())
+
+def studio_timeline_track_rect_at(tl_x: float, tl_y: float, tl_w: float, tl_h: float) -> Rect
+  requires tl_w >= 0.0
+  requires tl_h >= studio_timeline_track_height_px()
+  ensures result.w == tl_w
+  ensures result.h == studio_timeline_track_height_px()
   decreases 0
 =
-  if studio_port_windows_target_id_stub() != 4:
+  var track_y: float = tl_y + tl_h - studio_timeline_track_height_px() - 12.0
+  return rect_make(tl_x, track_y, tl_w, studio_timeline_track_height_px())
+
+def studio_timeline_playhead_rect_at(track_x: float, track_y: float, track_w: float, track_h: float, pct: float) -> Rect
+  requires track_w > 0.0
+  requires pct >= 0.0
+  requires pct <= 1.0
+  ensures result.w == 2.0
+  ensures result.h == track_h
+  decreases 0
+=
+  var px: float = track_x + (track_w * pct)
+  return rect_make(px, track_y, 2.0, track_h)
+
+def studio_inspector_header_rect_at(insp_x: float, insp_y: float, insp_w: float) -> Rect
+  requires insp_w >= 0.0
+  ensures result.w == insp_w
+  ensures result.h == studio_inspector_header_height_px()
+  decreases 0
+=
+  return rect_make(insp_x, insp_y, insp_w, studio_inspector_header_height_px())
+
+def studio_agent_cancel_visible(task_state: int) -> int
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  ensures result >= 0
+  ensures result <= 1
+  decreases task_state
+=
+  if task_state == studio_agent_task_running():
     return 1
-  if studio_portable_target_count_stub() != 5:
-    return 2
+  if task_state == studio_agent_task_blocked():
+    return 1
   return 0
+
+def studio_agent_error_visible(task_state: int) -> int
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  ensures result >= 0
+  ensures result <= 1
+  decreases task_state
+=
+  if task_state == studio_agent_task_failed():
+    return 1
+  return 0
+
+def studio_agent_status_color(task_state: int) -> Color
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  ensures result.r >= 0.0
+  decreases task_state
+=
+  if task_state == studio_agent_task_running():
+    return studio_color_agent_running()
+  if task_state == studio_agent_task_blocked():
+    return studio_color_agent_blocked()
+  if task_state == studio_agent_task_failed():
+    return studio_color_agent_error()
+  if task_state == studio_agent_task_done():
+    return studio_color_agent_done()
+  return studio_color_agent_idle()
+
+def studio_agent_cancel_rect_at(strip_x: float, strip_y: float, strip_w: float, strip_h: float) -> Rect
+  requires strip_w >= studio_agent_cancel_btn_width_px()
+  requires strip_h >= 0.0
+  ensures result.w == studio_agent_cancel_btn_width_px()
+  ensures result.h <= strip_h
+  decreases 0
+=
+  var pad: float = studio_agent_status_pad_px()
+  var btn_h: float = strip_h - (pad * 2.0)
+  if btn_h < 20.0:
+    btn_h = 20.0
+  if btn_h > strip_h:
+    btn_h = strip_h
+  var x: float = strip_x + strip_w - studio_agent_cancel_btn_width_px() - pad
+  var y: float = strip_y + (strip_h - btn_h) / 2.0
+  return rect_make(x, y, studio_agent_cancel_btn_width_px(), btn_h)
+
+def studio_agent_status_rect_at(strip_x: float, strip_y: float, strip_w: float, strip_h: float, cancel_visible: int) -> Rect
+  requires strip_w >= 0.0
+  requires strip_h >= 0.0
+  requires cancel_visible >= 0
+  requires cancel_visible <= 1
+  ensures result.w >= 0.0
+  ensures result.h <= strip_h
+  decreases cancel_visible
+=
+  var pad: float = studio_agent_status_pad_px()
+  var reserved: float = 0.0
+  if cancel_visible == 1:
+    reserved = studio_agent_cancel_btn_width_px() + pad
+  var w: float = strip_w - (pad * 2.0) - reserved
+  if w < 0.0:
+    w = 0.0
+  var h: float = strip_h - (pad * 2.0)
+  if h < 0.0:
+    h = 0.0
+  return rect_make(strip_x + pad, strip_y + pad, w, h)
+
+def studio_agent_error_strip_rect_at(strip_x: float, strip_y: float, strip_w: float, strip_h: float) -> Rect
+  requires strip_w >= 0.0
+  requires strip_h >= studio_agent_error_strip_height_px()
+  ensures result.w == strip_w
+  ensures result.h == studio_agent_error_strip_height_px()
+  decreases 0
+=
+  var y: float = strip_y + strip_h - studio_agent_error_strip_height_px()
+  return rect_make(strip_x, y, strip_w, studio_agent_error_strip_height_px())
+
+def studio_compose_agent_chrome(layout: StudioShellLayout, task_state: int) -> StudioAgentChromeCompose
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  ensures result.rect.w == layout.agent_strip.w
+  ensures result.task_state == task_state
+  decreases task_state
+=
+  var out: StudioAgentChromeCompose
+  out.rect = layout.agent_strip
+  out.task_state = task_state
+  out.cancel_visible = studio_agent_cancel_visible(task_state)
+  out.error_visible = studio_agent_error_visible(task_state)
+  out.cancel_rect = studio_agent_cancel_rect_at(layout.agent_strip.x, layout.agent_strip.y, layout.agent_strip.w, layout.agent_strip.h)
+  out.status_rect = studio_agent_status_rect_at(layout.agent_strip.x, layout.agent_strip.y, layout.agent_strip.w, layout.agent_strip.h, out.cancel_visible)
+  out.error_strip_rect = studio_agent_error_strip_rect_at(layout.agent_strip.x, layout.agent_strip.y, layout.agent_strip.w, layout.agent_strip.h)
+  return out
+
+def studio_compose_shell(w: float, h: float, active_dock_slot: int, has_selection: int) -> StudioShellCompose
+  requires w > 0.0
+  requires h > 0.0
+  requires active_dock_slot >= 0
+  requires active_dock_slot < studio_dock_slot_count()
+  requires has_selection >= 0
+  requires has_selection <= 1
+  ensures result.layout.viewport_w > 0.0
+  ensures result.dock.active_slot == active_dock_slot
+  decreases active_dock_slot
+=
+  var out: StudioShellCompose
+  var layout: StudioShellLayout = layout_studio_shell_adaptive(w, h)
+  out.layout = layout
+  out.dock.rect = layout.dock
+  out.dock.slot_count = studio_dock_slot_count()
+  out.dock.active_slot = active_dock_slot
+  out.dock.active_slot_rect = studio_dock_slot_rect_at(layout.dock.x, layout.dock.y, layout.dock.w, layout.dock.h, active_dock_slot)
+  out.timeline.rect = layout.timeline
+  out.timeline.track_rect = studio_timeline_track_rect_at(layout.timeline.x, layout.timeline.y, layout.timeline.w, layout.timeline.h)
+  out.timeline.playhead_rect = studio_timeline_playhead_rect_at(out.timeline.track_rect.x, out.timeline.track_rect.y, out.timeline.track_rect.w, out.timeline.track_rect.h, studio_timeline_playhead_pct())
+  out.timeline.playhead_pct = studio_timeline_playhead_pct()
+  out.inspector.rect = layout.inspector
+  out.inspector.header_rect = studio_inspector_header_rect_at(layout.inspector.x, layout.inspector.y, layout.inspector.w)
+  out.inspector.has_selection = has_selection
+  out.inspector.field_rows = studio_inspector_field_rows()
+  out.agent = studio_compose_agent_chrome(layout, studio_agent_task_idle())
+  out.panel = gui_panel_state_new()
+  return out
+
+def studio_compose_shell_agent(w: float, h: float, active_dock_slot: int, has_selection: int, task_state: int) -> StudioShellCompose
+  requires w > 0.0
+  requires h > 0.0
+  requires active_dock_slot >= 0
+  requires active_dock_slot < studio_dock_slot_count()
+  requires has_selection >= 0
+  requires has_selection <= 1
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  ensures result.agent.task_state == task_state
+  decreases task_state
+=
+  var out: StudioShellCompose = studio_compose_shell(w, h, active_dock_slot, has_selection)
+  out.agent = studio_compose_agent_chrome(out.layout, task_state)
+  return out
+
+def studio_paint_dock_cmds() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_paint_timeline_cmds() -> int
+  requires true
+  ensures result == 3
+  decreases 0
+=
+  return 3
+
+def studio_paint_inspector_cmds(has_selection: int) -> int
+  requires has_selection >= 0
+  requires has_selection <= 1
+  ensures result >= 2
+  ensures result <= 3
+  decreases has_selection
+=
+  if has_selection == 0:
+    return 2
+  return 3
+
+def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose) -> unit
+  requires frame.cmd_count >= 0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_dock_cmds()
+  ensures frame.last_kind == paint_op_stroke_rect()
+  ensures frame.last_rect.w == dock.active_slot_rect.w
+  decreases 0
+=
+  frame.cmd_count = frame.cmd_count + studio_paint_dock_cmds()
+  frame.last_kind = paint_op_stroke_rect()
+  frame.last_rect = dock.active_slot_rect
+  frame.last_color = studio_color_accent_cyan()
+
+def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose) -> unit
+  requires frame.cmd_count >= 0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_timeline_cmds()
+  ensures frame.last_kind == paint_op_stroke_rect()
+  decreases 0
+=
+  frame.cmd_count = frame.cmd_count + studio_paint_timeline_cmds()
+  frame.last_kind = paint_op_stroke_rect()
+  frame.last_rect = timeline.playhead_rect
+  frame.last_color = studio_color_accent_amber()
+
+def studio_paint_agent_cmds(task_state: int) -> int
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  ensures result >= 2
+  ensures result <= 5
+  decreases task_state
+=
+  if task_state == studio_agent_task_failed():
+    return 5
+  if task_state == studio_agent_task_running():
+    return 4
+  if task_state == studio_agent_task_blocked():
+    return 4
+  if task_state == studio_agent_task_done():
+    return 3
+  return 2
+
+def studio_paint_agent(frame: var PaintFrame, agent: StudioAgentChromeCompose) -> unit
+  requires frame.cmd_count >= 0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_agent_cmds(agent.task_state)
+  ensures frame.last_color.r >= 0.0
+  decreases agent.task_state
+=
+  frame.cmd_count = frame.cmd_count + studio_paint_agent_cmds(agent.task_state)
+  frame.last_kind = paint_op_fill_rect()
+  frame.last_rect = agent.rect
+  frame.last_color = studio_color_bg_elevated()
+  frame.last_kind = paint_op_fill_rect()
+  frame.last_rect = agent.status_rect
+  frame.last_color = studio_agent_status_color(agent.task_state)
+  if agent.cancel_visible == 1:
+    frame.last_kind = paint_op_stroke_rect()
+    frame.last_rect = agent.cancel_rect
+    frame.last_color = studio_color_border()
+  if agent.error_visible == 1:
+    frame.last_kind = paint_op_fill_rect()
+    frame.last_rect = agent.error_strip_rect
+    frame.last_color = studio_color_agent_error()
+    frame.last_kind = paint_op_stroke_rect()
+    frame.last_rect = agent.error_strip_rect
+    frame.last_color = studio_color_agent_error()
+
+def studio_paint_inspector(frame: var PaintFrame, inspector: StudioInspectorCompose) -> unit
+  requires frame.cmd_count >= 0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_inspector_cmds(inspector.has_selection)
+  decreases inspector.has_selection
+=
+  frame.cmd_count = frame.cmd_count + studio_paint_inspector_cmds(inspector.has_selection)
+  frame.last_kind = paint_op_stroke_rect()
+  frame.last_rect = inspector.rect
+  frame.last_color = studio_color_accent_violet()
+
+def studio_paint_compose_panels(frame: var PaintFrame, dock: StudioDockCompose, timeline: StudioTimelineCompose, inspector: StudioInspectorCompose) -> unit
+  requires frame.cmd_count >= 0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_compose_panels_count(inspector.has_selection)
+  decreases 0
+=
+  studio_paint_dock(frame, dock)
+  studio_paint_timeline(frame, timeline)
+  studio_paint_inspector(frame, inspector)
+
+def studio_paint_compose_panels_count(has_selection: int) -> int
+  requires has_selection >= 0
+  requires has_selection <= 1
+  ensures result == studio_paint_dock_cmds() + studio_paint_timeline_cmds() + studio_paint_inspector_cmds(has_selection)
+  decreases has_selection
+=
+  return studio_paint_dock_cmds() + studio_paint_timeline_cmds() + studio_paint_inspector_cmds(has_selection)
+
+def studio_shell_chrome_count(has_selection: int, task_state: int) -> int
+  requires has_selection >= 0
+  requires has_selection <= 1
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  ensures result >= studio_paint_compose_panels_count(has_selection)
+  decreases task_state
+=
+  return studio_paint_compose_panels_count(has_selection) + 2 + studio_paint_agent_cmds(task_state)
+
+def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose) -> unit
+  requires frame.cmd_count >= 0
+  ensures frame.cmd_count == studio_shell_chrome_count(compose.inspector.has_selection, compose.agent.task_state)
+  ensures frame.last_kind == paint_op_viewport_grid()
+  ensures frame.last_rect.w == compose.layout.viewport.w
+  decreases compose.agent.task_state
+=
+  frame.cmd_count = frame.cmd_count + studio_paint_dock_cmds()
+  frame.last_kind = paint_op_stroke_rect()
+  frame.last_rect = compose.dock.active_slot_rect
+  frame.last_color = studio_color_accent_cyan()
+  frame.cmd_count = frame.cmd_count + studio_paint_timeline_cmds()
+  frame.last_kind = paint_op_stroke_rect()
+  frame.last_rect = compose.timeline.playhead_rect
+  frame.last_color = studio_color_accent_amber()
+  frame.cmd_count = frame.cmd_count + studio_paint_inspector_cmds(compose.inspector.has_selection)
+  frame.last_kind = paint_op_stroke_rect()
+  frame.last_rect = compose.inspector.rect
+  frame.last_color = studio_color_accent_violet()
+  frame.cmd_count = frame.cmd_count + 1
+  frame.last_kind = paint_op_fill_rect()
+  frame.last_rect = compose.layout.topbar
+  frame.cmd_count = frame.cmd_count + 1
+  frame.last_kind = paint_op_viewport_grid()
+  frame.last_rect = compose.layout.viewport
+  frame.last_color = studio_color_accent_cyan()
+  studio_paint_agent(frame, compose.agent)
+
+def studio_shell_frame(w: float, h: float) -> PaintFrame
+  requires w > 0.0
+  requires h > 0.0
+  ensures result.cmd_count == studio_shell_chrome_count(1, studio_agent_task_running())
+  decreases 0
+=
+  var compose: StudioShellCompose = studio_compose_shell_agent(w, h, 0, 1, studio_agent_task_running())
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame, compose)
+  return frame
+
+def studio_agent_chrome_ok(agent: StudioAgentChromeCompose) -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+=
+  if agent.rect.h != studio_agent_strip_height_px():
+    return 0
+  if agent.cancel_visible == 1:
+    if agent.cancel_rect.w != studio_agent_cancel_btn_width_px():
+      return 0
+  if agent.error_visible == 1:
+    if agent.error_strip_rect.h != studio_agent_error_strip_height_px():
+      return 0
+  if agent.task_state == studio_agent_task_running():
+    if agent.cancel_visible != 1:
+      return 0
+  if agent.task_state == studio_agent_task_failed():
+    if agent.error_visible != 1:
+      return 0
+  return 1
+
+def studio_panel_switch_inspector(panel: var GuiPanelState, elapsed_ms: float) -> PanelSwitchTiming
+  requires elapsed_ms >= 0.0
+  requires panel.switch_count >= 0
+  ensures panel.active_region == studio_region_inspector()
+  decreases 0
+=
+  return gui_panel_switch_to(panel, studio_region_inspector(), elapsed_ms)
+
+def studio_panel_switch_timeline(panel: var GuiPanelState, elapsed_ms: float) -> PanelSwitchTiming
+  requires elapsed_ms >= 0.0
+  requires panel.switch_count >= 0
+  ensures panel.active_region == studio_region_timeline()
+  decreases 0
+=
+  return gui_panel_switch_to(panel, studio_region_timeline(), elapsed_ms)
+
+def studio_compose_ok(compose: StudioShellCompose) -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+=
+  if compose.dock.rect.w != studio_dock_width_px():
+    return 0
+  if compose.timeline.rect.h != studio_timeline_height_px():
+    return 0
+  if compose.inspector.rect.w != studio_inspector_width_px():
+    return 0
+  if compose.layout.viewport.w <= 0.0:
+    return 0
+  return 1
