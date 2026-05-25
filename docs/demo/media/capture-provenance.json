@@ -1,18 +1,13 @@
 {
-  "captured_at": "2026-05-25T13:20:51Z",
+  "captured_at": "2026-05-25T13:50:16Z",
   "capture_mode": "html_mock_playwright_chrome",
   "lic_root": "/Users/julian/Documents/coding-projects/lic",
-  "lic_ref": "feat/studio-ux-wave2-p0",
-  "lic_sha": "ec18d2a9ec2c6a327ad1a06093c78a5be1fa15eb",
-  "studio_sha": "6e2313bf82b07d11e0d168eeca19e22ba38d4c47",
-  "scenes": [
-    "01-studio-workspace",
-    "02-studio-empty-viewport",
-    "04-studio-command-palette",
-    "03-studio-agent-error",
-    "05-studio-end-cta"
-  ],
-  "wave": 2,
+  "lic_ref": "origin/feat/studio-ux-wave2-16-18",
+  "lic_sha": "4e2cba3aa542cbd6864c3751b88ba564042a17d3",
+  "studio_sha": "3c3e8f11ed265fbe113fca52ad652d408803cd29",
+  "chrome": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "scenes": ["01-studio-workspace-motion-0","01-studio-workspace-motion-1","01-studio-workspace-motion-2","02-studio-empty-viewport","04-studio-command-palette","03-studio-agent-error","05-studio-end-cta"],
+  "motion_frames": true,
   "native_window": false,
-  "notes": "Wave 2 mocks; Chrome PNG for 04/05; playwright blocked on launch timeout."
+  "notes": "Marketing mocks with mock-banner; not li-studio-demo/wgpu shell. Motion via reel_frame query when data-reel-motion present."
 }

@@ -2,7 +2,7 @@
 
 ## Summary
 
-Regenerated the marketing reel from lic Wave 2 HTML mocks (five scenes, ~38s) and documented UX critique deltas vs the pre-Wave 2 reel.
+Regenerated the marketing reel from lic Wave 2 HTML mocks with workspace motion frames (3×2.5s) plus palette/error/CTA scenes (~37.5s).
 
 ## Agent continuation
 
@@ -14,7 +14,8 @@ Regenerated the marketing reel from lic Wave 2 HTML mocks (five scenes, ~38s) an
 ## Changed
 
 - `docs/demo/media/studio-x-demo.mp4`, `capture-provenance.json`, `ffmpeg-scenes.txt`
-- `scripts/record-studio-x-demo.sh` — scenes `01`, `02`, `04`, `03`, `05`
+- `scripts/record-studio-x-demo.sh`, `scripts/capture-studio-demo-png.mjs` — motion `reel_frame` PNGs; scenes `01-motion-*`, `02`, `04`, `03`, `05`
+- `scripts/record-studio-x-demo-native.sh`, `docs/demo/RECORDING.md` — PH-GD-5 native blocker documented
 - `docs/demo/studio-x-demo-script.md`, `docs/demo/ux-critique-2026-05-25.md` (Wave 2 section)
 - Plan todo **studio-ux-19** evidence pack
 

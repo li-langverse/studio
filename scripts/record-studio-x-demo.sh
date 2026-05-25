@@ -65,6 +65,21 @@ capture_pngs() {
       return 0
     fi
   fi
+  capture_motion_chrome() {
+    local f="$1" base="$2"
+    [[ "${STUDIO_CAPTURE_MOTION_FRAMES:-1}" == "0" ]] && return 0
+    grep -q data-reel-motion "$f" || return 0
+    local i url
+    for i in 0 1 2; do
+      url="file://${f}?reel_frame=${i}"
+      timeout "${STUDIO_CAPTURE_TIMEOUT_SEC:-25}" \
+        "$CHROME" --headless --disable-gpu --hide-scrollbars \
+        --window-size=1920,1080 \
+        --screenshot="$PNG/${base}-motion-${i}.png" \
+        "$url" || return 1
+      echo "  $PNG/${base}-motion-${i}.png"
+    done
+  }
   for f in "$SHOTS"/[0-9]*.html; do
     [[ -f "$f" ]] || continue
     base=$(basename "$f" .html)
@@ -77,27 +92,35 @@ capture_pngs() {
       exit 5
     }
     echo "  $PNG/${base}.png"
+    capture_motion_chrome "$f" "$base" || true
   done
 }
 capture_pngs
 
 LIST="$MEDIA/ffmpeg-scenes.txt"
-# Wave 2 reel order: workspace → empty/agent invoke → palette → error recovery → end CTA
-cat >"$LIST" <<EOF
-file '${PNG}/01-studio-workspace.png'
-duration 8
-file '${PNG}/02-studio-empty-viewport.png'
-duration 6
-file '${PNG}/04-studio-command-palette.png'
-duration 5
-file '${PNG}/03-studio-agent-error.png'
-duration 7
-file '${PNG}/05-studio-end-cta.png'
-duration 6
-file '${PNG}/05-studio-end-cta.png'
-EOF
+scene_line() { printf "file '%s'\nduration %s\n" "$1" "$2" >>"$LIST"; }
 
-echo "record-studio-x-demo: encoding MP4 (~32s + hold)"
+# Wave 2 reel: workspace motion (3×2.5s) → invoke → palette → error → CTA hold
+: >"$LIST"
+if [[ -f "$PNG/01-studio-workspace-motion-0.png" ]]; then
+  scene_line "$PNG/01-studio-workspace-motion-0.png" 2.5
+  scene_line "$PNG/01-studio-workspace-motion-1.png" 2.5
+  scene_line "$PNG/01-studio-workspace-motion-2.png" 2.5
+else
+  scene_line "$PNG/01-studio-workspace.png" 8
+fi
+scene_line "$PNG/02-studio-empty-viewport.png" 6
+scene_line "$PNG/04-studio-command-palette.png" 5
+scene_line "$PNG/03-studio-agent-error.png" 7
+scene_line "$PNG/05-studio-end-cta.png" 6
+scene_line "$PNG/05-studio-end-cta.png" 0.5
+
+REEL_SCENES='["01-studio-workspace-motion-0","01-studio-workspace-motion-1","01-studio-workspace-motion-2","02-studio-empty-viewport","04-studio-command-palette","03-studio-agent-error","05-studio-end-cta"]'
+if [[ ! -f "$PNG/01-studio-workspace-motion-0.png" ]]; then
+  REEL_SCENES='["01-studio-workspace","02-studio-empty-viewport","04-studio-command-palette","03-studio-agent-error","05-studio-end-cta"]'
+fi
+
+echo "record-studio-x-demo: encoding MP4 (Wave 2 beats + motion)"
 ffmpeg -y -f concat -safe 0 -i "$LIST" \
   -vf "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2" \
   -c:v libx264 -pix_fmt yuv420p -r 30 \
@@ -106,15 +129,16 @@ ffmpeg -y -f concat -safe 0 -i "$LIST" \
 cat >"$PROV" <<EOF
 {
   "captured_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "capture_mode": "html_mock_headless_chrome",
+  "capture_mode": "html_mock_playwright_chrome",
   "lic_root": "$LIC_ROOT",
   "lic_ref": "$LIC_BRANCH",
   "lic_sha": "$lic_sha",
   "studio_sha": "$studio_sha",
   "chrome": "$CHROME",
-  "scenes": ["01-studio-workspace", "02-studio-empty-viewport", "04-studio-command-palette", "03-studio-agent-error", "05-studio-end-cta"],
+  "scenes": ${REEL_SCENES},
+  "motion_frames": $([ -f "$PNG/01-studio-workspace-motion-0.png" ] && echo true || echo false),
   "native_window": false,
-  "notes": "Marketing mocks with mock-banner; not li-studio-demo/wgpu shell."
+  "notes": "Marketing mocks with mock-banner; not li-studio-demo/wgpu shell. Motion via reel_frame query when data-reel-motion present."
 }
 EOF
 

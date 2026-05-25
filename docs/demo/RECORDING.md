@@ -64,6 +64,20 @@ screencapture -v ~/Desktop/studio-native.mov
 # Crop to 16:9 in iMovie/DaVinci; mux VO from studio-x-demo-script.md
 ```
 
+## Native host capture (P0 blocker — PH-GD-5)
+
+**Blocker:** `li-studio` / `li-studio-demo` in headless CI has no capturable host window (`wgpu` `surface_ok=false`; compose smoke only). Marketing reel therefore uses `lic` `deploy/studio-demo` HTML mocks with an explicit mock banner.
+
+**When unblocked:** macOS screen record of the real shell, or `STUDIO_CAPTURE_TRY_NATIVE=1` after SDL/wgpu viewport draws pixels with `DISPLAY` set.
+
+**Skeleton (optional, display required):**
+
+```bash
+./scripts/record-studio-x-demo-native.sh   # wraps optional SDL stub; no-op without DISPLAY
+```
+
+Do not set `native_window: true` in `capture-provenance.json` until a real product window is captured.
+
 ## Blockers encountered (agent run 2026-05-25)
 
 | Blocker | Mitigation |

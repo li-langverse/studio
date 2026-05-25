@@ -4,7 +4,7 @@
  * Usage: node scripts/capture-studio-demo-png.mjs [screenshots-dir]
  */
 import { chromium } from "playwright";
-import { readdir } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -37,13 +37,29 @@ const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
 
 for (const f of files) {
   const base = f.replace(/\.html$/, "");
-  const url = new URL(path.join(shotsDir, f), "file://").href;
+  const htmlPath = path.join(shotsDir, f);
+  const url = new URL(htmlPath, "file://").href;
   await page.goto(url, { waitUntil: "load", timeout: 20000 });
   await page.screenshot({
     path: path.join(outDir, `${base}.png`),
     fullPage: false,
   });
   console.log(`  ${outDir}/${base}.png`);
+
+  const html = await readFile(htmlPath, "utf8");
+  if (
+    process.env.STUDIO_CAPTURE_MOTION_FRAMES !== "0" &&
+    html.includes("data-reel-motion")
+  ) {
+    for (let i = 0; i < 3; i++) {
+      const motionUrl = new URL(htmlPath, "file://");
+      motionUrl.searchParams.set("reel_frame", String(i));
+      await page.goto(motionUrl.href, { waitUntil: "load", timeout: 20000 });
+      const motionPath = path.join(outDir, `${base}-motion-${i}.png`);
+      await page.screenshot({ path: motionPath, fullPage: false });
+      console.log(`  ${motionPath}`);
+    }
+  }
 }
 
 await browser.close();
