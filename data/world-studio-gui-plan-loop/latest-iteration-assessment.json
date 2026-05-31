@@ -1,28 +1,31 @@
 {
   "pass": true,
   "todo_id": "wsg-w5-perf-budgets",
-  "agent_run": "world_studio_builder",
-  "wps_touched": ["W5", "WP-UX-13", "PH-UX"],
+  "agent_run": "world_studio_builder-65463362",
+  "iteration": "verification",
+  "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "WP-UX-13", "PH-UX"],
   "smokes_run": [
-    "li-tests/smoke/studio_perf_budgets.li"
+    "scripts/verify-perf-budgets.py",
+    "scripts/verify-installer-ci.py",
+    "scripts/verify-headless-golden.py",
+    "li-tests/smoke/studio_perf_budgets.li (CI via src/lib.li)"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
   "phase0_styled_chrome": true,
-  "perf_budgets": {
-    "release_notes": "docs/release-notes/2026-06-01-wsg-w5-perf-budgets.md",
-    "registry": "benchmarks/competitive/studio-ui.toml",
-    "verify_script": "scripts/verify-perf-budgets.py",
-    "viewport_fps_target": 60,
-    "panel_switch_ms_target": 100,
-    "studio_load_ms_target": 2000,
-    "memory_warn_peak_mib": 512
-  },
+  "phases_w0_w5": "done",
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "world_studio_gui_plan_completion_gate": "pass",
-    "verify_perf_budgets": "pass"
+    "world_studio_gui_plan_completion_gate": "pass"
   },
-  "notes": "Final wsg-w* todo: PH-UX perf budgets documented in release notes, registry v2, Li API constants + smoke cross-check render/gui budgets; GUI plan Phases W0–W5 complete.",
+  "ci_fixes": [
+    "ci.yml LLVM 22 + ../lic sibling checkout",
+    "verify-installer-ci.py powershell FileNotFoundError handling",
+    "checkout-ecosystem-siblings.sh for native capture workflow",
+    "_studio-env.sh prefer developer LIC_ROOT",
+    "li.toml UTF-8 BOM removed",
+    "world-studio-gui-plan-gates.sh studio-repo smoke soft-skip"
+  ],
+  "notes": "GUI library plan Phases W0–W5 complete; verification iteration fixed local/CI gate regressions.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

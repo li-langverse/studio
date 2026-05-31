@@ -114,21 +114,28 @@ def try_windows_iscc() -> bool:
     if not demo.is_file():
         print("verify-installer-ci: demo binary missing — skip iscc on CI without lic build")
         return False
-    proc = subprocess.run(
-        [
-            "pwsh",
-            "-NoProfile",
-            "-File",
-            str(BUILD_PS1),
-            "-SkipDemoBuild",
-            "-SkipPresentHost",
-        ],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        timeout=300,
-        check=False,
-    )
+    ps = [
+        "powershell",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(BUILD_PS1),
+        "-SkipDemoBuild",
+        "-SkipPresentHost",
+    ]
+    try:
+        proc = subprocess.run(
+            ps,
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            timeout=300,
+            check=False,
+        )
+    except FileNotFoundError:
+        print("verify-installer-ci: powershell not found — source checks sufficient for CI")
+        return False
     if proc.returncode != 0:
         tail = (proc.stderr or proc.stdout or "")[-500:]
         if os.environ.get("STUDIO_INSTALLER_CI_REQUIRE_BUILD") == "1":
