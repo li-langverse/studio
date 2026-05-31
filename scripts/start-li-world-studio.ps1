@@ -16,14 +16,6 @@ $ErrorActionPreference = "Stop"
 $StudioRoot = Get-StudioRoot
 $LicRoot = Get-LicRoot
 
-function Convert-ToWslPath([string]$WinPath) {
-    $p = (Resolve-Path -LiteralPath $WinPath).Path -replace '\\', '/'
-    if ($p -match '^([A-Za-z]):(.*)$') {
-        return "/mnt/$($Matches[1].ToLower())$($Matches[2])"
-    }
-    return $p
-}
-
 function Test-ElfBinary([string]$Path) {
     if (-not (Test-Path -LiteralPath $Path)) { return $false }
     $b = [System.IO.File]::ReadAllBytes($Path)
@@ -73,7 +65,7 @@ if ($CheckOnly) {
 if ($Build) {
     if (-not $lic) {
         $bash = "C:\Program Files\Git\bin\bash.exe"
-        & $bash -lc "cd '$($LicRoot -replace '\\','/')' && bash scripts/wsl-setup-build.sh"
+        & $bash -lc "cd '$(Convert-ToBashPath $LicRoot)' && bash scripts/wsl-setup-build.sh"
         $lic = Resolve-LicBinary
     }
     if (-not $lic) { throw "lic not found" }

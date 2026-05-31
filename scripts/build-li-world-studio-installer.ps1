@@ -1,4 +1,4 @@
-# Build Li World Studio Windows installer (Inno Setup).
+﻿# Build Li World Studio Windows installer (Inno Setup).
 param(
     [switch]$SkipDemoBuild,
     [switch]$SkipPresentHost,
@@ -25,6 +25,60 @@ function Find-InnoSetupIscc {
     return $null
 }
 
+function Ensure-DemoBinary {
+    param(
+        [string]$StudioRoot,
+        [string]$LicRoot,
+        [string]$LicBin
+    )
+
+    $buildDir = Join-Path $StudioRoot "build"
+    $out = Join-Path $buildDir "li-studio-demo"
+    $outExe = Join-Path $buildDir "li-studio-demo.exe"
+    New-Item -ItemType Directory -Force -Path $buildDir | Out-Null
+
+    if (Test-Path -LiteralPath $outExe) {
+        return $outExe
+    }
+    if (Test-Path -LiteralPath $out) {
+        Copy-Item -LiteralPath $out -Destination $outExe -Force
+        return $outExe
+    }
+
+    Write-Host "Building li-studio-demo via WSL (lic package graph)..." -ForegroundColor Yellow
+    $wslLic = Convert-ToWslPath $LicRoot
+    $wslStudio = Convert-ToWslPath $StudioRoot
+    $wslLicBin = "$wslLic/build-wsl/compiler/lic/lic"
+    if (-not (Test-Path -LiteralPath $LicBin)) {
+        $wslLicBin = "$wslLic/build/compiler/lic/lic"
+    } else {
+        $wslLicBin = Convert-ToWslPath $LicBin
+    }
+
+    wsl -e bash -lc @"
+set -euo pipefail
+mkdir -p '$wslStudio/build'
+if [[ -x '$wslLicBin' ]]; then
+  cd '$wslLic'
+  '$wslLicBin' build --allow-open-vc --no-lean-verify '$wslStudio/src/main.li' -o '$wslStudio/build/li-studio-demo'
+fi
+"@
+
+    if (Test-Path -LiteralPath $out) {
+        Copy-Item -LiteralPath $out -Destination $outExe -Force
+        return $outExe
+    }
+
+    $licDemo = Join-Path $LicRoot "build\li-studio-demo"
+    if (Test-Path -LiteralPath $licDemo) {
+        Write-Host "Using prebuilt demo from lic/build..." -ForegroundColor Yellow
+        Copy-Item -LiteralPath $licDemo -Destination $outExe -Force
+        return $outExe
+    }
+
+    throw "li-studio-demo missing. Build in lic (WSL): lic build ../studio/src/main.li -o ../studio/build/li-studio-demo"
+}
+
 $StudioRoot = Get-StudioRoot
 $LicRoot = Get-LicRoot
 $lic = Resolve-LicBinary
@@ -33,22 +87,20 @@ if (-not $lic) {
     Write-Host "Building lic via WSL..." -ForegroundColor Yellow
     $bash = "C:\Program Files\Git\bin\bash.exe"
     if (-not (Test-Path $bash)) { throw "Git Bash required to build lic" }
-    & $bash -lc "cd '$($LicRoot -replace '\\','/')' && bash scripts/wsl-setup-build.sh"
+    & $bash -lc "cd '$(Convert-ToBashPath $LicRoot)' && bash scripts/wsl-setup-build.sh"
     $lic = Resolve-LicBinary
 }
 if (-not $lic) { throw "lic binary not found under $LicRoot" }
 
 if (-not $SkipDemoBuild) {
-    Write-Host "Building li-studio-demo..."
-    $main = Join-Path $StudioRoot "src\main.li"
-    $out = Join-Path $StudioRoot "build\li-studio-demo"
-    New-Item -ItemType Directory -Force -Path (Split-Path $out) | Out-Null
-    & $lic build --allow-open-vc --no-lean-verify $main -o $out
+    $null = Ensure-DemoBinary -StudioRoot $StudioRoot -LicRoot $LicRoot -LicBin $lic
 }
 
 if (-not $SkipPresentHost) {
     & "$PSScriptRoot\build-studio-shell-present-host.ps1"
 }
+
+& "$PSScriptRoot\ensure-studio-installer-assets.ps1"
 
 $isccPath = Find-InnoSetupIscc
 if (-not $isccPath -and $InstallInno) {

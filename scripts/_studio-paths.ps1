@@ -1,4 +1,4 @@
-# Studio repo path helpers — lic compiler lives in sibling ../lic (or $env:LIC_ROOT).
+﻿# Studio repo path helpers — lic compiler lives in sibling ../lic (or $env:LIC_ROOT).
 function Get-StudioRoot {
     if ($env:STUDIO_ROOT) { return $env:STUDIO_ROOT }
     return (Split-Path $PSScriptRoot -Parent)
@@ -12,6 +12,27 @@ function Get-LicRoot {
         throw "lic sibling not found at $lic (set `$env:LIC_ROOT)"
     }
     return (Resolve-Path -LiteralPath $lic).Path
+}
+
+function Convert-ToBashPath([string]$WinPath) {
+    if (-not $WinPath) { return $WinPath }
+    $p = $WinPath
+    if (Test-Path -LiteralPath $p -ErrorAction SilentlyContinue) {
+        $p = (Resolve-Path -LiteralPath $p).Path
+    }
+    $p = $p -replace '\\', '/'
+    if ($p -match '^([A-Za-z]):(.*)$') {
+        return "/$($Matches[1].ToLower())$($Matches[2])"
+    }
+    return $p
+}
+
+function Convert-ToWslPath([string]$WinPath) {
+    $p = Convert-ToBashPath $WinPath
+    if ($p -match '^/([a-z])(/.*)$') {
+        return "/mnt/$($Matches[1])$($Matches[2])"
+    }
+    return $p
 }
 
 function Resolve-LicBinary {
@@ -29,7 +50,8 @@ function Resolve-LicBinary {
     if (Test-Path -LiteralPath $resolve) {
         $bash = "C:\Program Files\Git\bin\bash.exe"
         if (Test-Path $bash) {
-            $p = & $bash -lc "cd '$($licRoot -replace '\\','/')' && ./scripts/resolve-lic.sh" 2>$null
+            $bashLic = Convert-ToBashPath $licRoot
+            $p = & $bash -lc "cd '$bashLic' && ./scripts/resolve-lic.sh" 2>$null
             if ($p -and (Test-Path -LiteralPath $p.Trim())) { return $p.Trim() }
         }
     }

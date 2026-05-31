@@ -115,7 +115,6 @@ begin
 
   WizardForm.DirEdit.Font.Color := StudioTextColor;
   WizardForm.DirEdit.Color := StudioBgColor;
-  WizardForm.DirBrowseLabel.Font.Color := StudioTextColor;
   WizardForm.NoRadio.Font.Color := StudioTextColor;
   WizardForm.YesRadio.Font.Color := StudioTextColor;
 

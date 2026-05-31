@@ -1,4 +1,4 @@
-# Build SDL present host for Li World Studio (WSL or MSYS2).
+﻿# Build SDL present host for Li World Studio (WSL preferred; Git Bash fallback).
 param(
     [switch]$WindowsNative
 )
@@ -16,6 +16,8 @@ if (-not (Test-Path -LiteralPath $src)) {
     throw "Missing $src"
 }
 
+New-Item -ItemType Directory -Force -Path $native | Out-Null
+
 if ($WindowsNative) {
     $gcc = Get-Command x86_64-w64-mingw32-gcc -ErrorAction SilentlyContinue
     if (-not $gcc) { throw "x86_64-w64-mingw32-gcc not found (MSYS2 mingw-w64)" }
@@ -24,24 +26,45 @@ if ($WindowsNative) {
     exit 0
 }
 
-$bash = "C:\Program Files\Git\bin\bash.exe"
-if (-not (Test-Path $bash)) { throw "Git Bash required for WSL/Linux present host build" }
-
-$wslStudio = ($StudioRoot -replace '\\', '/') -replace '^([A-Za-z]):', { "/mnt/$($_.Groups[1].Value.ToLower())" }
-# simpler conversion
-if ($StudioRoot -match '^([A-Za-z]):\\(.*)$') {
-    $wslStudio = "/mnt/$($Matches[1].ToLower())/$($Matches[2] -replace '\\','/')"
+function Build-PresentHostViaWsl {
+    param([string]$StudioRoot, [string]$NativeOut)
+    $wslNative = "$(Convert-ToWslPath $StudioRoot)/deploy/studio-demo/native"
+    wsl -e bash -lc @"
+set -euo pipefail
+mkdir -p '$wslNative'
+cd '$wslNative'
+chmod +x ./native-sdl-build.sh 2>/dev/null || true
+./native-sdl-build.sh studio_shell_present_host.c studio_shell_present_host
+"@
+    if ($LASTEXITCODE -ne 0) { return $false }
+    return (Test-Path -LiteralPath $NativeOut)
 }
 
-& $bash -lc @"
+function Build-PresentHostViaGitBash {
+    param([string]$StudioRoot, [string]$NativeOut)
+    $bash = "C:\Program Files\Git\bin\bash.exe"
+    if (-not (Test-Path $bash)) { return $false }
+    $bashNative = "$(Convert-ToBashPath $StudioRoot)/deploy/studio-demo/native"
+    & $bash -lc @"
 set -euo pipefail
-cd '$wslStudio/deploy/studio-demo/native'
-chmod +x ../../scripts/native-sdl-build.sh 2>/dev/null || true
-if [[ -x ./native-sdl-build.sh ]]; then
-  ./native-sdl-build.sh studio_shell_present_host.c studio_shell_present_host
-else
-  bash '$wslStudio/deploy/studio-demo/native/native-sdl-build.sh' studio_shell_present_host.c studio_shell_present_host
-fi
+mkdir -p '$bashNative'
+cd '$bashNative'
+chmod +x ./native-sdl-build.sh 2>/dev/null || true
+./native-sdl-build.sh studio_shell_present_host.c studio_shell_present_host
 "@
+    if ($LASTEXITCODE -ne 0) { return $false }
+    return (Test-Path -LiteralPath $NativeOut)
+}
+
+$built = $false
+if (Get-Command wsl -ErrorAction SilentlyContinue) {
+    $built = Build-PresentHostViaWsl -StudioRoot $StudioRoot -NativeOut $linuxOut
+}
+if (-not $built) {
+    $built = Build-PresentHostViaGitBash -StudioRoot $StudioRoot -NativeOut $linuxOut
+}
+if (-not $built) {
+    throw "Present host build failed (install SDL2 in WSL: sudo apt install libsdl2-dev)"
+}
 
 Write-Host "Built $linuxOut" -ForegroundColor Green
