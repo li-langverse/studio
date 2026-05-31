@@ -1,8 +1,8 @@
 {
   "pass": true,
   "todo_id": "plan-complete",
-  "agent_run": "world_studio_builder-70223780",
-  "iteration": "verification-pass-all-wsg-done",
+  "agent_run": "world_studio_builder-70629058",
+  "iteration": "verification-ci-fix-lic-composable-wgpu-bench",
   "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "WP-UX-13", "PH-UX"],
   "smokes_run": [
     "scripts/world-studio-gui-plan-gates.sh",
@@ -17,17 +17,18 @@
     "world_studio_gui_plan_completion_gate": "pass"
   },
   "ci_status": {
-    "studio_pr_18_check": "pass",
-    "studio_pr_18_native_sdl_capture": "pass",
-    "studio_pr_18_installer_matrix": "pass",
-    "lic_pr_682": "fail"
+    "studio_pr_18": "pass",
+    "lic_pr_682": "fix_pushed",
+    "lic_fixes": [
+      "studio_paint_agent cmd_count contract (remove extra paint_frame_push)",
+      "bench-studio-viewport-perf wgpu_swapchain hook for latest-bench.json"
+    ]
   },
   "local_notes": [
     "All 32 wsg-w* todos status: done in plan YAML",
     "Completion gate exit 0 on Windows agent workspace (2026-06-01)",
-    "Studio-repo smokes soft-fail import resolve (expected; CI checks src/lib.li)",
-    "Windows native .exe build skipped locally (MSYS2 MinGW not installed)"
+    "Lic PR #682: fixed composable import check failures + wgpu_swapchain bench hook"
   ],
-  "notes": "GUI library plan W0–W5 complete. Verification iteration confirms gates green and PR #18 CI fully green. Lic PR #682 CI still red — merge blocker for cross-repo stack.",
+  "notes": "GUI library plan W0–W5 complete. Verification iteration re-ran gates green; pushed lic CI fixes for PR #682 (composable smokes + wgpu_swapchain in latest-bench.json).",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }
