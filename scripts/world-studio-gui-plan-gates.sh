@@ -318,6 +318,29 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 3 font atlas (Inter + ui-monospace bitmap @ build time)"
+if grep -q 'def font_atlas_version' "$LIC_ROOT/packages/li-ui/src/font_atlas.li" 2>/dev/null \
+  && grep -q 'def font_atlas_face_new' "$LIC_ROOT/packages/li-ui/src/font_atlas.li" 2>/dev/null \
+  && grep -q 'def font_atlas_sample_alpha' "$LIC_ROOT/packages/li-ui/src/font_atlas.li" 2>/dev/null \
+  && grep -q 'BEGIN font-atlas-generated' "$LIC_ROOT/packages/li-ui/src/lib.li" 2>/dev/null; then
+  ok "li-ui font atlas API + lib.li mirror present"
+else
+  fail "li-ui font atlas missing (wsg-w3-font-atlas)"
+fi
+if [[ -f "$LIC_ROOT/scripts/build-font-atlas.py" ]]; then
+  python3 "$LIC_ROOT/scripts/build-font-atlas.py" --verify || fail "build-font-atlas.py --verify"
+else
+  fail "missing scripts/build-font-atlas.py (wsg-w3-font-atlas)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  atlas_smoke="$LIC_ROOT/packages/li-ui/li-tests/smoke/font_atlas_inter_mono.li"
+  if [[ -f "$atlas_smoke" ]]; then
+    lic_check "$atlas_smoke" "font_atlas_inter_mono" || fail "font_atlas_inter_mono"
+  else
+    fail "font_atlas_inter_mono smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

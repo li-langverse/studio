@@ -35,7 +35,7 @@ Update each iteration. Mark `| **DONE** |` only when every `wsg-wN-*` todo in th
 |-------|-------|--------|
 | **W0** | Styled chrome — PaintCmd round rects, typography tokens, studio_paint polish, native window not wireframe-only | **DONE** |
 | **W1** | li-gui core — Widget protocol, flex/grid/scroll layout, EventDispatcher, base widgets, inspector pilot | **DONE** |
-| **W2** | Reactive compose — Store/Derived, compose invalidation, migrate manual sync, ComposeCache | pending |
+| **W2** | Reactive compose — Store/Derived, compose invalidation, migrate manual sync, ComposeCache | **DONE** |
 | **W3** | Rasterization — font atlas, glyph PaintCmd ops, UI raster pass, wgpu viewport pixels, icon pipeline | pending |
 | **W4** | Studio integration — Li-owned present loop, slim C host, full Widget tree, route table, headless golden | pending |
 | **W5** | Installer-ready — Windows/macOS/Linux native hosts, CI installer matrix, perf budgets | pending |

@@ -52,7 +52,7 @@ todos:
     status: done
   - id: wsg-w3-font-atlas
     content: "Phase 3 — Inter + ui-monospace font atlas (SDF or bitmap) at build time"
-    status: pending
+    status: done
   - id: wsg-w3-paintcmd-glyphs
     content: "Phase 3 — PaintCmd draw_glyphs, draw_image, clip_push/pop ops"
     status: pending
