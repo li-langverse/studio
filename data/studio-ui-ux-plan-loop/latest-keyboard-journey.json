@@ -1,0 +1,10 @@
+{
+  "pass": true,
+  "step_count": 4,
+  "tab_steps": 3,
+  "shortcut_steps": 1,
+  "worst_elapsed_ms": 12.0,
+  "budget_tab_ms": 16.0,
+  "budget_shortcut_ms": 16.0,
+  "harness_journey_id": "keyboard_first_workflow"
+}
