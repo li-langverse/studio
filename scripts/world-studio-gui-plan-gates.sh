@@ -487,6 +487,31 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 4 widget tree all regions (ShellWidgetTree + reactive stores, wsg-w4-widget-tree-all-regions)"
+if grep -q 'def shell_widget_tree_new' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def shell_widget_tree_all_regions_laid_out' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_shell_attach_widget_tree' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'public widget_tree: ShellWidgetTree' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'studio_shell_sync_widget_tree_from_reactive' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null; then
+  ok "li-gui ShellWidgetTree + li-studio reactive bridge present"
+else
+  fail "ShellWidgetTree all regions missing (wsg-w4-widget-tree-all-regions)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  shell_tree_smoke="$LIC_ROOT/packages/li-gui/li-tests/smoke/shell_widget_tree_all_regions.li"
+  if [[ -f "$shell_tree_smoke" ]]; then
+    lic_check "$shell_tree_smoke" "shell_widget_tree_all_regions" || fail "shell_widget_tree_all_regions"
+  else
+    fail "shell_widget_tree_all_regions smoke missing under LIC_ROOT"
+  fi
+  studio_tree_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_shell_widget_tree.li"
+  if [[ -f "$studio_tree_smoke" ]]; then
+    lic_check "$studio_tree_smoke" "studio_shell_widget_tree" || fail "studio_shell_widget_tree"
+  else
+    fail "studio_shell_widget_tree smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

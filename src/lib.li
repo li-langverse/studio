@@ -2140,10 +2140,17 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 35
+  ensures result == 36
   decreases 0
 =
-  return 35
+  return 36
+
+def studio_shell_widget_tree_version() -> int
+  requires true
+  ensures result == gui_shell_widget_tree_version()
+  decreases 0
+=
+  return gui_shell_widget_tree_version()
 
 def studio_reactive_shell_version() -> int
   requires true
@@ -2158,6 +2165,55 @@ def studio_inspector_widget_pilot_version() -> int
   decreases 0
 =
   return gui_inspector_pilot_version()
+
+def studio_shell_widget_tree_params(compose: StudioShellCompose) -> ShellWidgetTreeParams
+  requires compose.layout.viewport_w > 0.0
+  requires compose.layout.inspector.h > gui_inspector_pilot_header_h_px()
+  ensures result.has_selection == compose.inspector.has_selection
+  ensures result.active_dock_slot == compose.dock.active_slot
+  decreases compose.dock.active_slot
+=
+  return shell_widget_tree_params_from_stores(compose.reactive.agent_task, compose.reactive.palette_open, compose.reactive.shell_mode, compose.reactive.timeline_tick, compose.dock.active_slot, compose.inspector.has_selection, compose.scene_entity_count)
+
+def studio_shell_build_widget_tree(compose: StudioShellCompose) -> ShellWidgetTree
+  requires compose.layout.viewport_w > 0.0
+  requires compose.layout.inspector.w > 0.0
+  requires compose.layout.inspector.h > gui_inspector_pilot_header_h_px()
+  ensures result.region_count == shell_widget_tree_region_count()
+  decreases compose.dock.active_slot
+=
+  var params: ShellWidgetTreeParams = studio_shell_widget_tree_params(compose)
+  return shell_widget_tree_new(params, compose.layout.inspector.w, compose.layout.inspector.h)
+
+def studio_shell_layout_widget_tree(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires compose.layout.inspector.h > gui_inspector_pilot_header_h_px()
+  ensures compose.widget_tree_layout.region_count == shell_widget_tree_region_count()
+  decreases compose.dock.active_slot
+=
+  compose.widget_tree = studio_shell_build_widget_tree(compose)
+  compose.widget_tree_layout = shell_widget_tree_layout(compose.widget_tree, compose.layout)
+  compose.widget_tree_active = 1
+
+def studio_shell_attach_widget_tree(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  ensures compose.widget_tree_active == 1
+  ensures shell_widget_tree_all_regions_laid_out(compose.widget_tree_layout) == 1
+  decreases compose.dock.active_slot
+=
+  studio_shell_layout_widget_tree(compose)
+
+def studio_shell_sync_widget_tree_from_reactive(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires compose.widget_tree_active == 1
+  ensures compose.widget_tree.params.agent_task_state == store_int_get(compose.reactive.agent_task)
+  ensures compose.widget_tree.params.palette_open == store_int_get(compose.reactive.palette_open)
+  ensures compose.widget_tree.params.playhead_pct == store_float_get(compose.reactive.timeline_tick)
+  decreases compose.reactive.agent_task.generation
+=
+  var params: ShellWidgetTreeParams = studio_shell_widget_tree_params(compose)
+  compose.widget_tree = shell_widget_tree_new(params, compose.layout.inspector.w, compose.layout.inspector.h)
+  compose.widget_tree_layout = shell_widget_tree_layout(compose.widget_tree, compose.layout)
 
 def studio_agent_context_none() -> int
   requires true
@@ -3077,6 +3133,7 @@ def studio_shell_sync_mode_from_env(compose: var StudioShellCompose) raises IO -
 type StudioReactiveShell = object
   public inv: ComposeInvalidation
   public graph: ComposeDepGraph
+  public cache: ComposeCache
   public agent_task: StoreInt
   public palette_open: StoreInt
   public shell_mode: StoreInt
@@ -3119,6 +3176,9 @@ type StudioShellCompose = object
   public loading: StudioShellLoadingState
   public world_checkpoint: StudioWorldCheckpoint
   public reactive: StudioReactiveShell
+  public widget_tree: ShellWidgetTree
+  public widget_tree_layout: ShellWidgetTreeLayout
+  public widget_tree_active: int
 
 
 def studio_reactive_shell_new(task_state: int, palette_open: int, mode: int, playhead_pct: float) -> StudioReactiveShell
@@ -3138,6 +3198,7 @@ def studio_reactive_shell_new(task_state: int, palette_open: int, mode: int, pla
   var rs: StudioReactiveShell
   rs.inv = compose_invalidation_new()
   rs.graph = compose_dep_graph_new()
+  rs.cache = compose_cache_new()
   rs.agent_task = store_int_new(reactive_store_id_agent_task(), task_state)
   rs.palette_open = store_int_new(reactive_store_id_palette_open(), palette_open)
   rs.shell_mode = store_int_new(reactive_store_id_shell_mode(), mode)
@@ -3195,26 +3256,36 @@ def studio_reactive_flush_palette(compose: var StudioShellCompose) -> unit
   ensures compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_palette()) == 0
   decreases 0
 =
-  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_palette()) != 1:
+  var gen: int = compose.reactive.palette_open.generation
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_palette(), gen) != 1:
+    compose_cache_note_skipped(compose.reactive.cache, compose_region_id_palette())
     return
   var pal: int = store_int_get(compose.reactive.palette_open)
   compose.palette = studio_compose_palette(compose.layout.viewport_w, compose.layout.viewport_h, pal)
   compose.panel.palette_open = pal
   compose_dep_clear_region(compose.reactive.graph, compose_region_id_palette())
   store_int_clear_dirty(compose.reactive.palette_open, compose.reactive.inv)
+  compose_cache_note_recomposed(compose.reactive.cache, compose_region_id_palette(), gen)
+  if compose.widget_tree_active == 1:
+    studio_shell_sync_widget_tree_from_reactive(compose)
 
 def studio_reactive_flush_timeline(compose: var StudioShellCompose) -> unit
   requires compose.layout.viewport_w > 0.0
   ensures compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_timeline()) == 0
   decreases 0
 =
-  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_timeline()) != 1:
+  var gen: int = compose.reactive.timeline_tick.generation
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_timeline(), gen) != 1:
+    compose_cache_note_skipped(compose.reactive.cache, compose_region_id_timeline())
     return
   var pct: float = store_float_get(compose.reactive.timeline_tick)
   compose.timeline.playhead_pct = pct
   compose.timeline.playhead_rect = studio_timeline_playhead_rect_at(compose.timeline.track_rect.x, compose.timeline.track_rect.y, compose.timeline.track_rect.w, compose.timeline.track_rect.h, pct)
   compose_dep_clear_region(compose.reactive.graph, compose_region_id_timeline())
   compose.reactive.timeline_tick.dirty = 0
+  compose_cache_note_recomposed(compose.reactive.cache, compose_region_id_timeline(), gen)
+  if compose.widget_tree_active == 1:
+    studio_shell_sync_widget_tree_from_reactive(compose)
 
 def studio_reactive_flush_mode_regions(compose: var StudioShellCompose) -> unit
   requires compose.layout.viewport_w > 0.0
@@ -3222,13 +3293,25 @@ def studio_reactive_flush_mode_regions(compose: var StudioShellCompose) -> unit
   ensures store_int_get(compose.reactive.shell_mode) == compose.mode
   decreases compose.mode
 =
-  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_dock()) == 1:
+  var mode_gen: int = compose.reactive.shell_mode.generation
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_dock(), mode_gen) == 1:
     compose_dep_clear_region(compose.reactive.graph, compose_region_id_dock())
-  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_inspector()) == 1:
+    compose_cache_note_recomposed(compose.reactive.cache, compose_region_id_dock(), mode_gen)
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_dock(), mode_gen) == 0:
+    compose_cache_note_skipped(compose.reactive.cache, compose_region_id_dock())
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_inspector(), mode_gen) == 1:
     compose_dep_clear_region(compose.reactive.graph, compose_region_id_inspector())
-  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_viewport_hud()) == 1:
+    compose_cache_note_recomposed(compose.reactive.cache, compose_region_id_inspector(), mode_gen)
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_inspector(), mode_gen) == 0:
+    compose_cache_note_skipped(compose.reactive.cache, compose_region_id_inspector())
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_viewport_hud(), mode_gen) == 1:
     compose_dep_clear_region(compose.reactive.graph, compose_region_id_viewport_hud())
+    compose_cache_note_recomposed(compose.reactive.cache, compose_region_id_viewport_hud(), mode_gen)
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_viewport_hud(), mode_gen) == 0:
+    compose_cache_note_skipped(compose.reactive.cache, compose_region_id_viewport_hud())
   store_int_clear_dirty(compose.reactive.shell_mode, compose.reactive.inv)
+  if compose.widget_tree_active == 1:
+    studio_shell_sync_widget_tree_from_reactive(compose)
 
 def studio_reactive_flush_agent_from_run(compose: var StudioShellCompose, run: StudioAgentRun) -> unit
   requires compose.layout.viewport_w > 0.0
@@ -3238,7 +3321,9 @@ def studio_reactive_flush_agent_from_run(compose: var StudioShellCompose, run: S
   ensures compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_agent()) == 0
   decreases run.task_state
 =
-  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_agent()) != 1:
+  var gen: int = compose.reactive.agent_task.generation
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_agent(), gen) != 1:
+    compose_cache_note_skipped(compose.reactive.cache, compose_region_id_agent())
     return
   var ctx: int = run.agent_context_label
   if ctx == studio_agent_context_none():
@@ -3257,6 +3342,25 @@ def studio_reactive_flush_agent_from_run(compose: var StudioShellCompose, run: S
   derived_int_sync_agent_progress(compose.reactive.agent_progress, compose.reactive.agent_task, compose.reactive.inv)
   compose_dep_clear_region(compose.reactive.graph, compose_region_id_agent())
   store_int_clear_dirty(compose.reactive.agent_task, compose.reactive.inv)
+  compose_cache_note_recomposed(compose.reactive.cache, compose_region_id_agent(), gen)
+  if compose.widget_tree_active == 1:
+    studio_shell_sync_widget_tree_from_reactive(compose)
+
+def studio_reactive_begin_flush_frame(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  ensures compose.reactive.cache.recompose_count == 0
+  ensures compose.reactive.cache.skip_count == 0
+  decreases 0
+=
+  compose_cache_begin_frame(compose.reactive.cache)
+
+def studio_reactive_cache_tally(compose: var StudioShellCompose) -> int
+  requires compose.layout.viewport_w > 0.0
+  ensures result >= 0
+  ensures result <= compose_cache_region_count()
+  decreases 0
+=
+  return compose_cache_tally_partial(compose.reactive.cache, compose.reactive.graph, compose.reactive.agent_task.generation, compose.reactive.palette_open.generation, compose.reactive.shell_mode.generation, compose.reactive.timeline_tick.generation)
 
 def studio_reactive_timeline_sync_playhead(compose: var StudioShellCompose, tick: int, duration_ticks: int) raises IO -> unit
   requires compose.layout.viewport_w > 0.0
@@ -6071,6 +6175,7 @@ def studio_compose_shell_profile(w: float, h: float, active_dock_slot: int, has_
   var mode0: int = studio_mode_from_profile(active_profile)
   out.reactive = studio_reactive_shell_new(studio_agent_task_idle(), studio_palette_closed_flag(), mode0, profile_tl_pct)
   studio_shell_apply_mode(out, mode0)
+  studio_shell_attach_widget_tree(out)
   return out
 
 def studio_compose_shell(w: float, h: float, active_dock_slot: int, has_selection: int, scene_entity_count: int) -> StudioShellCompose
@@ -6125,6 +6230,7 @@ def studio_compose_shell(w: float, h: float, active_dock_slot: int, has_selectio
   var mode0: int = studio_mode_default()
   out.reactive = studio_reactive_shell_new(studio_agent_task_idle(), studio_palette_closed_flag(), mode0, shell_tl_pct)
   studio_shell_apply_mode(out, mode0)
+  studio_shell_attach_widget_tree(out)
   return out
 
 
@@ -6991,6 +7097,14 @@ def studio_vertical_demo_compose(profile_id: int, frame_id: int, key_compose: in
   return out
 
 def studio_present_loop_raster_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+# Phase 4 (wsg-w4-c-host-slim) — C present host is window/input/surface I/O only.
+def studio_c_host_slim_version() -> int
   requires true
   ensures result == 1
   decreases 0

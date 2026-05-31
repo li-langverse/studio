@@ -73,7 +73,7 @@ todos:
     status: done
   - id: wsg-w4-widget-tree-all-regions
     content: "Phase 4 — all shell regions on Widget tree + reactive stores"
-    status: pending
+    status: done
   - id: wsg-w4-route-table
     content: "Phase 4 — StudioRoute table for verticals/modes formalized"
     status: pending

@@ -24,6 +24,12 @@ note = "T-PKG-li-studio-inspector-widget-pilot W1"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_shell_widget_tree.li"
+outcome = "check_ok"
+note = "W4: all shell regions on Widget tree + reactive stores"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_compose_panels.li"
 outcome = "check_ok"
 note = "T-PKG-li-studio-compose-panels"
