@@ -1,3 +1,10 @@
+## Studio UI/UX iteration `wsg-w1-event-dispatcher`
+
+- **UTC:** 2026-05-31T18:51:59Z
+- **Branch:** cursor/world-studio-gui-library-plan
+
+### Bench snapshot
+```json
 {
   "generated_at": "2026-05-31T18:51:59Z",
   "registry_path": "benchmarks\\competitive\\studio-ui.toml",
@@ -129,3 +136,9 @@
   },
   "gates_pass": true
 }
+```
+
+### Artifacts
+- PNG count: 0
+
+Rubric: `docs/game-dev/competitive-intel/ui-ux-by-dimension.md`
