@@ -18,6 +18,12 @@ note = "T-PKG-li-studio-inspector-fields UX-03"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_inspector_widget_pilot.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-inspector-widget-pilot W1"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_compose_panels.li"
 outcome = "check_ok"
 note = "T-PKG-li-studio-compose-panels"

@@ -2152,10 +2152,17 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 31
+  ensures result == 32
   decreases 0
 =
-  return 31
+  return 32
+
+def studio_inspector_widget_pilot_version() -> int
+  requires true
+  ensures result == gui_inspector_pilot_version()
+  decreases 0
+=
+  return gui_inspector_pilot_version()
 
 def studio_agent_context_none() -> int
   requires true
@@ -2825,6 +2832,9 @@ type StudioInspectorCompose = object
   public field_count: int
   public field0: StudioInspectorField
   public field1: StudioInspectorField
+  public widget_pilot: int
+  public pilot_spec: InspectorPilotWidget
+  public pilot_layout: InspectorPilotLayoutResult
 
 type StudioViewportEmptyCompose = object
   public frame_rect: Rect
@@ -5044,39 +5054,65 @@ def studio_inspector_field_at(insp_x: float, insp_y: float, insp_w: float, row: 
   out.value_rect = rect_make(vx, vy, value_w, lh1)
   return out
 
+def studio_inspector_compose_from_pilot(layout: StudioShellLayout, has_selection: int, pilot: InspectorPilotWidget, pilot_layout: InspectorPilotLayoutResult) -> StudioInspectorCompose
+  requires layout.inspector.w >= studio_inspector_width_px()
+  requires has_selection >= 0
+  requires has_selection <= 1
+  requires pilot.has_selection == has_selection
+  requires pilot_layout.has_selection == has_selection
+  ensures result.widget_pilot == 1
+  ensures result.has_selection == has_selection
+  decreases has_selection
+=
+  var out: StudioInspectorCompose
+  out.rect = layout.inspector
+  out.header_rect = pilot_layout.header_layout.bounds
+  out.has_selection = has_selection
+  out.widget_pilot = 1
+  out.pilot_spec = pilot
+  out.pilot_layout = pilot_layout
+  if has_selection == 1:
+    out.field_rows = studio_inspector_field_rows()
+    out.field_count = studio_inspector_selection_field_count()
+    out.empty_visible = 0
+    out.field0.label_rect = inspector_pilot_field_label_rect(pilot_layout, 0)
+    out.field0.value_rect = inspector_pilot_field_value_rect(pilot_layout, 0)
+    out.field1.label_rect = inspector_pilot_field_label_rect(pilot_layout, 1)
+    out.field1.value_rect = inspector_pilot_field_value_rect(pilot_layout, 1)
+    out.field_row_rect = pilot_layout.fields_layout.bounds
+    out.hint_line1_rect = rect_make(0.0, 0.0, 0.0, 0.0)
+    out.hint_line2_rect = rect_make(0.0, 0.0, 0.0, 0.0)
+    out.hint_box_rect = rect_make(0.0, 0.0, 0.0, 0.0)
+  if has_selection == 0:
+    out.field_rows = 0
+    out.field_count = 0
+    out.empty_visible = 1
+    out.hint_line1_rect = inspector_pilot_empty_hint_rect(pilot_layout, 0)
+    out.hint_line2_rect = inspector_pilot_empty_hint_rect(pilot_layout, 1)
+    out.hint_box_rect = inspector_pilot_empty_hint_box_rect(pilot_layout)
+    out.field_row_rect = rect_make(0.0, 0.0, 0.0, 0.0)
+  return out
+
+def studio_compose_inspector_widget_pilot(layout: StudioShellLayout, has_selection: int) -> StudioInspectorCompose
+  requires layout.inspector.w >= studio_inspector_width_px()
+  requires has_selection >= 0
+  requires has_selection <= 1
+  ensures result.widget_pilot == 1
+  ensures result.has_selection == has_selection
+  decreases has_selection
+=
+  var pilot: InspectorPilotWidget = inspector_pilot_new(has_selection, layout.inspector.w, layout.inspector.h)
+  var pilot_layout: InspectorPilotLayoutResult = inspector_pilot_layout(pilot, layout.inspector.x, layout.inspector.y, layout.inspector.w, layout.inspector.h)
+  return studio_inspector_compose_from_pilot(layout, has_selection, pilot, pilot_layout)
+
 def studio_compose_inspector_selected(layout: StudioShellLayout) -> StudioInspectorCompose
   requires layout.inspector.w >= studio_inspector_width_px()
   ensures result.has_selection == 1
   ensures result.field_count == studio_inspector_selection_field_count()
+  ensures result.widget_pilot == 1
   decreases 0
 =
-  var lay: StudioShellLayout = layout
-  var insp_x: float = lay.inspector.x
-  var insp_y: float = lay.inspector.y
-  var insp_w: float = lay.inspector.w
-  var out: StudioInspectorCompose
-  out.rect = lay.inspector
-  var hx: float = lay.inspector.x
-  var hy: float = lay.inspector.y
-  var hw: float = lay.inspector.w
-  out.header_rect = studio_inspector_header_rect_at(hx, hy, hw)
-  out.has_selection = 1
-  out.field_rows = studio_inspector_field_rows()
-  out.field_count = studio_inspector_selection_field_count()
-  var f0x: float = lay.inspector.x
-  var f0y: float = lay.inspector.y
-  var f0w: float = lay.inspector.w
-  var f1x: float = lay.inspector.x
-  var f1y: float = lay.inspector.y
-  var f1w: float = lay.inspector.w
-  out.field0 = studio_inspector_field_at(f0x, f0y, f0w, 0)
-  out.field1 = studio_inspector_field_at(f1x, f1y, f1w, 1)
-  out.empty_visible = 0
-  out.hint_line1_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  out.hint_line2_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  out.hint_box_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  out.field_row_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  return out
+  return studio_compose_inspector_widget_pilot(layout, 1)
 
 def studio_inspector_joint_value_width_px(joint_rad: float, slot_max_w: float) -> float
   requires slot_max_w >= 24.0
@@ -5152,29 +5188,10 @@ def studio_compose_empty_inspector(layout: StudioShellLayout) -> StudioInspector
   requires layout.inspector.w >= studio_inspector_width_px()
   ensures result.has_selection == 0
   ensures result.empty_visible == 1
+  ensures result.widget_pilot == 1
   decreases 0
 =
-  var out: StudioInspectorCompose
-  out.rect = layout.inspector
-  out.header_rect = studio_inspector_header_rect_at(layout.inspector.x, layout.inspector.y, layout.inspector.w)
-  out.has_selection = 0
-  out.field_rows = 0
-  out.empty_visible = 1
-  var h1x: float = layout.inspector.x
-  var h1y: float = layout.inspector.y
-  var h1w: float = layout.inspector.w
-  var h2x: float = layout.inspector.x
-  var h2y: float = layout.inspector.y
-  var h2w: float = layout.inspector.w
-  var hbx: float = layout.inspector.x
-  var hby: float = layout.inspector.y
-  var hbw: float = layout.inspector.w
-  var hbh: float = layout.inspector.h
-  out.hint_line1_rect = studio_inspector_empty_hint_line_rect_at(h1x, h1y, h1w, 0)
-  out.hint_line2_rect = studio_inspector_empty_hint_line_rect_at(h2x, h2y, h2w, 1)
-  out.hint_box_rect = studio_inspector_empty_hint_box_rect_at(hbx, hby, hbw, hbh)
-  out.field_row_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  return out
+  return studio_compose_inspector_widget_pilot(layout, 0)
 
 def studio_compose_empty_viewport(layout: StudioShellLayout) -> StudioViewportEmptyCompose
   requires layout.viewport.w > 0.0
@@ -5879,24 +5896,7 @@ def studio_compose_shell_profile(w: float, h: float, active_dock_slot: int, has_
   out.timeline.playhead_rect = studio_timeline_playhead_rect_at(out.timeline.track_rect.x, out.timeline.track_rect.y, out.timeline.track_rect.w, out.timeline.track_rect.h, profile_tl_pct)
   out.timeline.playhead_pct = profile_tl_pct
   out.scene_entity_count = 0
-  out.inspector.rect = lay.inspector
-  out.inspector.header_rect = studio_inspector_header_rect_at(lay.inspector.x, lay.inspector.y, lay.inspector.w)
-  if has_selection == 0:
-    out.inspector.has_selection = 0
-    out.inspector.field_rows = 0
-    out.inspector.empty_visible = 1
-    out.inspector.hint_line1_rect = studio_inspector_empty_hint_line_rect_at(lay.inspector.x, lay.inspector.y, lay.inspector.w, 0)
-    out.inspector.hint_line2_rect = studio_inspector_empty_hint_line_rect_at(lay.inspector.x, lay.inspector.y, lay.inspector.w, 1)
-    out.inspector.hint_box_rect = studio_inspector_empty_hint_box_rect_at(lay.inspector.x, lay.inspector.y, lay.inspector.w, lay.inspector.h)
-    out.inspector.field_row_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  if has_selection == 1:
-    out.inspector.has_selection = 1
-    out.inspector.field_rows = studio_inspector_field_rows()
-    out.inspector.empty_visible = 0
-    out.inspector.hint_line1_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-    out.inspector.hint_line2_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-    out.inspector.hint_box_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-    out.inspector.field_row_rect = studio_inspector_field_row_rect_at(lay.inspector.x, lay.inspector.y, lay.inspector.w)
+  out.inspector = studio_compose_inspector_widget_pilot(lay, has_selection)
   out.viewport_empty.frame_rect = lay.viewport
   out.viewport_empty.empty_visible = 1
   out.viewport_empty.title_rect = studio_viewport_empty_title_rect_at(lay.viewport.x, lay.viewport.y, lay.viewport.w, lay.viewport.h)
@@ -5946,24 +5946,7 @@ def studio_compose_shell(w: float, h: float, active_dock_slot: int, has_selectio
   var shell_tl_pct: float = studio_timeline_playhead_pct_from_tick(0, studio_timeline_duration_ticks_default())
   out.timeline.playhead_rect = studio_timeline_playhead_rect_at(out.timeline.track_rect.x, out.timeline.track_rect.y, out.timeline.track_rect.w, out.timeline.track_rect.h, shell_tl_pct)
   out.timeline.playhead_pct = shell_tl_pct
-  out.inspector.rect = out.layout.inspector
-  out.inspector.header_rect = studio_inspector_header_rect_at(out.layout.inspector.x, out.layout.inspector.y, out.layout.inspector.w)
-  if sel0 == 0:
-    out.inspector.has_selection = 0
-    out.inspector.field_rows = 0
-    out.inspector.empty_visible = 1
-    out.inspector.hint_line1_rect = studio_inspector_empty_hint_line_rect_at(out.layout.inspector.x, out.layout.inspector.y, out.layout.inspector.w, 0)
-    out.inspector.hint_line2_rect = studio_inspector_empty_hint_line_rect_at(out.layout.inspector.x, out.layout.inspector.y, out.layout.inspector.w, 1)
-    out.inspector.hint_box_rect = studio_inspector_empty_hint_box_rect_at(out.layout.inspector.x, out.layout.inspector.y, out.layout.inspector.w, out.layout.inspector.h)
-    out.inspector.field_row_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  if sel0 == 1:
-    out.inspector.has_selection = 1
-    out.inspector.field_rows = studio_inspector_field_rows()
-    out.inspector.empty_visible = 0
-    out.inspector.hint_line1_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-    out.inspector.hint_line2_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-    out.inspector.hint_box_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-    out.inspector.field_row_rect = studio_inspector_field_row_rect_at(out.layout.inspector.x, out.layout.inspector.y, out.layout.inspector.w)
+  out.inspector = studio_compose_inspector_widget_pilot(out.layout, sel0)
   out.viewport_empty.frame_rect = out.layout.viewport
   if scene0 == 0:
     out.viewport_empty.empty_visible = 1
@@ -6093,17 +6076,17 @@ def studio_paint_timeline_cmds() -> int
 
 def studio_paint_inspector_empty_cmds() -> int
   requires true
-  ensures result == 5
+  ensures result == inspector_pilot_paint_cmds(0)
   decreases 0
 =
-  return 5
+  return inspector_pilot_paint_cmds(0)
 
 def studio_paint_inspector_selected_cmds() -> int
   requires true
-  ensures result == 4
+  ensures result == inspector_pilot_paint_cmds(1)
   decreases 0
 =
-  return 4
+  return inspector_pilot_paint_cmds(1)
 
 def studio_paint_inspector_cmds(has_selection: int) -> int
   requires has_selection >= 0
@@ -6388,6 +6371,9 @@ def studio_paint_inspector(frame: var PaintFrame, inspector: StudioInspectorComp
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_inspector_cmds(inspector.has_selection)
   decreases inspector.has_selection
 =
+  if inspector.widget_pilot == 1:
+    inspector_pilot_paint(inspector.pilot_spec, inspector.pilot_layout, frame)
+    return
   if inspector.has_selection == 0:
     paint_frame_push_elevated_panel(frame, inspector.rect)
     paint_frame_push(frame, paint_cmd_fill_round(inspector.hint_line1_rect, studio_color_bg_elevated(), studio_radius_sm_px()))

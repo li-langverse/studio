@@ -37,7 +37,7 @@ todos:
     status: done
   - id: wsg-w1-inspector-pilot
     content: "Phase 1 — migrate inspector region to Widget tree pilot"
-    status: pending
+    status: done
   - id: wsg-w2-store-primitives
     content: "Phase 2 — Store<T> / Derived<T> primitives in li-gui"
     status: pending

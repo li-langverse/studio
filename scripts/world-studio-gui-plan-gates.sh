@@ -209,6 +209,31 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 1 inspector widget pilot (Flex/Grid tree + studio compose bridge)"
+if grep -q 'def inspector_pilot_new' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def inspector_pilot_layout' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def inspector_pilot_paint' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_compose_inspector_widget_pilot' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'def gui_inspector_pilot_version' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null; then
+  ok "li-gui inspector pilot + li-studio compose bridge present"
+else
+  fail "li-gui inspector pilot missing (wsg-w1-inspector-pilot)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  pilot_smoke="$LIC_ROOT/packages/li-gui/li-tests/smoke/inspector_pilot_widget.li"
+  if [[ -f "$pilot_smoke" ]]; then
+    lic_check "$pilot_smoke" "inspector_pilot_widget" || fail "inspector_pilot_widget"
+  else
+    warn "inspector_pilot_widget smoke missing under LIC_ROOT"
+  fi
+  studio_pilot_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_inspector_widget_pilot.li"
+  if [[ -f "$studio_pilot_smoke" ]]; then
+    lic_check "$studio_pilot_smoke" "studio_inspector_widget_pilot" || fail "studio_inspector_widget_pilot"
+  else
+    warn "studio_inspector_widget_pilot smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"
