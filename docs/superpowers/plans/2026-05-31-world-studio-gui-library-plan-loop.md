@@ -76,7 +76,7 @@ todos:
     status: done
   - id: wsg-w4-route-table
     content: "Phase 4 — StudioRoute table for verticals/modes formalized"
-    status: pending
+    status: done
   - id: wsg-w4-headless-golden
     content: "Phase 4 — headless Li CPU rasterizer golden frames (no C paint mirror)"
     status: pending

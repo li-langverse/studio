@@ -512,6 +512,25 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 4 route table (StudioRoute verticals/modes, wsg-w4-route-table)"
+if grep -q 'def studio_route_table_count' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_route_lookup' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_shell_apply_route' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_compose_shell_route' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_route_resolve_startup' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null; then
+  ok "li-studio StudioRoute table present"
+else
+  fail "StudioRoute table missing (wsg-w4-route-table)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  route_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_route_table.li"
+  if [[ -f "$route_smoke" ]]; then
+    lic_check "$route_smoke" "studio_route_table" || fail "studio_route_table"
+  else
+    fail "studio_route_table smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

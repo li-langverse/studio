@@ -1,21 +1,32 @@
 {
   "pass": true,
-  "todo_id": "wsg-w4-widget-tree-all-regions",
-  "agent_run": "world_studio_builder-60937033",
-  "wps_touched": ["W4", "WP-UX-15", "WP-GD-1"],
+  "todo_id": "wsg-w4-route-table",
+  "agent_run": "world_studio_builder-61566124",
+  "wps_touched": ["W4", "WP-UX-15", "PH-GD-1"],
   "smokes_run": [
-    "packages/li-gui/li-tests/smoke/shell_widget_tree_all_regions.li",
-    "packages/li-studio/li-tests/smoke/studio_shell_widget_tree.li",
-    "li-tests/smoke/studio_shell_widget_tree.li"
+    "packages/li-studio/li-tests/smoke/studio_route_table.li"
   ],
   "native_only": true,
-  "widget_tree_all_regions": true,
-  "region_count": 8,
+  "route_table": {
+    "route_count": 9,
+    "keys": [
+      "author/game",
+      "simulate/scientific",
+      "adaptive/drug/litl-0",
+      "adaptive/drug/litl-1",
+      "adaptive/drug/litl-2",
+      "adaptive/drug/litl-3",
+      "adaptive/drug/litl-4",
+      "agent",
+      "bench"
+    ],
+    "env": "STUDIO_ROUTE",
+    "startup": "studio_route_resolve_startup"
+  },
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "shell_widget_tree_all_regions": "pass",
-    "studio_shell_widget_tree": "pass"
+    "studio_route_table": "pass"
   },
-  "notes": "ShellWidgetTree covers dock, outliner, topbar, viewport, timeline, inspector, agent, palette; StudioShellCompose.widget_tree wired with reactive store sync on flush.",
+  "notes": "StudioRoute table maps named shell configs to profile, mode, layout variant, LITL stage, and primary region; startup resolves STUDIO_ROUTE or STUDIO_DEMO_PROFILE/STUDIO_BENCH_MODE; vertical demo compose uses route table.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }
