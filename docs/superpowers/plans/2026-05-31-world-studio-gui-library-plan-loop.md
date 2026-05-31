@@ -40,7 +40,7 @@ todos:
     status: done
   - id: wsg-w2-store-primitives
     content: "Phase 2 — Store<T> / Derived<T> primitives in li-gui"
-    status: pending
+    status: done
   - id: wsg-w2-compose-deps
     content: "Phase 2 — @compose dependency annotations or convention-based invalidation graph"
     status: pending

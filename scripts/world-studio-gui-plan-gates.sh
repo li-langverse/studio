@@ -234,6 +234,27 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 2 reactive stores (StoreInt/StoreFloat, Derived, invalidation)"
+if grep -q 'type StoreInt' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null \
+  && grep -q 'type DerivedInt' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null \
+  && grep -q 'type StoreFloat' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null \
+  && grep -q 'def store_int_set' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null \
+  && grep -q 'def derived_int_sync_value' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null \
+  && grep -q 'def compose_invalidation_any_dirty' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null \
+  && grep -q 'def gui_reactive_version' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null; then
+  ok "li-gui Store/Derived reactive primitives present"
+else
+  fail "li-gui reactive stores missing (wsg-w2-store-primitives)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  reactive_smoke="$LIC_ROOT/packages/li-gui/li-tests/smoke/reactive_store_derived.li"
+  if [[ -f "$reactive_smoke" ]]; then
+    lic_check "$reactive_smoke" "reactive_store_derived" || fail "reactive_store_derived"
+  else
+    warn "reactive_store_derived smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

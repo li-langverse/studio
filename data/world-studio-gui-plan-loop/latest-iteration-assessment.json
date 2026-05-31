@@ -1,12 +1,10 @@
 {
   "pass": true,
-  "todo_id": "wsg-w1-inspector-pilot",
-  "agent_run": "world_studio_builder-54698528",
-  "wps_touched": ["W1", "WP-UX-03", "WP-UX-04"],
+  "todo_id": "wsg-w2-store-primitives",
+  "agent_run": "world_studio_builder-55242139",
+  "wps_touched": ["W2", "WP-UX-06"],
   "smokes_run": [
-    "packages/li-gui/li-tests/smoke/inspector_pilot_widget.li",
-    "packages/li-studio/li-tests/smoke/studio_inspector_widget_pilot.li",
-    "packages/li-studio/li-tests/smoke/studio_inspector_fields.li"
+    "packages/li-gui/li-tests/smoke/reactive_store_derived.li"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
@@ -17,11 +15,11 @@
   "base_widgets": true,
   "focus_model": true,
   "inspector_pilot": true,
+  "reactive_stores": true,
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "inspector_pilot_widget": "pass",
-    "studio_inspector_widget_pilot": "pass"
+    "reactive_store_derived": "pass"
   },
-  "notes": "InspectorPilotWidget composite (header panel + 2x2 field grid / empty hint column); studio_compose_inspector_widget_pilot bridges Widget tree to StudioInspectorCompose; studio_paint_inspector delegates to inspector_pilot_paint; cmd bounds selected=19 empty=4; li_std_gui_version 10, li_std_studio_version 32.",
+  "notes": "StoreInt/StoreFloat + DerivedInt/DerivedFloat in li-gui/src/reactive.li (mirrored in lib.li for import gui); ComposeInvalidation dirty counts for partial re-compose; shell slot ids for agent task, palette, mode, timeline; derived_int_sync_agent_progress maps task_state→progress pct; li_std_gui_version 11, gui_reactive_version 1.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }
