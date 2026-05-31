@@ -1,0 +1,27 @@
+import studio
+import sim.additive
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 27:
+    return 1
+  var cfg: StudioProjectConfig = studio_project_config_from_additive_toml_fixture()
+  var sim_out: SimSessionStub = sim_session_stub_default()
+  studio_apply_config_to_sim(cfg, sim_out)
+  if studio_am_export_three_click_flow(cfg, sim_out, am_export_format_3mf()) != 0:
+    return 2
+  if sim_out.tick < 1:
+    return 3
+  if studio_am_export_three_click_flow(cfg, sim_out, am_export_format_gcode()) != 0:
+    return 4
+  var flow: StudioAmExportFlowState = studio_am_export_flow_init(am_export_format_gcode())
+  if studio_am_export_flow_advance(flow, cfg, sim_out) != 0:
+    return 5
+  if flow.click_count != 1:
+    return 6
+  if flow.wizard_step != studio_am_export_wizard_step_preflight():
+    return 7
+  return 0

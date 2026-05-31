@@ -1,0 +1,155 @@
+name: Studio UI/UX native capture
+
+on:
+  pull_request:
+    paths:
+      - "deploy/studio-demo/**"
+      - "scripts/studio-ui-ux-*.sh"
+      - "scripts/studio-ui-ux-*.py"
+      - "scripts/ci-studio-ui-ux-native.sh"
+      - "scripts/ci-studio-ui-ux-wgpu.sh"
+      - "scripts/ci-studio-ui-ux-wgpu-swapchain.sh"
+      - "packages/li-gpu/**"
+      - "scripts/bench-studio-viewport-perf.sh"
+      - "benchmarks/competitive/studio-ui.toml"
+      - "../lic/packages/li-ui/**"
+      - "../lic/packages/li-gui/**"
+      - "../lic/packages/li-render/**"
+      - "../lic/packages/li-scene/**"
+      - "**"
+      - ".github/workflows/studio-ui-ux-native.yml"
+  push:
+    branches: [cursor/studio-ui-ux-plan-loop]
+    paths:
+      - "deploy/studio-demo/**"
+      - "scripts/studio-ui-ux-*.sh"
+      - "scripts/studio-ui-ux-*.py"
+      - ".github/workflows/studio-ui-ux-native.yml"
+
+concurrency:
+  group: studio-ui-ux-native-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-sdl-capture:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout benchmarks sibling
+        run: |
+          chmod +x scripts/checkout-ecosystem-siblings.sh
+          ./scripts/checkout-ecosystem-siblings.sh
+
+      - name: Install SDL2 + Xvfb + capture tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libsdl2-dev pkg-config xvfb gcc python3
+
+      - name: Studio UI/UX gates (no lic build)
+        env:
+          STUDIO_UI_UX_GATES_SKIP_BUILD: "1"
+        run: |
+          chmod +x scripts/studio-ui-ux-plan-gates.sh scripts/ci-studio-ui-ux-native.sh
+          ./scripts/studio-ui-ux-plan-gates.sh
+
+      - name: Native SDL capture (native_pixels=true)
+        run: ./scripts/ci-studio-ui-ux-native.sh
+
+      - name: Upload native capture metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-native-capture-meta
+          path: |
+            data/studio-ui-ux-plan-loop/latest-native-capture.json
+            data/studio-ui-ux-plan-loop/latest-capture-deps.json
+            data/studio-ui-ux-plan-loop/latest-bench.json
+          if-no-files-found: error
+
+  native-wgpu-bench:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout benchmarks sibling
+        run: |
+          chmod +x scripts/checkout-ecosystem-siblings.sh
+          ./scripts/checkout-ecosystem-siblings.sh
+
+      - name: Install bench deps
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends python3
+
+      - name: Wgpu readback bench matrix leg
+        env:
+          STUDIO_UI_UX_GATES_SKIP_BUILD: "1"
+          LIG_WGPU_READBACK: "1"
+        run: |
+          chmod +x scripts/ci-studio-ui-ux-wgpu.sh scripts/bench-studio-viewport-perf.sh
+          ./scripts/ci-studio-ui-ux-wgpu.sh
+
+      - name: Upload wgpu bench metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-wgpu-bench-meta
+          path: data/studio-ui-ux-plan-loop/latest-bench.json
+          if-no-files-found: error
+
+  wgpu-swapchain-readback:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout benchmarks sibling
+        run: |
+          chmod +x scripts/checkout-ecosystem-siblings.sh
+          ./scripts/checkout-ecosystem-siblings.sh
+
+      - name: Install bench deps
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends python3 gcc
+
+      - name: Swapchain readback hook (honest blocked on CPU runner)
+        env:
+          STUDIO_UI_UX_GATES_SKIP_BUILD: "1"
+          LIG_WGPU_SWAPCHAIN: "1"
+        run: |
+          chmod +x scripts/ci-studio-ui-ux-wgpu-swapchain.sh scripts/bench-studio-viewport-perf.sh
+          ./scripts/ci-studio-ui-ux-wgpu-swapchain.sh
+
+      - name: Upload swapchain bench metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-wgpu-swapchain-meta
+          path: data/studio-ui-ux-plan-loop/latest-bench.json
+          if-no-files-found: error
+
+  wgpu-swapchain-gpu-runner:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout benchmarks sibling
+        run: |
+          chmod +x scripts/checkout-ecosystem-siblings.sh
+          ./scripts/checkout-ecosystem-siblings.sh
+
+      - name: Install bench + probe deps
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends python3 gcc
+
+      - name: Swapchain readback on org GPU runner env (LIG_GPU_RUNNER=1)
+        env:
+          STUDIO_UI_UX_GATES_SKIP_BUILD: "1"
+          LIG_WGPU_SWAPCHAIN: "1"
+          LIG_HOST_PRESENT: "1"
+          LIG_GPU_RUNNER: "1"
+        run: |
+          chmod +x scripts/ci-studio-ui-ux-wgpu-swapchain.sh scripts/bench-studio-viewport-perf.sh
+          ./scripts/ci-studio-ui-ux-wgpu-swapchain.sh
+          python3 -c "import json; d=json.load(open('data/studio-ui-ux-plan-loop/latest-bench.json')); ws=d.get('wgpu_swapchain') or {}; assert ws.get('status')=='swapchain_pass', ws"
+
+      - name: Upload GPU swapchain bench metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-wgpu-swapchain-gpu-meta
+          path: data/studio-ui-ux-plan-loop/latest-bench.json
+          if-no-files-found: error

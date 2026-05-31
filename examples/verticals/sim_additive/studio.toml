@@ -1,0 +1,10 @@
+# World Studio vertical example — profile: sim_additive
+
+[engine]
+profile = "sim_additive"
+determinism_tier = 2
+
+[engine.export]
+formats = ["3mf", "gcode"]
+printer_profile = "profiles/bambu_x1c.toml"
+require_sim_pass = true

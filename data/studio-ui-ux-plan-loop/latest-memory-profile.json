@@ -1,0 +1,17 @@
+{
+  "schema": "li_studio_memory_profile_v1",
+  "generated_at": "2026-05-30T22:06:48Z",
+  "memory_id": "animate_md_import",
+  "warn_peak_mib": 512.0,
+  "peak_import_mib": 0.56,
+  "peak_rss_mib": null,
+  "peak_observed_mib": 0.56,
+  "meets_budget": true,
+  "rss_status": "skip",
+  "registry_path": "benchmarks\\competitive\\studio-ui.toml",
+  "notes": [
+    "import peak = tracemalloc after loading animate_md",
+    "rss peak = --skip-export --max-frames 4 when /usr/bin/time available",
+    "full GIF export can exceed budget; Studio timeline uses streamed frames"
+  ]
+}

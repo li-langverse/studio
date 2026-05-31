@@ -1,0 +1,46 @@
+import sim
+import studio
+import world
+
+def main() raises Alloc, IO -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 23:
+    return 1
+  var scaffold: WorldSnapshot = studio_world_scaffold_snapshot()
+  if world_snapshot_valid(scaffold) != 1:
+    return 2
+  if scaffold.asset_ref_count != studio_game_asset_ref_count_stub():
+    return 3
+  var path_write: str = studio_world_li_path_default()
+  if studio_world_scaffold_write(path_write) != 1:
+    return 4
+  var path_rt: str = studio_world_li_path_default()
+  if studio_world_io_roundtrip(scaffold, path_rt) != 1:
+    return 5
+  var path_load: str = studio_world_li_path_default()
+  var loaded: WorldSnapshot = studio_world_load(path_load)
+  if world_snapshot_fields_match(scaffold, loaded) != 1:
+    return 6
+  if studio_world_asset_ref_path_default() == "":
+    return 7
+  var game_sess: SimSessionStub = sim_session_stub_default()
+  var game_cfg: StudioProjectConfig = studio_project_config_new(studio_profile_game())
+  if studio_sim_step_hook(game_cfg, game_sess, 0.016) != sim_status_ok():
+    return 10
+  var snap: WorldSnapshot = studio_game_world_checkpoint_from_session(game_sess)
+  var path_save: str = studio_world_li_path_default()
+  if studio_world_save(snap, path_save) != 1:
+    return 11
+  var path_reload: str = studio_world_li_path_default()
+  var reloaded: WorldSnapshot = studio_world_load(path_reload)
+  if studio_game_world_checkpoint_stub(reloaded) != 1:
+    return 12
+  if reloaded.tick != game_sess.tick:
+    return 13
+  var req: StudioAgentToolRequest = studio_mcp_tool_dispatch_mode_arg(studio_mode_author(), studio_mcp_world_scaffold(), studio_profile_game())
+  if req.status != studio_mcp_tool_status_ok():
+    return 20
+  return 0

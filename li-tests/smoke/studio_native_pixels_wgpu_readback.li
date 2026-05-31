@@ -1,0 +1,17 @@
+import studio
+import render
+
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if studio_native_pixel_source_honest(lig_native_pixel_source_wgpu_readback()) != 1:
+    return 1
+  if studio_native_pixel_source_honest(lig_native_pixel_source_paint_blit()) != 1:
+    return 2
+  if studio_native_pixel_source_honest(lig_native_pixel_source_none()) != 0:
+    return 3
+  if render_native_pixel_source_honest(lig_native_pixel_source_wgpu_draw_list()) != 1:
+    return 4
+  return studio_native_pixels_wgpu_readback_host_smoke()

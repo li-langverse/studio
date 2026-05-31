@@ -1,0 +1,41 @@
+import studio
+import sim.additive
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 12:
+    return 1
+  var cfg: StudioProjectConfig = studio_project_config_from_additive_toml_fixture()
+  if cfg.active_profile != studio_profile_sim_additive():
+    return 2
+  if cfg.determinism_tier != 2:
+    return 3
+  var want_mask: int = studio_export_format_mask_3mf() + studio_export_format_mask_gcode()
+  if cfg.export_cfg.format_mask != want_mask:
+    return 4
+  if cfg.export_cfg.require_sim_pass != 1:
+    return 5
+  if cfg.export_cfg.printer_profile_slot != studio_printer_profile_slot_bambu():
+    return 6
+  if sim_additive_require_sim_pass_ok(cfg.export_cfg.require_sim_pass) != 1:
+    return 7
+  if sim_additive_export_format_ok(am_export_format_3mf()) != 1:
+    return 8
+  if sim_additive_export_format_ok(am_export_format_gcode()) != 1:
+    return 9
+  var sim_out: SimSessionStub = sim_session_stub_default()
+  studio_apply_config_to_sim(cfg, sim_out)
+  if sim_out.studio_profile_id != studio_profile_sim_additive():
+    return 10
+  if sim_out.output_detail != output_detail_debug():
+    return 11
+  studio_toml_reset()
+  if studio_toml_parse_line("determinism_tier = 3") != 1:
+    return 12
+  var tier_cfg: StudioProjectConfig = studio_toml_parsed_config()
+  if tier_cfg.determinism_tier != 3:
+    return 13
+  return 0

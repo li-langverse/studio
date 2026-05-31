@@ -1,0 +1,65 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 11:
+    return 1
+  var run: StudioAgentRun = studio_agent_run_start(studio_agent_context_world())
+  if run.used_html_mock != 0:
+    return 2
+  if run.task_state != studio_agent_task_running():
+    return 3
+  if run.active_tool_id != studio_mcp_world_scaffold():
+    return 4
+  if run.step_total != studio_agent_real_pipeline_steps():
+    return 5
+  var after_patch: StudioAgentRun = studio_agent_run_next(run)
+  if after_patch.patch_applied != 1:
+    return 6
+  if after_patch.active_tool_id != studio_mcp_lic_check():
+    return 7
+  if after_patch.step_index != 1:
+    return 8
+  var after_check: StudioAgentRun = studio_agent_run_next(after_patch)
+  if after_check.check_step_done != 1:
+    return 9
+  if after_check.active_tool_id != studio_mcp_lic_build():
+    return 10
+  var done: StudioAgentRun = studio_agent_run_next(after_check)
+  if done.build_step_done != 1:
+    return 11
+  if done.task_state != studio_agent_task_done():
+    return 12
+  if studio_agent_run_complete_ok(done) != 1:
+    return 13
+  var request: StudioAgentToolRequest = studio_agent_tool_request_for_run(after_check)
+  if request.tool_id != studio_mcp_lic_build():
+    return 18
+  if studio_agent_tool_trace_visible_for(after_check.task_state, request.tool_id) != 1:
+    return 14
+  if studio_agent_progress_visible(after_check.task_state) != 1:
+    return 15
+  if after_check.agent_context_label != studio_agent_context_world():
+    return 17
+  var idle: StudioAgentRun = studio_agent_run_start(studio_agent_context_world())
+  idle.task_state = studio_agent_task_idle()
+  var idle_next: StudioAgentRun = studio_agent_run_next(idle)
+  if idle_next.patch_applied != 0:
+    return 19
+  var idle_request: StudioAgentToolRequest = studio_agent_tool_request_for_run(idle_next)
+  if idle_request.status != studio_mcp_tool_status_idle():
+    return 20
+  var blocked: StudioAgentRun = studio_agent_run_start(studio_agent_context_world())
+  blocked.task_state = studio_agent_task_blocked()
+  var blocked_next: StudioAgentRun = studio_agent_run_next(blocked)
+  if blocked_next.step_index != 0:
+    return 21
+  if blocked_next.active_tool_id != studio_mcp_world_scaffold():
+    return 22
+  var blocked_request: StudioAgentToolRequest = studio_agent_tool_request_for_run(blocked_next)
+  if blocked_request.status != studio_mcp_tool_status_pending():
+    return 23
+  return 0

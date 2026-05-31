@@ -1,0 +1,58 @@
+{
+  "report_date": "2026-05-24",
+  "generated_at": "2026-05-24T14:05:34.253909+00:00",
+  "tz": "Europe/Berlin",
+  "branch": "cursor/studio-ui-ux-plan-loop",
+  "head": "07ba4a2",
+  "plan_todos_total": 11,
+  "plan_todos_completed_yaml": 0,
+  "state_completed_count": 0,
+  "state_completed_ids": [],
+  "state_iterations": 0,
+  "ux_pass": false,
+  "ux_avg_score": null,
+  "ux_min_score": null,
+  "ux_dimensions": {},
+  "bench": {
+    "generated_at": "2026-05-24T13:14:00Z",
+    "load_ms": 0.04,
+    "viewport_fps_target": 60,
+    "panel_switch_ms_target": 100,
+    "particle_tiers": [
+      {
+        "id": "md_1k",
+        "particles": 1000,
+        "fps_target": 60,
+        "status": "fail",
+        "bench_exit": 2,
+        "stderr_tail": "usage: bench.py [-h] [--tier TIER] [--sample] [--ci] [--runs RUNS]\n                [--skip-verify] [--verify-results] [--out OUT] [--only ONLY]\n                [--package PACKAGE] [--changed]\nbench.py: error: unrecognized arguments: --filter md_lennard_jones\n"
+      },
+      {
+        "id": "md_10k",
+        "particles": 10000,
+        "fps_target": 60,
+        "status": "fail",
+        "bench_exit": 2,
+        "stderr_tail": "usage: bench.py [-h] [--tier TIER] [--sample] [--ci] [--runs RUNS]\n                [--skip-verify] [--verify-results] [--out OUT] [--only ONLY]\n                [--package PACKAGE] [--changed]\nbench.py: error: unrecognized arguments: --filter md_lennard_jones\n"
+      },
+      {
+        "id": "md_100k",
+        "particles": 100000,
+        "fps_target": 30,
+        "status": "fail",
+        "bench_exit": 2,
+        "stderr_tail": "usage: bench.py [-h] [--tier TIER] [--sample] [--ci] [--runs RUNS]\n                [--skip-verify] [--verify-results] [--out OUT] [--only ONLY]\n                [--package PACKAGE] [--changed]\nbench.py: error: unrecognized arguments: --filter md_lennard_jones\n"
+      }
+    ],
+    "memory_mib": {
+      "profile_exit": 0,
+      "lines": [
+        "tracemalloc peak (import): 1.07 MiB"
+      ]
+    },
+    "notes": []
+  },
+  "history": [],
+  "tracking_issue": "",
+  "runner_log": "data/studio-ui-ux-plan-loop/runner.log"
+}

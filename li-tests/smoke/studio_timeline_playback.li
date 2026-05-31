@@ -1,29 +1,47 @@
+import sim
 import studio
 
-def main() -> int
+def main() raises IO -> int
   requires true
   ensures result == 0
   decreases 0
 =
-  if li_std_studio_version() < 6:
+  if li_std_studio_version() < 13:
     return 1
-  studio_timeline_reset_mock()
-  if studio_timeline_playing() != 0:
+  var duration: int = studio_timeline_duration_ticks_default()
+  var cfg: StudioProjectConfig = studio_project_config_new(studio_profile_game())
+  var sess: SimSessionStub = sim_session_stub_default()
+  studio_apply_config_to_sim(cfg, sess)
+  if studio_timeline_reset_for_session(sess, duration) != 0:
     return 2
-  var pct0: float = studio_timeline_playhead_pct()
-  if studio_timeline_toggle_play() != 1:
+  if studio_timeline_playing() != 0:
     return 3
-  if studio_timeline_playing() != 1:
+  if studio_timeline_playhead_pct() != 0.0:
     return 4
-  if studio_timeline_tick_frame() != 1:
+  if sess.tick != 0:
     return 5
-  var pct1: float = studio_timeline_playhead_pct()
-  if pct1 <= pct0:
+  if studio_timeline_toggle_play() != 1:
     return 6
+  if studio_timeline_playing() != 1:
+    return 7
+  if studio_timeline_tick_sim_step(cfg, sess, 0.016, duration) != 1:
+    return 8
+  if sess.tick != 1:
+    return 9
+  if sim_session_replay_last_tick(sess) != 1:
+    return 10
+  var pct1: float = studio_timeline_playhead_pct()
+  var expect_pct: float = studio_timeline_playhead_pct_from_tick(1, duration)
+  if pct1 != expect_pct:
+    return 11
+  studio_timeline_scrub_to_tick(0, duration)
+  var pct_scrub: float = studio_timeline_playhead_pct()
+  if pct_scrub != 0.0:
+    return 13
   var layout: StudioShellLayout = layout_studio_shell_adaptive(1280.0, 720.0)
   var timeline: StudioTimelineCompose = studio_compose_timeline(layout)
   if timeline.play_btn_rect.w != studio_timeline_play_btn_size_px():
-    return 7
+    return 14
   if timeline.playhead_pct != studio_timeline_playhead_pct():
-    return 8
+    return 15
   return 0

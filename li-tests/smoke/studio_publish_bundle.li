@@ -1,0 +1,61 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 31:
+    return 1
+  var sci_cfg: StudioProjectConfig
+  sci_cfg.active_profile = studio_profile_sim_scientific()
+  sci_cfg.determinism_tier = 2
+  sci_cfg.export_cfg = studio_export_config_default()
+  var sci_chk: StudioWorldCheckpoint = studio_world_checkpoint_empty()
+  var sci: PublishBundleResult = studio_publish_bundle(sci_cfg, sci_chk, 42.0, 8, 1)
+  if sci.ok != 1:
+    return 2
+  if sci.magic_tag != studio_publish_bundle_magic_zip():
+    return 3
+  if sci.figure_count != 1:
+    return 4
+  if sci.data_count != 1:
+    return 5
+  if sci.entry_count != 3:
+    return 6
+  if sci.manifest_checksum <= 0.0:
+    return 7
+  if sci.world_sha256 <= 0.0:
+    return 8
+  var add_cfg: StudioProjectConfig = studio_project_config_from_additive_toml_fixture()
+  var add_sess: SimSessionStub = sim_session_stub_default()
+  studio_apply_config_to_sim(add_cfg, add_sess)
+  add_sess.tick = 4
+  var add_chk: StudioWorldCheckpoint = studio_world_checkpoint_capture(add_cfg.active_profile, add_sess)
+  var add: PublishBundleResult = studio_publish_bundle(add_cfg, add_chk, 17.0, 8, 1)
+  if add.ok != 1:
+    return 9
+  if add.figure_count != 1:
+    return 10
+  if add.data_count != 0:
+    return 11
+  if add.entry_count != 2:
+    return 12
+  var no_proof: PublishBundleResult = studio_publish_bundle(sci_cfg, sci_chk, 1.0, 8, 0)
+  if no_proof.ok != 0:
+    return 13
+  if studio_publish_bundle_three_click_flow(sci_cfg, sci_chk, 100.0, 8, 1) != 0:
+    return 14
+  if studio_publish_bundle_three_click_flow(sci_cfg, sci_chk, 50.0, 8, 0) == 0:
+    return 15
+  var mcp: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_publish_bundle(), studio_mcp_arg_publish_bundle_proof())
+  if mcp.status != studio_mcp_tool_status_ok():
+    return 16
+  if mcp.result_code != studio_publish_bundle_magic_zip():
+    return 17
+  var mcp_fail: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_publish_bundle(), studio_mcp_arg_lic_build_fail())
+  if mcp_fail.status != studio_mcp_tool_status_failed():
+    return 18
+  if mcp_fail.result_code != studio_mcp_tool_result_err_proof():
+    return 19
+  return 0

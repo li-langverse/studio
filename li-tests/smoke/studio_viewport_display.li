@@ -1,0 +1,56 @@
+import studio
+import ui
+
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 10:
+    return 1
+  if studio_mcp_tool_count() != 11:
+    return 2
+  if studio_mcp_tool_from_name("studio_set_viewport_background") != studio_mcp_set_viewport_background():
+    return 3
+  if studio_mcp_tool_from_name("studio_set_particle_display") != studio_mcp_set_particle_display():
+    return 4
+  if studio_mcp_tool_from_name("studio_set_biomol_style") != studio_mcp_set_biomol_style():
+    return 5
+  studio_viewport_display_reset_for_profile(studio_profile_sim_scientific())
+  var sci: StudioShellCompose = studio_compose_shell_profile(1280.0, 720.0, 0, 1, studio_profile_sim_scientific())
+  sci.scene_entity_count = 1
+  sci.viewport_empty.empty_visible = 0
+  studio_attach_viewport_shell(sci)
+  if sci.viewport_display.background != studio_viewport_bg_grid():
+    return 6
+  if sci.viewport_display.particle_tier_id != scene_md_tier_10k():
+    return 7
+  if sci.viewport_menu.menu_visible != 1:
+    return 8
+  var bg_req: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_set_viewport_background(), studio_viewport_bg_gradient())
+  if bg_req.status != studio_mcp_tool_status_ok():
+    return 9
+  if studio_viewport_display_read_bg() != studio_viewport_bg_gradient():
+    return 10
+  var tier_req: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_set_particle_display(), scene_md_tier_1k())
+  if tier_req.status != studio_mcp_tool_status_ok():
+    return 11
+  if studio_viewport_display_read_particle_tier() != scene_md_tier_1k():
+    return 12
+  var style_req: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_set_biomol_style(), studio_biomol_style_sticks())
+  if style_req.status != studio_mcp_tool_status_ok():
+    return 13
+  if studio_viewport_display_read_biomol_style() != studio_biomol_style_sticks():
+    return 14
+  studio_viewport_display_reset_for_profile(studio_profile_sim_drug_design())
+  if studio_viewport_display_read_bg() != studio_viewport_bg_gradient():
+    return 15
+  if studio_viewport_display_read_particle_tier() != scene_md_tier_1k():
+    return 16
+  var frame: PaintFrame = paint_frame_new()
+  studio_attach_viewport_shell(sci)
+  studio_paint_shell_chrome(frame, sci)
+  var exp_cmds: int = studio_shell_chrome_count_palette(1, 1, studio_agent_task_idle(), studio_palette_closed_flag(), studio_agent_context_none(), studio_viewport_error_none(), sci.viewport_display, sci.viewport_menu, sci.agent.invoke_input_visible, sci.agent.tool_trace_visible)
+  if frame.cmd_count != exp_cmds:
+    return 17
+  return 0

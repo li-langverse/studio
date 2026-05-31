@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-05-30T15:50:07.066345+00:00",
+  "platform": "Windows",
+  "summary": {
+    "total": 1,
+    "failing": 0,
+    "passing": 0,
+    "skipped": 1
+  },
+  "targets": [
+    {
+      "target_id": "world-studio-native",
+      "repo": "lic",
+      "surface": "gui",
+      "surface_class": "gui_app",
+      "mode": "native_gui",
+      "artifacts": [],
+      "axe_violations": [],
+      "pixel_diff": {
+        "max_ratio": 0.0,
+        "threshold": 0.04
+      },
+      "contrast_failures": [],
+      "baseline_status": "ok",
+      "tokens_deviation": [],
+      "broken_links": 0,
+      "status": "skip",
+      "skip_reason": "native capture exit 4: native-sdl-build: install SDL2 (libsdl2-dev or brew install sdl2)\n",
+      "native_pixels": false,
+      "capture_meta": {
+        "status": "fail",
+        "skip_reason": "SDL capture failed (missing sdl2/xvfb?)",
+        "native_pixels": false
+      }
+    }
+  ]
+}

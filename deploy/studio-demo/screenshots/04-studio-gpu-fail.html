@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1920, height=1080" />
+  <title>Li World Studio — GPU fail recovery (marketing mock)</title>
+  <link rel="stylesheet" href="studio-tokens.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      width: 1920px; height: 1080px; margin: 0;
+      background: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      font-family: var(--typography-ui);
+      overflow: hidden;
+    }
+    .mock-banner {
+      position: absolute; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--mock-banner-bg, #3d1f00);
+      color: #ffdf9e; font-size: 11px; letter-spacing: 0.04em;
+      text-align: center; padding: 4px 8px;
+      border-bottom: 1px solid var(--color-accent-amber);
+    }
+    .shell { position: absolute; inset: 24px 0 0 0; }
+    .dock {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: var(--spacing-dock-width-px);
+      background: var(--color-bg-elevated);
+      border-right: 1px solid var(--color-border);
+      display: flex; flex-direction: column; align-items: center;
+      padding: 12px 0; gap: 8px;
+    }
+    .dock button {
+      width: 36px; height: 36px; border: 1px solid var(--color-border);
+      border-radius: 6px; background: transparent; color: var(--color-text-muted);
+    }
+    .topbar {
+      position: absolute; left: var(--spacing-dock-width-px); right: 0; top: 0;
+      height: var(--spacing-topbar-height-px);
+      background: var(--color-bg-elevated);
+      border-bottom: 1px solid var(--color-border);
+      display: flex; align-items: center; gap: 16px; padding: 0 16px;
+    }
+    .profile-chip {
+      font-size: 12px; padding: 4px 10px; border-radius: 999px;
+      border: 1px solid var(--color-accent-violet); color: var(--color-accent-violet);
+    }
+    .viewport {
+      position: absolute;
+      left: var(--spacing-dock-width-px); top: var(--spacing-topbar-height-px);
+      right: var(--spacing-inspector-width-px); bottom: 220px;
+      background: radial-gradient(circle at 50% 42%, #1a2332, var(--color-bg-primary));
+      border-right: 1px solid var(--color-border);
+    }
+    .gpu-fail-strip {
+      position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+      display: flex; align-items: center; gap: 12px;
+      min-height: 32px; padding: 6px 12px;
+      background: rgba(218, 54, 51, 0.22);
+      border-bottom: 1px solid var(--color-agent-error);
+      font-size: 12px; color: var(--color-text-primary);
+    }
+    .gpu-fail-strip .message { flex: 1; }
+    .gpu-fail-strip button {
+      padding: 6px 14px; border-radius: 6px;
+      border: 1px solid var(--color-accent-cyan);
+      background: var(--color-bg-elevated);
+      color: var(--color-accent-cyan);
+      cursor: pointer; font-size: 12px;
+    }
+    .gpu-fail-strip button:focus-visible { outline: var(--focus-ring); }
+    .viewport-grid {
+      position: absolute; inset: 32px 0 0 0;
+      background-image:
+        linear-gradient(var(--color-viewport-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--color-viewport-grid) 1px, transparent 1px);
+      background-size: 48px 48px; opacity: 0.25;
+    }
+    .agent-strip {
+      position: absolute;
+      left: var(--spacing-dock-width-px); right: var(--spacing-inspector-width-px);
+      bottom: 180px; height: 40px;
+      display: flex; align-items: center; gap: 12px; padding: 0 16px;
+      background: rgba(22, 27, 34, 0.95);
+      border-top: 1px solid var(--color-border);
+      font-size: 12px; color: var(--color-agent-idle);
+    }
+    .timeline {
+      position: absolute;
+      left: var(--spacing-dock-width-px); right: var(--spacing-inspector-width-px); bottom: 0;
+      height: 180px; background: var(--color-bg-elevated);
+      border-top: 1px solid var(--color-border); padding: 12px 16px;
+    }
+    .inspector {
+      position: absolute; right: 0; top: var(--spacing-topbar-height-px);
+      width: var(--spacing-inspector-width-px); bottom: 0;
+      background: var(--color-bg-elevated);
+      border-left: 1px solid var(--color-border); padding: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="mock-banner" role="note">MARKETING MOCK — GPU fail strip; native path uses li-studio compose</div>
+  <div class="shell">
+    <nav class="dock" aria-label="Tools"><button type="button">◇</button></nav>
+    <header class="topbar">
+      <strong>Li World Studio</strong>
+      <span class="profile-chip">MD · Lennard-Jones</span>
+    </header>
+    <main class="viewport" aria-label="3D viewport">
+      <div class="gpu-fail-strip" role="alert">
+        <span class="message">GPU initialization failed — viewport paused. Check drivers or try software fallback.</span>
+        <button type="button">Retry GPU</button>
+      </div>
+      <div class="viewport-grid" aria-hidden="true"></div>
+    </main>
+    <aside class="agent-strip" aria-label="Agent copilot">
+      <span>Idle — viewport blocked until GPU retry succeeds</span>
+    </aside>
+    <section class="timeline" aria-label="Timeline"><strong>Timeline</strong></section>
+    <aside class="inspector" aria-label="Inspector"><h2>Inspector</h2></aside>
+  </div>
+</body>
+</html>

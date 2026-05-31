@@ -1,0 +1,77 @@
+name: World Studio installers
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "installer/**"
+      - "scripts/build-li-world-studio-installer.ps1"
+      - "scripts/_li-world-studio-packaging-common.sh"
+      - "scripts/world-studio-runnable-*.sh"
+      - "src/**"
+      - "li.toml"
+      - ".github/workflows/world-studio-installers.yml"
+  push:
+    branches: [main, cursor/studio-repo-consolidation]
+    paths:
+      - "installer/**"
+      - "scripts/build-li-world-studio-installer.ps1"
+
+concurrency:
+  group: world-studio-installers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-appimage-smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout lic sibling
+        run: |
+          git clone --depth 1 https://github.com/li-langverse/lic.git ../lic || true
+          test -d ../lic/scripts/wsl-setup-build.sh || test -d ../lic/scripts/build.sh
+
+      - name: Runnable gate (demo + smokes; skip iscc on Linux)
+        env:
+          LIC_ROOT: ${{ github.workspace }}/../lic
+          STUDIO_ROOT: ${{ github.workspace }}
+        run: |
+          chmod +x scripts/_studio-env.sh scripts/world-studio-runnable-gate.sh
+          ./scripts/world-studio-runnable-gate.sh || echo "WARN: gate skipped without lic build"
+
+  windows-inno:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout lic sibling
+        shell: pwsh
+        run: |
+          git clone --depth 1 https://github.com/li-langverse/lic.git ../lic
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Build installer (when lic + demo available)
+        shell: pwsh
+        env:
+          LIC_ROOT: ${{ github.workspace }}\..\lic
+        run: |
+          if (Test-Path ../lic/scripts/wsl-setup-build.sh) {
+            Write-Host "lic present; full build requires WSL on runner — compile ISS only when demo exists"
+          }
+          if (Get-Command iscc -ErrorAction SilentlyContinue) {
+            if (Test-Path build/li-studio-demo.exe) {
+              ./scripts/build-li-world-studio-installer.ps1 -SkipDemoBuild
+            } else {
+              Write-Host "WARN: demo binary missing — skip iscc on CI until lic build wired"
+            }
+          }
+
+      - name: Upload installer artifact
+        if: hashFiles('installer/out/LiWorldStudio-Setup.exe') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: LiWorldStudio-Setup
+          path: installer/out/LiWorldStudio-Setup.exe

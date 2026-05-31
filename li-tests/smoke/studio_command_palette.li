@@ -1,13 +1,15 @@
+import gui
 import studio
+import ui
 
 def main() -> int
   requires true
   ensures result == 0
   decreases 0
 =
-  if li_std_studio_version() < 6:
+  if li_std_studio_version() < 14:
     return 1
-  if li_std_ui_studio_composables_version() < 3:
+  if li_std_ui_studio_composables_version() < 6:
     return 2
   var shell_closed: StudioShellCompose = studio_compose_shell(1920.0, 1080.0, 0, 0, 0)
   if shell_closed.palette.is_open != studio_palette_closed_flag():
@@ -25,4 +27,21 @@ def main() -> int
     return 7
   if studio_paint_palette_cmds(studio_palette_closed_flag()) != 0:
     return 8
+  var key_shell: StudioShellCompose = studio_compose_shell(1920.0, 1080.0, 0, 0, 0)
+  var open_input: InputState = input_default()
+  open_input.key_cmd_k = 1
+  if studio_handle_studio_key(key_shell, open_input) != studio_key_action_palette_toggle():
+    return 9
+  if key_shell.palette.is_open != studio_palette_open_flag():
+    return 10
+  var exec_input: InputState = input_default()
+  exec_input.key_digit = 1
+  if studio_handle_studio_key(key_shell, exec_input) != studio_key_action_palette_exec():
+    return 11
+  if key_shell.palette.is_open != studio_palette_closed_flag():
+    return 12
+  if key_shell.palette.last_action_id != studio_palette_action_focus_inspector():
+    return 13
+  if key_shell.panel.active_region != studio_region_inspector():
+    return 14
   return 0

@@ -1,0 +1,43 @@
+import scene
+import sim
+import sim.viz
+import studio
+
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 25:
+    return 1
+  studio_viewport_display_reset_for_profile(studio_profile_sim_scientific())
+  var cfg: StudioProjectConfig = studio_project_config_new(studio_profile_sim_scientific())
+  var sess: SimSessionStub = sim_session_stub_default()
+  if studio_sim_scientific_step_hook(sess, 1.0) != sim_status_ok():
+    return 10
+  if sess.tick != 1:
+    return 11
+  var vp: Rect = rect_make(0.0, 0.0, 1280.0, 720.0)
+  var disp: StudioViewportDisplayCompose = studio_compose_viewport_display(vp, studio_profile_sim_scientific())
+  if disp.particle_tier_id != scene_md_tier_1k():
+    return 12
+  if disp.tier_particles != 1000:
+    return 13
+  var viz_tick0: int = studio_viz_tick_for_particle_tier(disp.particle_tier_id)
+  var pipe: VizPipelineState = studio_sim_scientific_viz_for_tick(viz_tick0)
+  if pipe.source_count < 1:
+    return 14
+  if studio_sim_scientific_viz_viewport_ok(pipe, disp) != 1:
+    return 15
+  if disp.particle_dots_visible != 1:
+    return 16
+  var fields: VizViewportFields = viz_pipeline_to_viewport_fields(pipe)
+  if fields.tier_label_visible != 1:
+    return 17
+  if studio_sim_scientific_step_hook(sess, 1.0) != sim_status_ok():
+    return 20
+  var pipe2: VizPipelineState = studio_sim_scientific_viz_for_tick(8)
+  var disp2: StudioViewportDisplayCompose = studio_compose_viewport_display(vp, studio_profile_sim_scientific())
+  if studio_sim_scientific_viz_viewport_ok(pipe2, disp2) != 1:
+    return 21
+  return 0

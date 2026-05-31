@@ -1,0 +1,31 @@
+import assets
+import studio
+import world
+
+def main() raises Alloc, IO -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 24:
+    return 1
+  if li_assets_version() < 1:
+    return 2
+  var path_mesh: str = assets_gltf_path_default()
+  var mesh: GltfIngestMesh = studio_gltf_ingest_mesh(path_mesh)
+  if assets_gltf_ingest_ok(mesh) != 1:
+    return 3
+  var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 0, 0)
+  var path_apply: str = assets_gltf_path_default()
+  if studio_shell_apply_gltf_ingest(shell, path_apply) != 1:
+    return 4
+  if shell.scene_entity_count < 1:
+    return 5
+  if shell.viewport_empty.empty_visible != 0:
+    return 6
+  var snap: WorldSnapshot = studio_world_scaffold_snapshot()
+  if snap.asset_ref_count != studio_game_asset_ref_count_stub():
+    return 7
+  if studio_gltf_ingest_default_into_shell(shell) != 1:
+    return 8
+  return 0

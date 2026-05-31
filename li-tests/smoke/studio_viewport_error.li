@@ -1,54 +1,87 @@
 import studio
+import render
+import lig
+import gui
 
-def main() -> int
+def main() -> int raises IO
   requires true
   ensures result == 0
   decreases 0
 =
-  if li_std_studio_version() < 6:
+  if li_std_studio_version() < 18:
     return 1
   if studio_viewport_error_kind() != studio_viewport_error_none():
     return 2
+  var fail: RenderViewportSmoke
+  fail.wgpu.backend_id = lig_backend_webgpu()
+  fail.wgpu.status = lig_wgpu_smoke_status_fail()
+  fail.wgpu.adapter_ok = 0
+  fail.wgpu.surface_ok = 0
+  fail.viewport_w = 640.0
+  fail.viewport_h = 360.0
+  fail.fps_counter_ready = 0
+  fail.native_pixels = 0
+  if studio_viewport_error_kind_for_render_smoke(fail) != studio_err_gpu():
+    return 3
+  var layout_ok: StudioShellLayout = layout_studio_shell_adaptive(640.0, 360.0)
+  var ok_vp: ViewportRegion = gui_viewport_region_from_layout(layout_ok)
+  var ok_smoke: RenderViewportSmoke = render_wgpu_viewport_smoke_pure(ok_vp)
+  if studio_viewport_error_kind_for_render_smoke(ok_smoke) != studio_viewport_error_none():
+    return 4
   var layout0: StudioShellLayout = layout_studio_shell_adaptive(1280.0, 720.0)
   if studio_viewport_error_set_mock(studio_err_gpu()) != studio_err_gpu():
-    return 3
+    return 5
   if studio_viewport_error_kind() != studio_err_gpu():
-    return 4
+    return 6
   var layout_ov: StudioShellLayout = layout0
   var overlay_vis: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout_ov, studio_err_gpu())
-  var vis_flag: int = overlay_vis.visible
-  if vis_flag != 1:
-    return 5
-  var layout_kind: StudioShellLayout = layout0
-  var overlay_kind: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout_kind, studio_err_gpu())
-  var err_kind0: int = overlay_kind.error_kind
-  if err_kind0 != studio_err_gpu():
-    return 6
-  if studio_paint_viewport_error_cmds() != 2:
+  if overlay_vis.visible != 1:
     return 7
+  var overlay_kind: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout0, studio_err_gpu())
+  if overlay_kind.error_kind != studio_err_gpu():
+    return 8
+  if studio_paint_viewport_error_cmds() != 2:
+    return 9
   var shell0: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 0, 1)
   if shell0.viewport_error.error_kind != studio_err_gpu():
-    return 8
-  if shell0.viewport_error.visible != 1:
-    return 9
-  var layout_paint: StudioShellLayout = layout0
-  var overlay_paint: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout_paint, studio_err_gpu())
-  var frame: PaintFrame = paint_frame_new()
-  studio_paint_viewport_error(frame, overlay_paint)
-  var frame_shell: PaintFrame = paint_frame_new()
-  var shell_paint: StudioShellCompose = shell0
-  studio_paint_shell_chrome(frame_shell, shell_paint)
-  if studio_viewport_error_set_mock(studio_err_missing_asset()) != studio_err_missing_asset():
     return 10
-  if studio_viewport_error_kind() != studio_err_missing_asset():
+  if shell0.viewport_error.visible != 1:
     return 11
-  if studio_viewport_error_retry() != studio_viewport_error_none():
+  var frame: PaintFrame = paint_frame_new()
+  var overlay_paint: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout0, studio_err_gpu())
+  studio_paint_viewport_error(frame, overlay_paint)
+  var shell_ptr: StudioShellCompose = shell0
+  var inp: InputState = input_default()
+  inp.pointer_down = 1
+  inp.pointer_x = shell_ptr.viewport_error.retry_rect.x + 8.0
+  inp.pointer_y = shell_ptr.viewport_error.retry_rect.y + 8.0
+  if studio_shell_handle_viewport_error_pointer(shell_ptr, inp) != studio_viewport_error_action_retry_clicked():
     return 12
-  if studio_viewport_error_kind() != studio_viewport_error_none():
+  if shell_ptr.viewport_error.visible != 0:
     return 13
-  var layout_clr: StudioShellLayout = layout0
-  var cleared: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout_clr, studio_viewport_error_kind())
-  var cleared_vis: int = cleared.visible
-  if cleared_vis != 0:
+  if studio_viewport_error_kind() != studio_viewport_error_none():
     return 14
+  var probe_gpu: RenderViewportWgpuProbe = render_viewport_wgpu_probe_pure(0, 1, 1)
+  if studio_viewport_error_kind_from_wgpu_probe(probe_gpu) != studio_err_gpu():
+    return 15
+  var probe_surface: RenderViewportWgpuProbe = render_viewport_wgpu_probe_pure(1, 0, 1)
+  if studio_viewport_error_kind_from_wgpu_probe(probe_surface) != studio_err_gpu():
+    return 16
+  var probe_asset: RenderViewportWgpuProbe = render_viewport_wgpu_probe_pure(1, 1, 0)
+  if studio_viewport_error_kind_from_wgpu_probe(probe_asset) != studio_err_missing_asset():
+    return 17
+  var probe_ok: RenderViewportWgpuProbe = render_viewport_wgpu_probe_pure(1, 1, 1)
+  if studio_viewport_error_kind_from_wgpu_probe(probe_ok) != studio_viewport_error_none():
+    return 18
+  if studio_viewport_error_wgpu_probe_ok(probe_ok) != 1:
+    return 19
+  if studio_viewport_error_wgpu_probe_ok(probe_gpu) != 0:
+    return 20
+  studio_viewport_error_retry()
+  var layout_sync: StudioShellLayout = layout0
+  var sync_kind: int = studio_viewport_error_retry_wgpu(layout_sync, studio_profile_sim_scientific())
+  if sync_kind < studio_viewport_error_none():
+    return 21
+  if sync_kind > studio_err_missing_asset():
+    return 22
   return 0

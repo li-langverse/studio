@@ -6,7 +6,7 @@ Parent prompt: [issue-feature-planner.md](../issue-feature-planner.md)
 
 - **Issues:** language, compiler, `packages/`, `li-tests/`, `docs/superpowers/plans/`
 - **Plan home:** `docs/superpowers/plans/YYYY-MM-DD-*.md` + master plan PH tracker
-- **Provability:** always list **G-*** ids in plan; update [provability-gaps.md](https://github.com/li-langverse/lic/blob/main/docs/verification/provability-gaps.md) in implementation PR
+- **Provability:** always list **G-*** ids in plan; update [provability-gaps.md](https://github.com/li-langverse/studio/blob/main/docs/verification/provability-gaps.md) in implementation PR
 
 ## Feature examples
 

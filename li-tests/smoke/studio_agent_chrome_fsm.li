@@ -1,0 +1,88 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 16:
+    return 1
+  var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 0)
+  var run: StudioAgentRun = studio_agent_run_idle()
+  studio_agent_sync_chrome_from_run(shell, run)
+  if shell.agent.task_state != studio_agent_task_idle():
+    return 2
+  if shell.agent.invoke_input_visible != 1:
+    return 3
+  run = studio_agent_run_start(studio_agent_context_world())
+  studio_agent_sync_chrome_from_run(shell, run)
+  if shell.agent.task_state != studio_agent_task_running():
+    return 4
+  if shell.agent.tool_trace_visible != 1:
+    return 5
+  if shell.agent.cancel_visible != 1:
+    return 6
+  var cancel_input: InputState = input_default()
+  cancel_input.pointer_down = 1
+  cancel_input.pointer_x = shell.agent.cancel_rect.x + 4.0
+  cancel_input.pointer_y = shell.agent.cancel_rect.y + 4.0
+  if studio_shell_handle_agent_pointer(shell, run, cancel_input) != studio_agent_action_cancel():
+    return 7
+  if run.task_state != studio_agent_task_idle():
+    return 8
+  if shell.agent.task_state != studio_agent_task_idle():
+    return 9
+  run = studio_agent_run_start(studio_agent_context_world())
+  run = studio_agent_run_fail(run)
+  studio_agent_sync_chrome_from_run(shell, run)
+  if shell.agent.error_visible != 1:
+    return 10
+  if shell.agent.retry_visible != 1:
+    return 11
+  var retry_input: InputState = input_default()
+  retry_input.pointer_down = 1
+  retry_input.pointer_x = shell.agent.retry_hint_rect.x + 4.0
+  retry_input.pointer_y = shell.agent.retry_hint_rect.y + 4.0
+  if studio_shell_handle_agent_pointer(shell, run, retry_input) != studio_agent_action_retry():
+    return 12
+  if run.task_state != studio_agent_task_running():
+    return 13
+  var tick0: int = studio_shell_agent_run_tick(shell, run)
+  if tick0 != 1:
+    return 14
+  if run.step_index != 1:
+    return 15
+  if run.patch_applied != 1:
+    return 16
+  var tick1: int = studio_shell_agent_run_tick(shell, run)
+  if tick1 != 1:
+    return 17
+  var tick2: int = studio_shell_agent_run_tick(shell, run)
+  if tick2 != 1:
+    return 18
+  if run.task_state != studio_agent_task_done():
+    return 19
+  if studio_agent_run_complete_ok(run) != 1:
+    return 20
+  if studio_agent_last_action_reversible_for(run) != 1:
+    return 21
+  run = studio_agent_run_undo(run)
+  if run.patch_applied != 0:
+    return 22
+  studio_agent_sync_chrome_from_run(shell, run)
+  if shell.agent.task_state != studio_agent_task_idle():
+    return 23
+  var send_input: InputState = input_default()
+  send_input.pointer_down = 1
+  send_input.pointer_x = shell.agent.send_rect.x + 4.0
+  send_input.pointer_y = shell.agent.send_rect.y + 4.0
+  if studio_shell_handle_agent_pointer(shell, run, send_input) != studio_agent_action_send():
+    return 24
+  if run.task_state != studio_agent_task_running():
+    return 25
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame, shell)
+  if frame.cmd_count < 1:
+    return 26
+  return 0

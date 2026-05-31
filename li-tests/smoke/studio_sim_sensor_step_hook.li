@@ -1,0 +1,29 @@
+import sim
+import sim.sensors
+import studio
+
+# PH-SIM SIM-5 — studio_sim_sensor_step_hook for automotive + robotics profiles.
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  var auto_cfg: StudioProjectConfig = studio_project_config_new(studio_profile_sim_automotive())
+  var auto_sess: SimSessionStub = sim_session_stub_default()
+  if studio_sim_step_hook(auto_cfg, auto_sess, 0.02) != sim_status_ok():
+    return 1
+  var bus_sz: int = sensor_bus_size_default()
+  if auto_sess.sensor_rays_emitted != bus_sz:
+    return 2
+  if auto_sess.sim_contract_id != sim_contract_sim_automotive():
+    return 3
+  var robo_cfg: StudioProjectConfig = studio_project_config_new(studio_profile_sim_robotics())
+  var robo_sess: SimSessionStub = sim_session_stub_default()
+  if studio_sim_step_hook(robo_cfg, robo_sess, 0.01) != sim_status_ok():
+    return 4
+  if robo_sess.sensor_rays_emitted != bus_sz:
+    return 5
+  if robo_sess.sim_contract_id != sim_contract_sim_robotics():
+    return 6
+  return 0

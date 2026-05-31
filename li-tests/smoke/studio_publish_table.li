@@ -1,0 +1,39 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 30:
+    return 1
+  var pipe: VizPipelineState = studio_sim_scientific_viz_for_tick(8)
+  if pipe.source_count < 1:
+    return 2
+  var hdf5: PublishTableResult = studio_publish_table(studio_publish_table_format_hdf5(), pipe, 42.0, 1)
+  if hdf5.ok != 1:
+    return 3
+  if hdf5.magic_tag != studio_publish_table_magic_hdf5():
+    return 4
+  if hdf5.col_count != studio_publish_table_schema_columns():
+    return 5
+  if hdf5.row_count <= 0:
+    return 6
+  var csv: PublishTableResult = studio_publish_table(studio_publish_table_format_csv(), pipe, 17.0, 1)
+  if csv.ok != 1:
+    return 7
+  if csv.magic_tag != studio_publish_table_magic_csv():
+    return 8
+  var no_proof: PublishTableResult = studio_publish_table(studio_publish_table_format_hdf5(), pipe, 1.0, 0)
+  if no_proof.ok != 0:
+    return 9
+  var from_tick: PublishTableResult = studio_publish_table_from_viz_tick(8, studio_publish_table_format_csv(), 9.0, 1)
+  if from_tick.ok != 1:
+    return 10
+  if from_tick.source_count != pipe.source_count:
+    return 11
+  if studio_publish_table_three_click_flow(studio_publish_table_format_hdf5(), 8, 100.0, 1) != 0:
+    return 12
+  if studio_publish_table_three_click_flow(studio_publish_table_format_csv(), 8, 50.0, 0) == 0:
+    return 13
+  return 0

@@ -12,7 +12,7 @@ You turn **new feature issues** into vision-aligned plans. You **do not** implem
 
 1. [vision-and-roadmap.md](https://github.com/li-langverse/roadmap/blob/main/docs/ecosystem/vision-and-roadmap.md)
 2. [engineering-standards.md](https://github.com/li-langverse/roadmap/blob/main/docs/ecosystem/engineering-standards.md)
-3. [lic master plan](https://github.com/li-langverse/lic/blob/main/docs/superpowers/plans/2026-05-14-li-master-plan.md) — PH tracker
+3. [lic master plan](https://github.com/li-langverse/studio/blob/main/docs/superpowers/plans/2026-05-14-li-master-plan.md) — PH tracker
 4. `AGENTS.md` in the target repo
 
 ---

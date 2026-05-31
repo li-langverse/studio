@@ -1,0 +1,212 @@
+{
+  "completed_ids": [
+    "studio-ux-00-design-system",
+    "studio-ux-01-ui-composables",
+    "studio-ux-02-gui-viewport-stub",
+    "studio-ux-03-render-wgpu-smoke",
+    "studio-ux-04-particle-display",
+    "studio-ux-05-studio-compose",
+    "studio-ux-06-agent-chrome",
+    "studio-ux-07-capture-harness",
+    "studio-ux-08-bench-registry",
+    "studio-ux-09-memory-budget",
+    "studio-ux-10-native-capture",
+    "studio-ux-11-panel-switch-gate",
+    "studio-ux-12-world-studio-demo-linux-audit",
+    "studio-ux-13-proactive-sweep",
+    "studio-ux-14-native-sdl-ci",
+    "studio-ux-15-wgpu-readback",
+    "studio-ux-16-palette-search-latency",
+    "studio-ux-17-gpu-fail-recovery",
+    "studio-ux-18-proactive-wave3",
+    "studio-ux-19-wgpu-swapchain-readback",
+    "studio-ux-20-proactive-sweep-20260530",
+    "studio-ux-22-palette-native-latency",
+    "studio-ux-23-agent-chrome-native",
+    "studio-ux-21-wgpu-swapchain-gpu-runner",
+    "studio-ux-24-gpu-runner-deps"
+  ],
+  "iterations": 22,
+  "history": [
+    {
+      "at": "2026-05-24T14:53:41+00:00",
+      "todo_id": "studio-ux-01-ui-composables",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "recovered after persist fix; work on 6218d35"
+    },
+    {
+      "at": "2026-05-24T18:23:10+00:00",
+      "todo_id": "studio-ux-02-gui-viewport-stub",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "li-gui viewport + panel switch hooks; gates/capture/bench verified"
+    },
+    {
+      "at": "2026-05-24T19:36:50+00:00",
+      "todo_id": "studio-ux-03-render-wgpu-smoke",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "li-gpu wgpu smoke + li-render FPS counter bench hooks"
+    },
+    {
+      "at": "2026-05-24T21:42:00+00:00",
+      "todo_id": "studio-ux-03-render-wgpu-smoke",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "re-verified gates/capture; issue #181 comment"
+    },
+    {
+      "at": "2026-05-24T23:05:00+00:00",
+      "todo_id": "studio-ux-04-particle-display",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "li-scene MD tiers + li-render scene path; issue #181 comment"
+    },
+    {
+      "at": "2026-05-25T00:42:54+00:00",
+      "todo_id": "studio-ux-04-particle-display",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "re-verified gates/capture/bench; issue #181 comment 4530713964"
+    },
+    {
+      "at": "2026-05-25T02:14:50+00:00",
+      "todo_id": "studio-ux-06-agent-chrome",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "StudioAgentChromeCompose task states + cancel + error strip; issue #181"
+    },
+    {
+      "at": "2026-05-29T08:42:00+00:00",
+      "todo_id": "studio-ux-11-panel-switch-gate",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "panel_switch bench worst 95ms; gui_panel_switch_to region fix; gates_pass true"
+    },
+    {
+      "at": "2026-05-30T01:04:00+00:00",
+      "todo_id": "studio-ux-12-world-studio-demo-linux-audit",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "Linux non-mock world-studio-demo harness; agentic_ai SOTA refs; capture dry exit 0"
+    },
+    {
+      "at": "2026-05-30T04:33:00+00:00",
+      "todo_id": "studio-ux-13-proactive-sweep",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "Proactive sweep: capture-deps probe, wave-2 todos, issue #182 comment 4581660167; native_pixels=false (SDL gap)"
+    },
+    {
+      "at": "2026-05-30T08:05:00+00:00",
+      "todo_id": "studio-ux-14-native-sdl-ci",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "SDL software renderer readback; ci-studio-ui-ux-native.sh + studio-ui-ux-native.yml; native_pixels=true; issue #182"
+    },
+    {
+      "at": "2026-05-30T08:11:00+00:00",
+      "todo_id": "studio-ux-15-wgpu-readback",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "wgpu readback bench hooks; viewport+particles status=native; honest_simulate=false on PH gates"
+    },
+    {
+      "at": "2026-05-30T08:15:00+00:00",
+      "todo_id": "studio-ux-16-palette-search-latency",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "palette fuzzy filter + palette_latency bench hook; UX-04 score bump"
+    },
+    {
+      "at": "2026-05-30T12:08:00+00:00",
+      "todo_id": "studio-ux-17-gpu-fail-recovery",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "GPU fail strip + retry overlay; gpu_fail_retry_ms gate; UX-08 bump; issue #182"
+    },
+    {
+      "at": "2026-05-30T12:50:00+00:00",
+      "todo_id": "studio-ux-18-proactive-wave3",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "keyboard_journey bench + harness audit; wgpu CI matrix leg; issue #182"
+    },
+    {
+      "at": "2026-05-30T13:24:00+00:00",
+      "todo_id": "studio-ux-19-wgpu-swapchain-readback",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "swapchain blocked_runner hooks + CI job; capture issue #182 comment 4582947162; gates_pass true"
+    },
+    {
+      "at": "2026-05-30T14:35:00+00:00",
+      "todo_id": "studio-ux-20-proactive-sweep-20260530",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "Briefing snapshot refresh; wave-4 todos studio-ux-21..24; capture-deps zero gaps; issue #182"
+    },
+    {
+      "at": "2026-05-30T15:20:00+00:00",
+      "todo_id": "studio-ux-22-palette-native-latency",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "Native palette bench 14ms/9.5ms; palette_latency status=native; issue #182 comment 4583225944"
+    },
+    {
+      "at": "2026-05-30T21:52:00+00:00",
+      "todo_id": "studio-ux-23-agent-chrome-native",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "Agent stream tick/cancel native (12ms/8ms); agent_chrome status=native; issue #182 comment 4584960809"
+    },
+    {
+      "at": "2026-05-31T01:56:00+00:00",
+      "todo_id": "studio-ux-21-wgpu-swapchain-gpu-runner",
+      "agent_exit": 0,
+      "capture_exit": 0,
+      "gates_ok": true,
+      "ux_pass": true,
+      "note": "lig swapchain readback + GPU runner CI job; capture issue #182 comment 4585419521; proactive briefing refresh"
+    }
+  ]
+}

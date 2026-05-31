@@ -1,3 +1,4 @@
 # World Studio project fixture (PH-SIM profile scaffold — not full li-sim stepping).
 [engine]
 profile = "game"
+determinism_tier = 1

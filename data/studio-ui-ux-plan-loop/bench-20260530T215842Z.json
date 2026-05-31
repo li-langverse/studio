@@ -1,0 +1,266 @@
+{
+  "generated_at": "2026-05-30T21:58:43Z",
+  "registry_path": "benchmarks\\competitive\\studio-ui.toml",
+  "registry_schema": "li_studio_ui_bench_v1",
+  "registry_version": 1,
+  "load_ms": 0.29,
+  "viewport_fps_target": 60,
+  "panel_switch_ms_target": 100,
+  "studio_load_ms_target": 2000,
+  "viewport_fps": {
+    "fps_target": 60,
+    "fps_estimated": 60.0,
+    "meets_target": true,
+    "native_pixels": true,
+    "wgpu_smoke_status": "readback_pass",
+    "wgpu_surface_ok": true,
+    "fps_counter_hook": "li-render",
+    "bench_simulate_fn": "render_bench_fps_counter_simulate",
+    "bench_native_fn": "render_bench_fps_counter_native",
+    "draw_path": "wgpu_readback",
+    "hook_version": 2,
+    "status": "native"
+  },
+  "panel_switch_ms": {
+    "budget_ms": 100.0,
+    "worst_elapsed_ms": 95.0,
+    "median_elapsed_ms": 88.0,
+    "transition_count": 3,
+    "all_within_budget": true,
+    "meets_target": true,
+    "native_pixels": false,
+    "status": "simulate",
+    "bench_simulate_fn": "gui_panel_switch_budget_ms"
+  },
+  "particle_tiers": [
+    {
+      "id": "md_1k",
+      "tier_id": 0,
+      "particles": 1000,
+      "fps_target": 60,
+      "fps_estimated": 60.0,
+      "meets_target": true,
+      "status": "native",
+      "native_pixels": true,
+      "draw_path": "wgpu_readback",
+      "kernel": "md_lennard_jones",
+      "hook_version": 2,
+      "bench_simulate_fn": "scene_bench_particle_tier_simulate",
+      "bench_native_fn": "scene_bench_particle_tier_native"
+    },
+    {
+      "id": "md_10k",
+      "tier_id": 1,
+      "particles": 10000,
+      "fps_target": 60,
+      "fps_estimated": 60.0,
+      "meets_target": true,
+      "status": "native",
+      "native_pixels": true,
+      "draw_path": "wgpu_readback",
+      "kernel": "md_lennard_jones",
+      "hook_version": 2,
+      "bench_simulate_fn": "scene_bench_particle_tier_simulate",
+      "bench_native_fn": "scene_bench_particle_tier_native"
+    },
+    {
+      "id": "md_100k",
+      "tier_id": 2,
+      "particles": 100000,
+      "fps_target": 30,
+      "fps_estimated": 30.0,
+      "meets_target": true,
+      "status": "native",
+      "native_pixels": true,
+      "draw_path": "wgpu_readback",
+      "kernel": "md_lennard_jones",
+      "hook_version": 2,
+      "bench_simulate_fn": "scene_bench_particle_tier_simulate",
+      "bench_native_fn": "scene_bench_particle_tier_native"
+    }
+  ],
+  "memory_mib": {
+    "profile_exit": 1,
+    "lines": [
+      "tracemalloc peak (import): 0.56 MiB",
+      "==> budget warn_peak_mib=512 observed=0.56 meets=True",
+      "STUDIO_MEMORY_JSON={\"schema\":\"li_studio_memory_profile_v1\",\"generated_at\":\"2026-05-30T21:58:43Z\",\"memory_id\":\"animate_md_import\",\"warn_peak_mib\":512.0,\"peak_import_mib\":0.56,\"peak_rss_mib\":null,\"peak_observed_mib\":0.56,\"meets_budget\":true,\"rss_status\":\"skip\",\"registry_path\":\"benchmarks\\\\competitive\\\\studio-ui.toml\",\"notes\":[\"import peak = tracemalloc after loading animate_md\",\"rss peak = --skip-export --max-frames 4 when /usr/bin/time available\",\"full GIF export can exceed budget; Studio timeline uses streamed frames\"]}"
+    ],
+    "profile": {
+      "schema": "li_studio_memory_profile_v1",
+      "generated_at": "2026-05-30T21:58:43Z",
+      "memory_id": "animate_md_import",
+      "warn_peak_mib": 512.0,
+      "peak_import_mib": 0.56,
+      "peak_rss_mib": null,
+      "peak_observed_mib": 0.56,
+      "meets_budget": true,
+      "rss_status": "skip",
+      "registry_path": "benchmarks\\competitive\\studio-ui.toml",
+      "notes": [
+        "import peak = tracemalloc after loading animate_md",
+        "rss peak = --skip-export --max-frames 4 when /usr/bin/time available",
+        "full GIF export can exceed budget; Studio timeline uses streamed frames"
+      ]
+    },
+    "warn_peak_mib": 512.0,
+    "peak_observed_mib": 0.56,
+    "meets_budget": true
+  },
+  "gates": {
+    "viewport_fps": {
+      "target": 60,
+      "value": 60.0,
+      "unit": "fps",
+      "meets_target": true,
+      "honest_simulate": false
+    },
+    "panel_switch_ms": {
+      "target": 100,
+      "value": 95.0,
+      "unit": "ms",
+      "meets_target": true,
+      "honest_simulate": true
+    },
+    "palette_open_ms": {
+      "target": 50,
+      "value": null,
+      "unit": "ms",
+      "meets_target": false,
+      "honest_simulate": false
+    },
+    "palette_filter_ms": {
+      "target": 30,
+      "value": null,
+      "unit": "ms",
+      "meets_target": false,
+      "honest_simulate": false
+    },
+    "gpu_fail_retry_ms": {
+      "target": 100,
+      "value": null,
+      "unit": "ms",
+      "meets_target": false,
+      "honest_simulate": false,
+      "strip_visible": null,
+      "retry_visible": null
+    },
+    "keyboard_tab_ms": {
+      "target": 16,
+      "value": null,
+      "unit": "ms",
+      "meets_target": false,
+      "honest_simulate": false
+    },
+    "keyboard_shortcut_ms": {
+      "target": 16,
+      "value": null,
+      "unit": "ms",
+      "meets_target": false,
+      "honest_simulate": false
+    },
+    "agent_tick_ms": {
+      "target": 16,
+      "value": null,
+      "unit": "ms",
+      "meets_target": false,
+      "honest_simulate": false,
+      "steps_completed": null,
+      "progress_visible": null
+    },
+    "agent_cancel_ms": {
+      "target": 16,
+      "value": null,
+      "unit": "ms",
+      "meets_target": false,
+      "honest_simulate": false,
+      "cancel_works": null
+    },
+    "studio_load_ms": {
+      "target": 2000,
+      "value": 0.29,
+      "unit": "ms",
+      "meets_target": true,
+      "honest_simulate": true
+    },
+    "md_1k": {
+      "target": 60,
+      "value": 60.0,
+      "unit": "fps",
+      "particles": 1000,
+      "meets_target": true,
+      "honest_simulate": false
+    },
+    "md_10k": {
+      "target": 60,
+      "value": 60.0,
+      "unit": "fps",
+      "particles": 10000,
+      "meets_target": true,
+      "honest_simulate": false
+    },
+    "md_100k": {
+      "target": 30,
+      "value": 30.0,
+      "unit": "fps",
+      "particles": 100000,
+      "meets_target": true,
+      "honest_simulate": false
+    },
+    "animate_md_import": {
+      "target": 512.0,
+      "value": 0.56,
+      "unit": "mib",
+      "meets_target": true,
+      "honest_simulate": true,
+      "peak_import_mib": 0.56,
+      "peak_rss_mib": null
+    }
+  },
+  "hooks": {
+    "viewport_fps": {
+      "package": "li-render",
+      "path": "packages/li-render/bench/viewport_fps.toml",
+      "present": true
+    },
+    "wgpu_smoke": {
+      "package": "lig",
+      "path": "packages/lig/bench/wgpu_smoke.toml",
+      "present": false
+    },
+    "panel_switch": {
+      "package": "li-gui",
+      "path": "packages/li-gui/bench/panel_switch.toml",
+      "present": true
+    },
+    "studio_compose": {
+      "package": "li-studio",
+      "path": "bench/studio_compose.toml",
+      "present": true
+    },
+    "studio_vertical_present": {
+      "package": "li-studio",
+      "path": "bench/studio_vertical_present.toml",
+      "present": false
+    },
+    "particle_tiers": {
+      "package": "li-scene",
+      "path": "packages/li-scene/bench/particle_tiers.toml",
+      "present": true
+    }
+  },
+  "notes": [
+    "present:li-ui",
+    "present:li-gui",
+    "present:li-render",
+    "present:li-scene",
+    "present:li-studio",
+    "skip_wgpu_swapchain:hook_missing",
+    "skip_palette_latency:hook_missing",
+    "skip_gpu_fail_recovery:hook_missing",
+    "skip_keyboard_journey:hook_missing",
+    "skip_agent_chrome:hook_missing",
+    "particle_tiers:li-scene_hook_native"
+  ],
+  "gates_pass": true
+}

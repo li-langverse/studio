@@ -1,0 +1,119 @@
+import sim
+import sim.sensors
+import scene
+import studio
+
+# PH-SIM SIM-1 — studio_sim_step_hook roundtrip for all 7 World Studio runtime profiles.
+
+def studio_sim_step_profile_ok(profile_id: int, expect_contract: int, dt: float, expect_tick: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  requires expect_contract >= 0
+  requires dt > 0.0
+  requires expect_tick >= 1
+  ensures result >= 0
+  decreases profile_id
+=
+  var cfg: StudioProjectConfig = studio_project_config_new(profile_id)
+  var sess: SimSessionStub = sim_session_stub_default()
+  if studio_sim_step_hook(cfg, sess, dt) != sim_status_ok():
+    return 1
+  if sess.studio_profile_id != profile_id:
+    return 2
+  if sess.sim_contract_id != expect_contract:
+    return 3
+  if sess.tick != expect_tick:
+    return 4
+  if sess.last_dt != dt:
+    return 5
+  if sess.output_detail != sim_output_detail_for_studio_profile(profile_id):
+    return 6
+  if sim_session_replay_last_tick(sess) != expect_tick:
+    return 7
+  return 0
+
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  var game: int = studio_sim_step_profile_ok(studio_profile_game(), sim_contract_game(), 0.016, 1)
+  if game != 0:
+    return 10 + game
+  var game_sess: SimSessionStub = sim_session_stub_default()
+  var game_cfg: StudioProjectConfig = studio_project_config_new(studio_profile_game())
+  studio_sim_step_hook(game_cfg, game_sess, 0.016)
+  if game_sess.game_pz >= 0.0:
+    return 18
+  if game_sess.game_physics_steps < 1:
+    return 19
+  var sci_cfg: StudioProjectConfig = studio_project_config_new(studio_profile_sim_scientific())
+  var sci_sess: SimSessionStub = sim_session_stub_default()
+  studio_viewport_display_reset_for_profile(studio_profile_sim_scientific())
+  if studio_sim_step_hook(sci_cfg, sci_sess, 1.0) != sim_status_ok():
+    return 20
+  if sci_sess.tick != 1:
+    return 21
+  if sci_sess.sim_contract_id != sim_contract_sim_scientific():
+    return 22
+  if studio_viewport_display_read_particle_tier() != scene_md_tier_1k():
+    return 23
+  if studio_viewport_display_read_particle_draw_points() != 1000:
+    return 24
+  if studio_md_particle_tier_select_ok(scene_md_tier_10k()) != 1:
+    return 25
+  var auto_cfg: StudioProjectConfig = studio_project_config_new(studio_profile_sim_automotive())
+  var auto_sess: SimSessionStub = sim_session_stub_default()
+  if studio_sim_step_hook(auto_cfg, auto_sess, 0.02) != sim_status_ok():
+    return 30
+  if auto_sess.tick != 1:
+    return 31
+  var auto_bus: int = sensor_bus_size_default()
+  if auto_sess.sensor_bus_size != auto_bus:
+    return 32
+  if auto_sess.sensor_rays_emitted != auto_bus:
+    return 33
+  if sensor_raycast_id_valid(auto_sess.sensor_last_raycast_id) != 1:
+    return 34
+  var auto_hits: SensorHitSnapshot = sensor_hit_from_session(auto_sess)
+  if auto_hits.hit0 > sensor_raycast_max_range_m():
+    return 35
+  var robo_cfg: StudioProjectConfig = studio_project_config_new(studio_profile_sim_robotics())
+  var robo_sess: SimSessionStub = sim_session_stub_default()
+  if studio_sim_step_hook(robo_cfg, robo_sess, 0.01) != sim_status_ok():
+    return 40
+  if robo_sess.tick != 1:
+    return 41
+  if robo_sess.sensor_rays_emitted != auto_bus:
+    return 42
+  if sensor_hit_from_session(robo_sess).hit1 > sensor_raycast_max_range_m():
+    return 43
+  if robo_sess.env_last_obs0 <= 0.0:
+    return 44
+  if studio_sim_robotics_inspector_live_ok(robo_sess) != 1:
+    return 45
+  var add: int = studio_sim_step_profile_ok(studio_profile_sim_additive(), sim_contract_sim_additive(), 0.05, 1)
+  if add != 0:
+    return 50 + add
+  var drug: int = studio_sim_step_profile_ok(studio_profile_sim_drug_design(), sim_contract_sim_drug_design(), 0.1, 1)
+  if drug != 0:
+    return 60 + drug
+  var rl_cfg: StudioProjectConfig = studio_project_config_new(studio_profile_sim_rl())
+  var rl_sess: SimSessionStub = sim_session_stub_default()
+  if studio_sim_step_hook(rl_cfg, rl_sess, 0.01) != sim_status_ok():
+    return 70
+  if rl_sess.sim_contract_id != sim_contract_sim_rl():
+    return 71
+  var rl_pool_sz: int = sim_rl_env_pool_size_default()
+  if rl_sess.tick != rl_pool_sz:
+    return 72
+  if sim_session_replay_last_tick(rl_sess) != rl_pool_sz:
+    return 73
+  if rl_sess.last_dt != 0.01:
+    return 74
+  if rl_sess.env_pool_size != rl_pool_sz:
+    return 75
+  if rl_sess.env_pool_steps_emitted != rl_pool_sz:
+    return 76
+  if env_obs_from_session(rl_sess).obs1 != rl_sess.last_dt:
+    return 77
+  return 0

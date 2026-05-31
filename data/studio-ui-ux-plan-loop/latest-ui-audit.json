@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-05-31T06:57:25.355997+00:00",
+  "platform": "Windows",
+  "summary": {
+    "total": 1,
+    "failing": 0,
+    "passing": 1,
+    "skipped": 0
+  },
+  "targets": [
+    {
+      "target_id": "world-studio-demo",
+      "repo": "lic",
+      "surface": "gui",
+      "surface_class": "gui_app",
+      "status": "pass",
+      "artifacts": [
+        "C:\\Users\\Julian\\Documents\\Programming\\li\\li-cursor-agents/ux-harness/artifacts/world-studio-demo/home.png"
+      ],
+      "axe_violations": [],
+      "pixel_diff": {
+        "max_ratio": 0.0,
+        "threshold": 0.04
+      },
+      "contrast_failures": [],
+      "baseline_status": "ok",
+      "tokens_deviation": [],
+      "broken_links": 0
+    }
+  ]
+}

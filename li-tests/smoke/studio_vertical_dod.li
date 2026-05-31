@@ -1,0 +1,26 @@
+import studio
+
+def main() -> int raises Alloc, IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 31:
+    return 1
+  if studio_vertical_dod_all_profiles_ok() != 1:
+    return 2
+  if studio_vertical_dod_profile_composable_ok(studio_profile_game()) != 1:
+    return 10
+  if studio_vertical_dod_profile_composable_ok(studio_profile_sim_rl()) != 1:
+    return 20
+  if studio_vertical_dod_profile_composable_ok(studio_profile_sim_automotive()) != 1:
+    return 30
+  if studio_vertical_dod_profile_composable_ok(studio_profile_sim_robotics()) != 1:
+    return 40
+  if studio_vertical_dod_profile_composable_ok(studio_profile_sim_additive()) != 1:
+    return 50
+  if studio_vertical_dod_profile_composable_ok(studio_profile_sim_scientific()) != 1:
+    return 60
+  if studio_vertical_dod_profile_composable_ok(studio_profile_sim_drug_design()) != 1:
+    return 70
+  return 0

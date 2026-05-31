@@ -1,0 +1,48 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 21:
+    return 1
+  var state: StudioMcpServerState = studio_mcp_server_state_new()
+  if state.initialized != studio_mcp_server_flag_off():
+    return 2
+  var init: StudioMcpServerReply = studio_mcp_server_handle_initialize(state)
+  if init.ok != studio_mcp_server_flag_on():
+    return 3
+  if state.initialized != studio_mcp_server_flag_on():
+    return 4
+  var list: StudioMcpServerReply = studio_mcp_server_handle_tools_list(state)
+  if list.tool_count != studio_mcp_tool_count():
+    return 5
+  if studio_mcp_server_tool_id_at(0) != studio_mcp_world_scaffold():
+    return 6
+  if studio_mcp_server_tool_id_at(10) != studio_mcp_set_biomol_style():
+    return 7
+  var ping: StudioMcpServerReply = studio_mcp_server_handle_method(state, studio_mcp_server_method_ping(), "", 0)
+  if ping.ok != studio_mcp_server_flag_on():
+    return 8
+  var check: StudioMcpServerReply = studio_mcp_server_handle_tools_call(state, "lic_check", studio_mcp_arg_lic_check_pass())
+  if check.request.status != studio_mcp_tool_status_ok():
+    return 9
+  var bg: StudioMcpServerReply = studio_mcp_server_handle_tools_call(state, "studio_set_viewport_background", studio_viewport_bg_grid())
+  if bg.request.status != studio_mcp_tool_status_ok():
+    return 10
+  if studio_viewport_display_read_bg() != studio_viewport_bg_grid():
+    return 11
+  var fail: StudioMcpServerReply = studio_mcp_server_handle_tools_call(state, "lic_build", studio_mcp_arg_lic_build_fail())
+  if fail.ok != studio_mcp_server_flag_off():
+    return 12
+  if fail.request.status != studio_mcp_tool_status_failed():
+    return 13
+  var bad: StudioMcpServerReply = studio_mcp_server_handle_tools_call(state, "not_a_tool", 0)
+  if bad.ok != studio_mcp_server_flag_off():
+    return 14
+  var pre_init: StudioMcpServerState = studio_mcp_server_state_new()
+  var early: StudioMcpServerReply = studio_mcp_server_handle_tools_list(pre_init)
+  if early.ok != studio_mcp_server_flag_off():
+    return 15
+  return 0

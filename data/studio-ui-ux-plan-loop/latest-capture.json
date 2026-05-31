@@ -1,0 +1,16 @@
+{
+  "iteration": "wsm-w6-vertical-dod",
+  "artifact_dir": "C:/Users/Julian/Documents/Programming/li/li-cursor-agents/data/workspaces/li-langverse/lic/world_studio_builder-1780210294877/repo/data/studio-ui-ux-plan-loop/artifacts/iter-wsm-w6-vertical-dod",
+  "repo": "li-langverse/lic",
+  "release_tag": "studio-ui-ux-progress",
+  "tracking_issue": 182,
+  "issue_url": "https://github.com/li-langverse/studio/issues/182",
+  "issue_comment_url": "https://github.com/li-langverse/studio/issues/182#issuecomment-4585995593",
+  "release_url": "https://github.com/li-langverse/studio/releases/tag/studio-ui-ux-progress",
+  "png_count": 30,
+  "upload_count": 0,
+  "has_reel": false,
+  "dry_run": false,
+  "native_pixels": false,
+  "capture_mode": "html_mock"
+}

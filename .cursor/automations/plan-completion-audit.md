@@ -11,8 +11,8 @@ You find **incomplete plans**: unchecked master-plan phases, open plan checkboxe
 ## Read first
 
 1. `AGENTS.md` (benchmarks)
-2. [provability-gaps.md](https://github.com/li-langverse/lic/blob/main/docs/verification/provability-gaps.md)
-3. [master plan tracker](https://github.com/li-langverse/lic/blob/main/docs/superpowers/plans/2026-05-14-li-master-plan.md)
+2. [provability-gaps.md](https://github.com/li-langverse/studio/blob/main/docs/verification/provability-gaps.md)
+3. [master plan tracker](https://github.com/li-langverse/studio/blob/main/docs/superpowers/plans/2026-05-14-li-master-plan.md)
 
 ---
 

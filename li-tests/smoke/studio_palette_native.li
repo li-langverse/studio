@@ -1,0 +1,24 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 5:
+    return 1
+  if li_std_ui_studio_composables_version() < 5:
+    return 2
+  var bench: StudioPaletteBenchLatency = studio_shell_palette_bench_native(1920.0, 1080.0, 11)
+  if bench.native_pixels != 1:
+    return 3
+  if bench.open_meets_budget != 1:
+    return 4
+  if bench.filter_meets_budget != 1:
+    return 5
+  if bench.open_ms != studio_palette_open_latency_native_ms():
+    return 6
+  if bench.filter_ms != studio_palette_filter_latency_native_ms(11):
+    return 7
+  return 0
