@@ -1,26 +1,25 @@
 {
   "pass": true,
-  "todo_id": "wsg-w5-linux-appimage",
+  "todo_id": "wsg-w5-installer-ci",
   "agent_run": "world_studio_builder",
-  "wps_touched": ["W5", "WP-GD-05", "PH-HW-WP3"],
+  "wps_touched": ["W5", "WP-PUB-01"],
   "smokes_run": [
-    "li-tests/smoke/studio_linux_appimage_present.li"
+    "li-tests/smoke/studio_installer_ci.li"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
   "phase0_styled_chrome": true,
-  "linux_appimage": {
-    "platform": "x86_64-linux-gnu",
-    "backend": "sdl_wgpu_appdir",
-    "build_script": "scripts/build-studio-linux-appimage.sh",
-    "launch_script": "scripts/start-li-world-studio-linux.sh",
-    "appdir": "installer/out/LiWorldStudio.AppDir",
-    "env_contract": ["LIG_HOST_PRESENT=1", "LIG_WGPU_SWAPCHAIN=1", "LIG_GPU_RUNNER=1"]
+  "installer_ci": {
+    "workflow": ".github/workflows/world-studio-installers.yml",
+    "matrix": ["ubuntu-24.04", "windows-latest", "macos-14"],
+    "verify_script": "scripts/verify-installer-ci.py",
+    "windows_artifact": "installer/out/LiWorldStudio-Setup.exe",
+    "linux_appimage_verify": "scripts/verify-linux-appimage.py"
   },
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "verify_linux_appimage": "pass"
+    "verify_installer_ci": "pass"
   },
-  "notes": "Linux AppDir packages I/O-only present host with bundled SDL2 libs; AppRun sets wgpu swapchain env. verify-linux-appimage.py gates source wiring; live AppImage build when appimagetool available.",
+  "notes": "Installer CI matrix: verify-installer-ci.py gates workflow jobs (linux/windows/macos), Inno ISS, AppImage wiring; GHA runs verify on PR; live iscc/AppImage build soft-skip without lic demo binary.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

@@ -6,23 +6,28 @@ on:
     paths:
       - "installer/**"
       - "scripts/build-li-world-studio-installer.ps1"
+      - "scripts/build-studio-linux-appimage.sh"
+      - "scripts/verify-installer-ci.py"
+      - "scripts/verify-linux-appimage.py"
       - "scripts/_li-world-studio-packaging-common.sh"
       - "scripts/world-studio-runnable-*.sh"
       - "src/**"
       - "li.toml"
       - ".github/workflows/world-studio-installers.yml"
   push:
-    branches: [main, cursor/studio-repo-consolidation]
+    branches: [main, cursor/studio-repo-consolidation, cursor/world-studio-gui-library-plan]
     paths:
       - "installer/**"
       - "scripts/build-li-world-studio-installer.ps1"
+      - "scripts/verify-installer-ci.py"
+      - ".github/workflows/world-studio-installers.yml"
 
 concurrency:
   group: world-studio-installers-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  linux-appimage-smoke:
+  linux-installer-matrix:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -32,12 +37,19 @@ jobs:
           git clone --depth 1 https://github.com/li-langverse/lic.git ../lic || true
           test -d ../lic/scripts/wsl-setup-build.sh || test -d ../lic/scripts/build.sh
 
+      - name: Installer CI verify (wsg-w5-installer-ci)
+        env:
+          STUDIO_LINUX_APPIMAGE_SKIP_BUILD: "1"
+          STUDIO_INSTALLER_CI_SKIP_BUILD: "1"
+        run: |
+          chmod +x scripts/_studio-env.sh scripts/world-studio-runnable-gate.sh
+          python3 scripts/verify-installer-ci.py
+
       - name: Runnable gate (demo + smokes; skip iscc on Linux)
         env:
           LIC_ROOT: ${{ github.workspace }}/../lic
           STUDIO_ROOT: ${{ github.workspace }}
         run: |
-          chmod +x scripts/_studio-env.sh scripts/world-studio-runnable-gate.sh
           ./scripts/world-studio-runnable-gate.sh || echo "WARN: gate skipped without lic build"
 
   macos-wgpu-surface-smoke:
@@ -63,7 +75,7 @@ jobs:
           path: deploy/studio-demo/native/
           if-no-files-found: ignore
 
-  windows-inno:
+  windows-installer-matrix:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -72,6 +84,13 @@ jobs:
         shell: pwsh
         run: |
           git clone --depth 1 https://github.com/li-langverse/lic.git ../lic
+
+      - name: Installer CI verify (wsg-w5-installer-ci)
+        shell: pwsh
+        env:
+          STUDIO_LINUX_APPIMAGE_SKIP_BUILD: "1"
+          STUDIO_INSTALLER_CI_SKIP_BUILD: "1"
+        run: python scripts/verify-installer-ci.py
 
       - name: Install Inno Setup
         run: choco install innosetup -y
@@ -86,7 +105,7 @@ jobs:
           }
           if (Get-Command iscc -ErrorAction SilentlyContinue) {
             if (Test-Path build/li-studio-demo.exe) {
-              ./scripts/build-li-world-studio-installer.ps1 -SkipDemoBuild
+              ./scripts/build-li-world-studio-installer.ps1 -SkipDemoBuild -SkipPresentHost
             } else {
               Write-Host "WARN: demo binary missing — skip iscc on CI until lic build wired"
             }

@@ -650,6 +650,36 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 5 installer CI matrix (Windows Inno + Linux AppImage, wsg-w5-installer-ci)"
+if grep -q 'def studio_installer_ci_version' "$ROOT/src/lib.li" 2>/dev/null; then
+  ok "studio_installer_ci_version present"
+else
+  fail "studio_installer_ci_version missing (wsg-w5-installer-ci)"
+fi
+if [[ -f "$ROOT/scripts/verify-installer-ci.py" ]]; then
+  python3 "$ROOT/scripts/verify-installer-ci.py" || fail "verify-installer-ci.py"
+else
+  fail "missing scripts/verify-installer-ci.py"
+fi
+if [[ -f "$ROOT/.github/workflows/world-studio-installers.yml" ]] \
+  && [[ -f "$ROOT/installer/LiWorldStudio.iss" ]] \
+  && [[ -f "$ROOT/scripts/build-li-world-studio-installer.ps1" ]]; then
+  ok "installer CI workflow + Inno script present"
+else
+  fail "installer CI assets missing (wsg-w5-installer-ci)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  inst_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_installer_ci.li"
+  if [[ ! -f "$inst_smoke" ]]; then
+    inst_smoke="$ROOT/li-tests/smoke/studio_installer_ci.li"
+  fi
+  if [[ -f "$inst_smoke" ]]; then
+    lic_check "$inst_smoke" "studio_installer_ci" || fail "studio_installer_ci"
+  else
+    fail "studio_installer_ci smoke missing"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"
