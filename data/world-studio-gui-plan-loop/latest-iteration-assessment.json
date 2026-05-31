@@ -1,12 +1,13 @@
 {
   "pass": true,
   "todo_id": "plan-complete",
-  "agent_run": "world_studio_builder-70629058",
-  "iteration": "verification-ci-fix-lic-composable-wgpu-bench",
-  "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "WP-UX-13", "PH-UX"],
+  "agent_run": "world_studio_builder-1780271153000",
+  "iteration": "verification-gui-plan-complete-lic-symbol-fix",
+  "wps_touched": ["W5", "WP-PUB-01", "PH-UX"],
   "smokes_run": [
     "scripts/world-studio-gui-plan-gates.sh",
-    "scripts/world-studio-gui-plan-completion-gate.sh"
+    "scripts/world-studio-gui-plan-completion-gate.sh",
+    "li-tests/composable/import_studio_* (lic WSL verify)"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
@@ -20,15 +21,16 @@
     "studio_pr_18": "pass",
     "lic_pr_682": "fix_pushed",
     "lic_fixes": [
-      "studio_paint_agent cmd_count contract (remove extra paint_frame_push)",
-      "bench-studio-viewport-perf wgpu_swapchain hook for latest-bench.json"
+      "paint_op_fill_round -> paint_op_fill_round_rect in studio_paint_agent",
+      "lig_present_host_present_active -> lig_present_host_active",
+      "studio_agent_context_for_shell: remove invalid scene_entity_count requires"
     ]
   },
   "local_notes": [
     "All 32 wsg-w* todos status: done in plan YAML",
-    "Completion gate exit 0 on Windows agent workspace (2026-06-01)",
-    "Lic PR #682: fixed composable import check failures + wgpu_swapchain bench hook"
+    "Completion gate exit 0 on agent workspace (2026-06-01)",
+    "Lic composable import_studio_* smokes pass after symbol fix (WSL lic check)"
   ],
-  "notes": "GUI library plan W0–W5 complete. Verification iteration re-ran gates green; pushed lic CI fixes for PR #682 (composable smokes + wgpu_swapchain in latest-bench.json).",
+  "notes": "GUI library plan W0–W5 complete on studio PR #18 (CI green). Lic PR #682: fixed unresolved symbol errors blocking five composable smokes.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }
