@@ -14,6 +14,20 @@ LATEST = ROOT / "data/studio-ui-ux-plan-loop/latest-bench.json"
 COMPETITIVE = Path(os.environ["BENCHMARKS_RESULTS"]) / "bench-studio-viewport-perf.json"
 
 
+def resolve_repo_path(rel: str) -> Path:
+    rel_path = Path(rel)
+    candidates = [ROOT / rel_path]
+    lic_root = os.environ.get("LIC_ROOT")
+    if lic_root:
+        candidates.append(Path(lic_root) / rel_path)
+    for sibling in (ROOT.parent / "lic", ROOT.parent.parent / "lic"):
+        candidates.append(sibling / rel_path)
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    return ROOT / rel_path
+
+
 def fail(msg: str) -> None:
     print(f"studio-ui-ux-verify-bench-registry: {msg}", file=sys.stderr)
     sys.exit(1)
@@ -52,7 +66,7 @@ def main() -> None:
     if "animate_md_import" not in memory_ids:
         fail("missing [[memory]] id=animate_md_import")
     mem_script = (reg.get("harness") or {}).get("memory_script", "")
-    if mem_script and not (ROOT / mem_script).is_file():
+    if mem_script and not resolve_repo_path(mem_script).is_file():
         fail(f"harness.memory_script missing: {mem_script}")
     mem_latest = ROOT / "data/studio-ui-ux-plan-loop/latest-memory-profile.json"
     if not mem_latest.is_file():
@@ -62,7 +76,7 @@ def main() -> None:
         if not isinstance(hook, dict):
             continue
         rel = hook.get("path", "")
-        if rel and not (ROOT / rel).is_file():
+        if rel and not resolve_repo_path(rel).is_file():
             fail(f"hook {hook.get('id', '?')}: missing path {rel}")
 
     for path, label in ((LATEST, "latest-bench"), (COMPETITIVE, "competitive")):

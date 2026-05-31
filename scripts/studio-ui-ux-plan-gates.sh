@@ -77,6 +77,7 @@ if [[ "${STUDIO_UI_UX_GATES_SKIP_BUILD:-0}" != "1" ]]; then
 fi
 
 li_phase "memory profile smoke"
+chmod +x "$ROOT/scripts/profile-animate-memory.sh" 2>/dev/null || true
 "$ROOT/scripts/profile-animate-memory.sh" || fail "profile-animate-memory"
 [[ -f "$ROOT/data/studio-ui-ux-plan-loop/latest-memory-profile.json" ]] \
   || fail "latest-memory-profile.json missing after profile-animate-memory"
