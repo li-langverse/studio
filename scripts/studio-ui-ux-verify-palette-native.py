@@ -3,11 +3,28 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-HOOK = ROOT / "packages/li-ui/bench/palette_latency.toml"
+HOOK_REL = Path("packages/li-ui/bench/palette_latency.toml")
+
+
+def resolve_hook() -> Path:
+    lic_root = os.environ.get("LIC_ROOT")
+    if lic_root:
+        candidate = Path(lic_root) / HOOK_REL
+        if candidate.is_file():
+            return candidate
+    for sibling in (ROOT.parent / "lic", ROOT.parent.parent / "lic"):
+        candidate = sibling / HOOK_REL
+        if candidate.is_file():
+            return candidate
+    return ROOT / HOOK_REL
+
+
+HOOK = resolve_hook()
 
 
 def fail(msg: str) -> None:

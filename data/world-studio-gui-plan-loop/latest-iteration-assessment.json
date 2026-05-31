@@ -20,7 +20,7 @@
     "Rename lig_present_host_present_active -> lig_present_host_active in studio/src/lib.li (matches lig.present API)",
     "studio-ui-ux-native.yml: ECOSYSTEM_REF from PR head + LIC_ROOT for token verify",
     "checkout-ecosystem-siblings.sh: force-refresh lic on CI; export LIC_ROOT",
-    "studio-ui-ux-verify-tokens.py: resolve lic at ROOT.parent.parent/lic (GHA layout fallback)"
+    "studio-ui-ux-verify-*.py: resolve lic package bench hooks via LIC_ROOT sibling"
   ],
   "notes": "GUI library plan W0–W5 complete (all wsg-w* todos done). Local gates + completion gate pass. CI fixes for check (wrong lig API name) and native-sdl-capture (lic main missing W0 typography tokens).",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
