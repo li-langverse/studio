@@ -1,7 +1,7 @@
 {
   "pass": true,
   "todo_id": "plan-complete",
-  "agent_run": "world_studio_builder-69814848",
+  "agent_run": "world_studio_builder-70223780",
   "iteration": "verification-pass-all-wsg-done",
   "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "WP-UX-13", "PH-UX"],
   "smokes_run": [
@@ -24,7 +24,7 @@
   },
   "local_notes": [
     "All 32 wsg-w* todos status: done in plan YAML",
-    "Completion gate exit 0 on Windows agent workspace",
+    "Completion gate exit 0 on Windows agent workspace (2026-06-01)",
     "Studio-repo smokes soft-fail import resolve (expected; CI checks src/lib.li)",
     "Windows native .exe build skipped locally (MSYS2 MinGW not installed)"
   ],
