@@ -1,6 +1,6 @@
-# Li World Studio (li-studio)
+ï»¿# Li World Studio (li-studio)
 
-Product repo for **Li World Studio** — compose dock, timeline, inspector, vertical sim profiles, MCP tools, and platform installers.
+Product repo for **Li World Studio** â€” compose dock, timeline, inspector, vertical sim profiles, MCP tools, and platform installers.
 
 Import: `import studio`
 
@@ -62,13 +62,17 @@ Build demo first, then package using `installer/out/LiWorldStudio.AppDir` layout
 
 ## Dependencies
 
-`li.toml` path-deps point at `../lic/packages/*` (li-gui, li-ui, li-sim-*, li-render, lig, …). Full build requires **lic** sibling + **lip** registry packages resolved by the compiler.
+`li.toml` path-deps point at `../lic/packages/*` (li-gui, li-ui, li-sim-*, li-render, lig, â€¦). Full build requires **lic** sibling + **lip** registry packages resolved by the compiler.
 
 ## Related repos
 
-- **lic** — Li compiler and generic packages (not studio product)
-- **li-studio-ai** — agent orchestration (`import studio.ai`), still in lic monorepo for now
+- **lic** â€” Li compiler and generic packages (not studio product)
+- **li-studio-ai** â€” agent orchestration (`import studio.ai`), still in lic monorepo for now
 
 ## X demo (marketing reel)
 
 `docs/demo/studio-x-demo-script.md`, `./scripts/record-studio-x-demo.sh`
+
+## License
+
+Copyright (C) 2026 Julian. Licensed under the [GNU General Public License v3.0](LICENSE).
