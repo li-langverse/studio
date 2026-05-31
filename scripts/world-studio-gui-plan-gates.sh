@@ -67,9 +67,12 @@ try_wsl_lic_smokes() {
   return 0
 }
 
-echo "==> token verification (soft until wsg-w0-token-verify done)"
+echo "==> token verification (TOML ↔ li-ui via LIC_ROOT)"
 if [[ -f "$ROOT/scripts/studio-ui-ux-verify-tokens.py" ]]; then
-  python3 "$ROOT/scripts/studio-ui-ux-verify-tokens.py" || warn "studio-ui-ux-verify-tokens soft-fail"
+  export LIC_ROOT
+  python3 "$ROOT/scripts/studio-ui-ux-verify-tokens.py" || fail "studio-ui-ux-verify-tokens"
+else
+  fail "missing studio-ui-ux-verify-tokens.py"
 fi
 
 echo "==> studio smokes"

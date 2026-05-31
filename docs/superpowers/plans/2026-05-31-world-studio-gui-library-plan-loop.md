@@ -16,7 +16,7 @@ todos:
     status: done
   - id: wsg-w0-token-verify
     content: "Phase 0 — studio-ui-ux-verify-tokens.py extended verification green"
-    status: pending
+    status: done
   - id: wsg-w0-native-styled-chrome
     content: "Phase 0 — native window shows styled chrome (round rects/tokens), not wireframe-only"
     status: pending
