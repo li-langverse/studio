@@ -145,12 +145,30 @@ if grep -q 'def flex_layout_measure' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/d
 else
   fail "li-gui layout engines missing (wsg-w1-layout-engines)"
 fi
-if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
   layout_smoke="$LIC_ROOT/packages/li-gui/li-tests/smoke/layout_engines_flex_grid.li"
   if [[ -f "$layout_smoke" ]]; then
     lic_check "$layout_smoke" "layout_engines_flex_grid" || fail "layout_engines_flex_grid"
   else
     warn "layout_engines_flex_grid smoke missing under LIC_ROOT"
+  fi
+fi
+
+echo "==> phase 1 event dispatcher (hit-test tree + focus manager)"
+if grep -q 'def event_dispatcher_hit_test_flex' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def event_dispatcher_focus_next' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def event_dispatcher_pointer_down' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def event_dispatcher_dispatch_key_focus' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null; then
+  ok "li-gui EventDispatcher procs present"
+else
+  fail "li-gui EventDispatcher missing (wsg-w1-event-dispatcher)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  dispatch_smoke="$LIC_ROOT/packages/li-gui/li-tests/smoke/event_dispatcher_hit_focus.li"
+  if [[ -f "$dispatch_smoke" ]]; then
+    lic_check "$dispatch_smoke" "event_dispatcher_hit_focus" || fail "event_dispatcher_hit_focus"
+  else
+    warn "event_dispatcher_hit_focus smoke missing under LIC_ROOT"
   fi
 fi
 

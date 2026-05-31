@@ -1,9 +1,10 @@
 {
   "pass": true,
-  "todo_id": "wsg-w1-layout-engines",
-  "agent_run": "world_studio_builder-52603629",
-  "wps_touched": ["W1", "WP-UX-01", "WP-GD-00"],
+  "todo_id": "wsg-w1-event-dispatcher",
+  "agent_run": "world_studio_builder-52989176",
+  "wps_touched": ["W1", "WP-UX-06", "WP-UX-09"],
   "smokes_run": [
+    "packages/li-gui/li-tests/smoke/event_dispatcher_hit_focus.li",
     "packages/li-gui/li-tests/smoke/layout_engines_flex_grid.li",
     "packages/li-gui/li-tests/smoke/widget_protocol_measure_layout.li"
   ],
@@ -12,11 +13,13 @@
   "phase0_styled_chrome": true,
   "widget_protocol": true,
   "layout_engines": true,
+  "event_dispatcher": true,
   "gates": {
     "world_studio_gui_plan_gates": "pass",
+    "event_dispatcher_hit_focus": "pass",
     "layout_engines_flex_grid": "pass",
     "widget_protocol_measure_layout": "pass"
   },
-  "notes": "Added FlexLayout, GridLayout, PaddingLayout, ScrollLayout in li-gui with measure/layout procs, flex_layout_paint, layout_int_as_float helper; smoke layout_engines_flex_grid.li; li_std_gui_version 6.",
+  "notes": "Added EventDispatcher in li-gui: hit-test tree (reverse paint order), focus manager (next/prev roving), pointer_down dispatch, key_focus routing; smoke event_dispatcher_hit_focus.li; li_std_gui_version 7.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

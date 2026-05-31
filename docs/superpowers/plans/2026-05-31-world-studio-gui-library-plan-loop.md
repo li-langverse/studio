@@ -28,7 +28,7 @@ todos:
     status: done
   - id: wsg-w1-event-dispatcher
     content: "Phase 1 — EventDispatcher hit-test tree + focus manager"
-    status: pending
+    status: done
   - id: wsg-w1-base-widgets
     content: "Phase 1 — Label, Button, Panel, ScrollArea, TextInput base widgets"
     status: pending
