@@ -16,7 +16,7 @@ The old `studio_shell_present_host.c` drew a single cyan HUD rectangle in a **hi
 | **lig.present** | Host present bridge: swapchain stub, paint_blit honesty flags |
 | **SDL present host** | Native window + CPU blit of shell layout (`studio_shell_paint_fb`) |
 
-**wgpu viewport (WP-GD-05 / wsm-w2-wgpu-viewport):** scaffold only — `lig_wgpu_swapchain_readback_run`, draw-list submit stubs. No in-tree wgpu-rs swapchain pixels yet. Master plan path A target; path B (CPU paint_blit) is current honest product path.
+**wgpu viewport (WP-GD-05 / wsg-w3-wgpu-viewport-pixels):** `render_wgpu_viewport_readback` bridges `lig_wgpu_swapchain_readback_run` → `RenderViewportSmoke`; `native_pixels=1` when `LIG_WGPU_SWAPCHAIN=1` + `LIG_GPU_RUNNER=1` + `LIG_HOST_PRESENT=1`. CPU CI reports `blocked_runner` honestly; path B (CPU paint_blit) remains fallback.
 
 ## Real window launch (no installer)
 
@@ -66,4 +66,4 @@ Full phased roadmap: [GUI-LIBRARY-PLAN.md](GUI-LIBRARY-PLAN.md).
 | HTML mock | false | Marketing only |
 | C paint_fb capture (no SDL) | true | CI / headless evidence |
 | SDL present host (this path) | true | Real window; mirrors Li paint contracts |
-| wgpu swapchain | true (future) | Production target |
+| wgpu swapchain | true (when GPU runner env) | Production target (Path A) |

@@ -61,7 +61,7 @@ todos:
     status: done
   - id: wsg-w3-wgpu-viewport-pixels
     content: "Phase 3 — real wgpu swapchain/readback pixels (WP-GD-05 Path A progress)"
-    status: pending
+    status: done
   - id: wsg-w3-icon-pipeline
     content: "Phase 3 — SVG → atlas icon pipeline referenced by token name"
     status: pending

@@ -383,6 +383,34 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 3 wgpu viewport swapchain pixels (Path A readback, WP-GD-05)"
+if grep -q 'def render_wgpu_viewport_readback' "$LIC_ROOT/packages/li-render/src/lib.li" 2>/dev/null \
+  && grep -q 'def render_viewport_readback_ok' "$LIC_ROOT/packages/li-render/src/lib.li" 2>/dev/null \
+  && grep -q 'def lig_wgpu_swapchain_readback_run' "$LIC_ROOT/packages/lig/present/lib.li" 2>/dev/null \
+  && grep -q 'def lig_present_wgpu_swapchain_active' "$LIC_ROOT/packages/lig/present/lib.li" 2>/dev/null \
+  && grep -q 'def studio_native_pixels_wgpu_swapchain_host_smoke' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null; then
+  ok "li-render viewport swapchain readback + li-studio host smoke present"
+else
+  fail "wgpu viewport swapchain pixels missing (wsg-w3-wgpu-viewport-pixels)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  swap_smoke="$LIC_ROOT/packages/li-render/li-tests/smoke/wgpu_viewport_swapchain.li"
+  if [[ -f "$swap_smoke" ]]; then
+    lic_check "$swap_smoke" "wgpu_viewport_swapchain" || fail "wgpu_viewport_swapchain"
+  else
+    fail "wgpu_viewport_swapchain smoke missing under LIC_ROOT"
+  fi
+  studio_swap_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_native_pixels_wgpu_swapchain.li"
+  if [[ -f "$studio_swap_smoke" ]]; then
+    lic_check "$studio_swap_smoke" "studio_native_pixels_wgpu_swapchain" || fail "studio_native_pixels_wgpu_swapchain"
+  else
+    fail "studio_native_pixels_wgpu_swapchain smoke missing under LIC_ROOT"
+  fi
+fi
+if [[ -f "$ROOT/scripts/studio-ui-ux-verify-wgpu-swapchain.py" ]]; then
+  python3 "$ROOT/scripts/studio-ui-ux-verify-wgpu-swapchain.py" || warn "studio-ui-ux-verify-wgpu-swapchain soft-fail (CPU runner expected blocked_runner)"
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

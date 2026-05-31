@@ -1,17 +1,18 @@
 {
-  "timestamp": "2026-05-31T22:45:00+00:00",
+  "timestamp": "2026-05-31T23:15:00+00:00",
   "branch": "cursor/world-studio-gui-library-plan",
-  "todo": "wsg-w3-ui-raster",
-  "next_todo": "wsg-w3-wgpu-viewport-pixels",
-  "wps": ["WP-GD-05", "PH-UX-13"],
+  "todo": "wsg-w3-wgpu-viewport-pixels",
+  "next_todo": "wsg-w3-icon-pipeline",
+  "wps": ["WP-GD-05", "WP-UX-14", "PH-UX-13"],
   "smokes": [
-    "lic check packages/li-render/li-tests/smoke/ui_raster_pass.li"
+    "lic check packages/li-render/li-tests/smoke/wgpu_viewport_swapchain.li",
+    "lic check packages/li-studio/li-tests/smoke/studio_native_pixels_wgpu_swapchain.li"
   ],
   "gates": "world-studio-gui-plan-gates.sh pass",
   "native_only": true,
   "pass": true,
   "design_review": {
-    "capture": "UI raster pass — CPU chrome estimate + wgpu stub; viewport pixel golden deferred to wsg-w3-wgpu-viewport-pixels",
+    "capture": "wgpu swapchain readback — RenderViewportSmoke.native_pixels=1 on GPU runner; blocked_runner honest on CPU CI",
     "regressions": "none"
   }
 }

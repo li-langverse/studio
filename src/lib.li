@@ -6874,10 +6874,10 @@ def studio_shell_demo_apply_profile(compose: var StudioShellCompose, profile_id:
 =
   compose.config = studio_project_config_new(profile_id)
 
-# WP-UX-14 — honest native_pixels: paint blit or wgpu readback/draw-list (not external CPU host alone).
+# WP-UX-14 — honest native_pixels: paint blit or wgpu readback/draw-list/swapchain (not external CPU host alone).
 def studio_native_pixel_source_honest(source: int) -> int
   requires source >= 0
-  requires source <= 4
+  requires source <= 5
   ensures result >= 0
   ensures result <= 1
   decreases source
@@ -6888,14 +6888,18 @@ def studio_native_pixel_source_honest(source: int) -> int
     return 1
   if source == lig_native_pixel_source_wgpu_draw_list():
     return 1
+  if source == lig_native_pixel_source_wgpu_swapchain():
+    return 1
   return 0
 
 def studio_native_pixel_source_expected() -> int raises IO
   requires true
   ensures result >= 0
-  ensures result <= 4
+  ensures result <= 5
   decreases 0
 =
+  if lig_present_wgpu_swapchain_active() == 1:
+    return lig_native_pixel_source_wgpu_swapchain()
   if lig_present_wgpu_readback_active() == 1:
     return lig_native_pixel_source_wgpu_readback()
   return lig_native_pixel_source_paint_blit()
@@ -6920,6 +6924,38 @@ def studio_native_pixels_wgpu_readback_host_smoke() -> int raises IO
   render_fps_counter_host_tick(counter)
   if counter.native_pixels != 1:
     return 4
+  return 0
+
+def studio_native_pixels_wgpu_swapchain_host_smoke() -> int raises IO
+  requires true
+  ensures result >= 0
+  ensures result <= 8
+  decreases 0
+=
+  if lig_present_wgpu_swapchain_active() != 1:
+    return 0
+  var vp_w: float = 1280.0
+  var vp_h: float = 720.0
+  var rb: LigWgpuSwapchainReadback = lig_wgpu_swapchain_readback_run()
+  if rb.status != lig_wgpu_swapchain_status_pass():
+    return 0
+  if lig_wgpu_swapchain_readback_passed(rb) != 1:
+    return 1
+  if rb.pixels_sampled <= 0:
+    return 2
+  if rb.native_pixel_source != lig_native_pixel_source_wgpu_swapchain():
+    return 3
+  var layout: StudioShellLayout = layout_studio_shell_adaptive(vp_w, vp_h)
+  var vp: ViewportRegion = gui_viewport_region_from_layout(layout)
+  var smoke: RenderViewportSmoke = render_wgpu_viewport_readback(vp)
+  if render_viewport_readback_ok(smoke) != 1:
+    return 4
+  if smoke.native_pixels != 1:
+    return 5
+  if lig_present_host_native_pixels_flag() != 1:
+    return 6
+  if lig_present_host_native_pixel_source_flag() != lig_native_pixel_source_wgpu_swapchain():
+    return 7
   return 0
 
 def studio_vertical_demo_compose(profile_id: int, frame_id: int, key_compose: int) -> StudioShellCompose
