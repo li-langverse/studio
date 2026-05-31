@@ -31,7 +31,7 @@ todos:
     status: done
   - id: wsg-w1-base-widgets
     content: "Phase 1 — Label, Button, Panel, ScrollArea, TextInput base widgets"
-    status: pending
+    status: done
   - id: wsg-w1-focus-model
     content: "Phase 1 — roving tabindex + studio_paint_focus_ring integration"
     status: pending

@@ -172,6 +172,24 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 1 base widgets (Label, Button, Panel, ScrollArea, TextInput)"
+if grep -q 'def widget_node_text_input' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def scroll_area_new' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def scroll_area_paint' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def gui_base_widgets_version' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null; then
+  ok "li-gui base widgets present"
+else
+  fail "li-gui base widgets missing (wsg-w1-base-widgets)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  base_smoke="$LIC_ROOT/packages/li-gui/li-tests/smoke/base_widgets.li"
+  if [[ -f "$base_smoke" ]]; then
+    lic_check "$base_smoke" "base_widgets" || fail "base_widgets"
+  else
+    warn "base_widgets smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

@@ -1,12 +1,13 @@
 {
   "pass": true,
-  "todo_id": "wsg-w1-event-dispatcher",
-  "agent_run": "world_studio_builder-52989176",
+  "todo_id": "wsg-w1-base-widgets",
+  "agent_run": "world_studio_builder-53651015",
   "wps_touched": ["W1", "WP-UX-06", "WP-UX-09"],
   "smokes_run": [
-    "packages/li-gui/li-tests/smoke/event_dispatcher_hit_focus.li",
+    "packages/li-gui/li-tests/smoke/base_widgets.li",
+    "packages/li-gui/li-tests/smoke/widget_protocol_measure_layout.li",
     "packages/li-gui/li-tests/smoke/layout_engines_flex_grid.li",
-    "packages/li-gui/li-tests/smoke/widget_protocol_measure_layout.li"
+    "packages/li-gui/li-tests/smoke/event_dispatcher_hit_focus.li"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
@@ -14,12 +15,14 @@
   "widget_protocol": true,
   "layout_engines": true,
   "event_dispatcher": true,
+  "base_widgets": true,
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "event_dispatcher_hit_focus": "pass",
+    "base_widgets": "pass",
+    "widget_protocol_measure_layout": "pass",
     "layout_engines_flex_grid": "pass",
-    "widget_protocol_measure_layout": "pass"
+    "event_dispatcher_hit_focus": "pass"
   },
-  "notes": "Added EventDispatcher in li-gui: hit-test tree (reverse paint order), focus manager (next/prev roving), pointer_down dispatch, key_focus routing; smoke event_dispatcher_hit_focus.li; li_std_gui_version 7.",
+  "notes": "Added TextInput widget kind (monospace bitmap chars, focus on click) and ScrollArea composite (scroll_layout wrapper with paint/hit-test/event dispatch); smoke base_widgets.li; gui_base_widgets_version 1; li_std_gui_version 8.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }
