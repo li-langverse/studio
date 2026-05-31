@@ -55,7 +55,7 @@ todos:
     status: done
   - id: wsg-w3-paintcmd-glyphs
     content: "Phase 3 — PaintCmd draw_glyphs, draw_image, clip_push/pop ops"
-    status: pending
+    status: done
   - id: wsg-w3-ui-raster
     content: "Phase 3 — li-render UI raster pass (CPU fallback + wgpu pipeline)"
     status: pending

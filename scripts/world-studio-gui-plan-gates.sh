@@ -341,6 +341,30 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 3 PaintCmd ext ops (draw_glyphs, draw_image, clip_push/pop)"
+if grep -q 'def paint_op_draw_glyphs' "$LIC_ROOT/packages/li-ui/src/lib.li" 2>/dev/null \
+  && grep -q 'def paint_cmd_draw_image' "$LIC_ROOT/packages/li-ui/src/lib.li" 2>/dev/null \
+  && grep -q 'def paint_cmd_clip_push' "$LIC_ROOT/packages/li-ui/src/lib.li" 2>/dev/null \
+  && grep -q 'def paint_cmd_clip_pop' "$LIC_ROOT/packages/li-ui/src/lib.li" 2>/dev/null \
+  && [[ -f "$LIC_ROOT/packages/li-ui/src/paint_cmds_ext.li" ]]; then
+  ok "li-ui PaintCmd ext ops present (clip, glyphs, image)"
+else
+  fail "li-ui PaintCmd ext ops missing (wsg-w3-paintcmd-glyphs)"
+fi
+if [[ -f "$LIC_ROOT/scripts/sync-paint-cmds-ext.py" ]]; then
+  python3 "$LIC_ROOT/scripts/sync-paint-cmds-ext.py" --verify || fail "sync-paint-cmds-ext.py --verify"
+else
+  fail "missing scripts/sync-paint-cmds-ext.py (wsg-w3-paintcmd-glyphs)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  paint_ext_smoke="$LIC_ROOT/packages/li-ui/li-tests/smoke/paint_cmds_ext_phase3.li"
+  if [[ -f "$paint_ext_smoke" ]]; then
+    lic_check "$paint_ext_smoke" "paint_cmds_ext_phase3" || fail "paint_cmds_ext_phase3"
+  else
+    fail "paint_cmds_ext_phase3 smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

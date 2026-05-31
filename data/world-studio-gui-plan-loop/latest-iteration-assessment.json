@@ -1,17 +1,17 @@
 {
-  "timestamp": "2026-05-31T20:05:00+00:00",
+  "timestamp": "2026-05-31T22:15:00+00:00",
   "branch": "cursor/world-studio-gui-library-plan",
-  "todo": "wsg-w3-font-atlas",
-  "next_todo": "wsg-w3-paintcmd-glyphs",
+  "todo": "wsg-w3-paintcmd-glyphs",
+  "next_todo": "wsg-w3-ui-raster",
   "wps": ["WP-GD-05", "PH-UX-13"],
   "smokes": [
-    "lic check packages/li-ui/li-tests/smoke/font_atlas_inter_mono.li"
+    "lic check packages/li-ui/li-tests/smoke/paint_cmds_ext_phase3.li"
   ],
   "gates": "world-studio-gui-plan-gates.sh pass",
   "native_only": true,
   "pass": true,
   "design_review": {
-    "capture": "native PPM probe via studio-ui-ux-verify-styled-chrome-native (mock N/A for atlas)",
-    "regressions": "none — first font atlas iteration"
+    "capture": "PaintCmd IR extension — raster/text golden deferred to wsg-w3-ui-raster",
+    "regressions": "none — paint_studio_shell_chrome kind_max updated"
   }
 }
