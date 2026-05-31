@@ -228,6 +228,12 @@ note = "wsg-w5-windows-native: Windows SDL present host, no WSL requirement"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_macos_wgpu_present.li"
+outcome = "check_ok"
+note = "wsg-w5-macos-wgpu: macOS aarch64 wgpu/Metal surface (PH-HW WP3)"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_shell_demo_pattern_tick.li"
 outcome = "check_ok"
 note = "T-PKG-li-studio-shell-demo-pattern-tick STUDIO_DEMO_LOOP_TICK base"

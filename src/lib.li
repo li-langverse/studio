@@ -7119,6 +7119,44 @@ def studio_windows_native_present_version() -> int
 =
   return 1
 
+# Phase 5 (wsg-w5-macos-wgpu) — macOS aarch64-apple-darwin wgpu/Metal surface (PH-HW WP3).
+def studio_macos_wgpu_present_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_macos_wgpu_surface_smoke() -> int raises IO
+  requires true
+  ensures result >= 0
+  ensures result <= 8
+  decreases 0
+=
+  if lig_present_host_present_active() != 1:
+    return 0
+  if lig_present_wgpu_swapchain_active() != 1:
+    return 0
+  var rb: LigWgpuSwapchainReadback = lig_wgpu_swapchain_readback_run()
+  if rb.status != lig_wgpu_swapchain_status_pass():
+    return 1
+  if lig_wgpu_swapchain_readback_passed(rb) != 1:
+    return 2
+  if rb.pixels_sampled <= 0:
+    return 3
+  if rb.native_pixel_source != lig_native_pixel_source_wgpu_swapchain():
+    return 4
+  if lig_present_surface_ok() != 1:
+    return 5
+  var layout: StudioShellLayout = layout_studio_shell_adaptive(1280.0, 720.0)
+  var vp: ViewportRegion = gui_viewport_region_from_layout(layout)
+  var smoke: RenderViewportSmoke = render_wgpu_viewport_readback(vp)
+  if render_viewport_readback_ok(smoke) != 1:
+    return 6
+  if smoke.native_pixels != 1:
+    return 7
+  return 0
+
 # Phase 4 (wsg-w4-present-loop) — PaintFrame → Li UI rasterizer (CPU or wgpu) before host blit.
 def studio_shell_present_raster_pass(shell_w: float, shell_h: float, frame: PaintFrame, profile_id: int) -> RenderUiRasterResult raises IO
   requires shell_w >= 0.0

@@ -49,6 +49,17 @@ Equivalent:
 
 Requires WSL + SDL2 (`sudo apt install libsdl2-dev`) and X11/WSLg for visible window when using ELF fallback. Windows native `.exe` path does not require WSL.
 
+**macOS aarch64 wgpu surface (wsg-w5-macos-wgpu — PH-HW WP3):**
+
+```bash
+cd studio
+brew install sdl2
+./scripts/build-studio-shell-present-host-macos.sh
+./scripts/start-li-world-studio-macos.sh
+```
+
+Sets `LIG_HOST_PRESENT=1`, `LIG_WGPU_SWAPCHAIN=1`, `LIG_GPU_RUNNER=1` for Metal/wgpu swapchain on Apple Silicon. Probe: `deploy/studio-demo/native/lig_macos_wgpu_surface_probe.c`.
+
 ## li-gui roadmap: Qt vs Svelte-like
 
 **Do not rebuild Qt.** Apply patterns:
@@ -77,4 +88,5 @@ Full phased roadmap: [GUI-LIBRARY-PLAN.md](GUI-LIBRARY-PLAN.md).
 | C paint_fb capture (no SDL) | true | CI / headless evidence |
 | SDL present host (this path) | true | Real window; Li raster → `--rgb-ppm` blit |
 | Windows native `.exe` host | true | Real window on desktop; no WSL (wsg-w5) |
+| macOS Metal wgpu surface | true (when LIG_WGPU_SWAPCHAIN env) | Apple Silicon present path (wsg-w5-macos-wgpu) |
 | wgpu swapchain | true (when GPU runner env) | Production target (Path A) |

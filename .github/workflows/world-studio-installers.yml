@@ -40,6 +40,29 @@ jobs:
           chmod +x scripts/_studio-env.sh scripts/world-studio-runnable-gate.sh
           ./scripts/world-studio-runnable-gate.sh || echo "WARN: gate skipped without lic build"
 
+  macos-wgpu-surface-smoke:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SDL2
+        run: brew install sdl2
+
+      - name: Verify macOS wgpu surface wiring (wsg-w5-macos-wgpu)
+        env:
+          STUDIO_MACOS_WGPU_SKIP_BUILD: "0"
+        run: |
+          chmod +x scripts/build-studio-shell-present-host-macos.sh scripts/start-li-world-studio-macos.sh
+          python3 scripts/verify-macos-wgpu-present.py
+
+      - name: Upload macOS probe metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-macos-wgpu-surface-meta
+          path: deploy/studio-demo/native/
+          if-no-files-found: ignore
+
   windows-inno:
     runs-on: windows-latest
     steps:

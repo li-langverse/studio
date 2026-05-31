@@ -1,27 +1,26 @@
 {
   "pass": true,
-  "todo_id": "wsg-w5-windows-native",
-  "agent_run": "world_studio_builder-62830456",
-  "wps_touched": ["W5", "WP-UX-14", "PH-HW-WP3"],
+  "todo_id": "wsg-w5-macos-wgpu",
+  "agent_run": "world_studio_builder-63281379",
+  "wps_touched": ["W5", "WP-GD-05", "PH-HW-WP3"],
   "smokes_run": [
-    "packages/li-studio/li-tests/smoke/studio_windows_native_present.li",
-    "li-tests/smoke/studio_windows_native_present.li"
+    "li-tests/smoke/studio_macos_wgpu_present.li"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
   "phase0_styled_chrome": true,
-  "windows_native_present": {
-    "host_binary": "deploy/studio-demo/native/studio_shell_present_host.exe",
-    "build_script": "scripts/build-studio-shell-present-host.ps1",
-    "launch_script": "scripts/start-li-world-studio-window.ps1",
-    "wsl_required_for_window": false,
-    "host_io_only": true,
-    "pixel_path": "li_rgb_ppm_blit"
+  "macos_wgpu_surface": {
+    "platform": "aarch64-apple-darwin",
+    "backend": "metal_wgpu_surface",
+    "build_script": "scripts/build-studio-shell-present-host-macos.sh",
+    "launch_script": "scripts/start-li-world-studio-macos.sh",
+    "probe_source": "deploy/studio-demo/native/lig_macos_wgpu_surface_probe.c",
+    "env_contract": ["LIG_HOST_PRESENT=1", "LIG_WGPU_SWAPCHAIN=1", "LIG_GPU_RUNNER=1"]
   },
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "verify_windows_native_present": "pass"
+    "verify_macos_wgpu_present": "pass"
   },
-  "notes": "Windows native SDL present host builds via MinGW+SDL2 (.exe); start-li-world-studio-window.ps1 uses Invoke-PresentHost directly without WSL when PE binary available. C host uses host_setenv/_WIN32 portability.",
+  "notes": "macOS Metal wgpu surface wiring: present host exports metal_wgpu_surface JSON on __APPLE__; probe + launch scripts set swapchain env; smoke studio_macos_wgpu_surface_smoke validates surface_ok path when host active.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

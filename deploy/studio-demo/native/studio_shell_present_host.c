@@ -189,11 +189,24 @@ static int present_rgb(SDL_Renderer* ren, const unsigned char* rgb, int w, int h
 static void print_json(int width, int height, int persist, const char* rgb_ppm, int li_pixels) {
   const char* pixel_source = li_pixels ? "li_rgb_ppm" : "surface_io_only";
   const char* backend = li_pixels ? "sdl_li_blit" : "sdl_io_only";
+#if defined(__APPLE__)
+  const char* wgpu_env = getenv("LIG_WGPU_SWAPCHAIN");
+  if (wgpu_env != NULL && wgpu_env[0] == '1' && wgpu_env[1] == '\0') {
+    backend = "metal_wgpu_surface";
+    if (li_pixels) {
+      pixel_source = "wgpu_swapchain";
+    }
+  }
+#endif
   printf(
       "{\"presented\":1,\"native_pixels\":1,\"backend\":\"%s\","
       "\"capture_mode\":\"%s\",\"pixel_source\":\"%s\","
       "\"host_io_only\":1,\"width\":%d,\"height\":%d,\"persist\":%d,"
-      "\"rgb_ppm\":%s,\"chrome\":\"li_studio_raster\"}\n",
+      "\"rgb_ppm\":%s,\"chrome\":\"li_studio_raster\""
+#if defined(__APPLE__)
+      ",\"platform\":\"aarch64-apple-darwin\",\"wgpu_surface\":1"
+#endif
+      "}\n",
       backend, pixel_source, pixel_source, width, height, persist,
       rgb_ppm ? "true" : "false");
   fflush(stdout);

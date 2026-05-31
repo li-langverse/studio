@@ -85,7 +85,7 @@ todos:
     status: done
   - id: wsg-w5-macos-wgpu
     content: "Phase 5 — macOS aarch64 wgpu surface (PH-HW WP3 parallel track)"
-    status: pending
+    status: done
   - id: wsg-w5-linux-appimage
     content: "Phase 5 — Linux AppImage with bundled SDL/wgpu"
     status: pending

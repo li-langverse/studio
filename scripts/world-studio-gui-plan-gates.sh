@@ -590,6 +590,36 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 5 macos wgpu surface (Metal/aarch64-apple-darwin, wsg-w5-macos-wgpu)"
+if grep -q 'def studio_macos_wgpu_present_version' "$ROOT/src/lib.li" 2>/dev/null; then
+  ok "studio_macos_wgpu_present_version present"
+else
+  fail "studio_macos_wgpu_present_version missing (wsg-w5-macos-wgpu)"
+fi
+if [[ -f "$ROOT/scripts/verify-macos-wgpu-present.py" ]]; then
+  python3 "$ROOT/scripts/verify-macos-wgpu-present.py" || fail "verify-macos-wgpu-present.py"
+else
+  fail "missing scripts/verify-macos-wgpu-present.py"
+fi
+if [[ -f "$ROOT/scripts/build-studio-shell-present-host-macos.sh" ]] \
+  && [[ -f "$ROOT/scripts/start-li-world-studio-macos.sh" ]] \
+  && [[ -f "$ROOT/deploy/studio-demo/native/lig_macos_wgpu_surface_probe.c" ]]; then
+  ok "macOS wgpu surface scripts + probe present"
+else
+  fail "macOS wgpu surface scripts missing (wsg-w5-macos-wgpu)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  mac_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_macos_wgpu_present.li"
+  if [[ ! -f "$mac_smoke" ]]; then
+    mac_smoke="$ROOT/li-tests/smoke/studio_macos_wgpu_present.li"
+  fi
+  if [[ -f "$mac_smoke" ]]; then
+    lic_check "$mac_smoke" "studio_macos_wgpu_present" || fail "studio_macos_wgpu_present"
+  else
+    fail "studio_macos_wgpu_present smoke missing"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"
