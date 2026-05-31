@@ -1,20 +1,19 @@
 {
   "pass": true,
-  "todo_id": "wsg-w0-native-styled-chrome",
-  "agent_run": "world_studio_builder-51843745",
-  "wps_touched": ["W0", "WP-UX-01", "WP-GD-00"],
+  "todo_id": "wsg-w1-widget-protocol",
+  "agent_run": "world_studio_builder-52246144",
+  "wps_touched": ["W1", "WP-UX-01", "WP-GD-00"],
   "smokes_run": [
-    "li-tests/smoke/studio_native_styled_chrome.li",
-    "packages/li-ui/li-tests/smoke/paint_studio_shell_chrome.li"
+    "packages/li-gui/li-tests/smoke/widget_protocol_measure_layout.li"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
   "phase0_styled_chrome": true,
+  "widget_protocol": true,
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "studio_ui_ux_verify_styled_chrome_native": "pass",
-    "studio_ui_ux_verify_tokens": "pass"
+    "widget_protocol_measure_layout": "pass"
   },
-  "notes": "Synced C present-host paint mirror (fill_round_rect, stroke_round_rect, fill_gradient_v) with li-ui/studio_paint; added studio_native_styled_chrome smoke and studio-ui-ux-verify-styled-chrome-native.py gate.",
+  "notes": "Added Widget protocol in li-gui: WidgetNode kinds (label/button/panel/spacer), measure/layout/paint/handle_event dispatch, hit-test helper; smoke widget_protocol_measure_layout.li; li_std_gui_version 5.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

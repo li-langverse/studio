@@ -22,7 +22,7 @@ todos:
     status: done
   - id: wsg-w1-widget-protocol
     content: "Phase 1 — Widget protocol (measure, layout, paint, handle_event) in li-gui"
-    status: pending
+    status: done
   - id: wsg-w1-layout-engines
     content: "Phase 1 — FlexLayout, GridLayout, PaddingLayout, ScrollLayout in li-gui"
     status: pending

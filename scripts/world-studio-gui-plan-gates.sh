@@ -118,6 +118,24 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 1 widget protocol (li-gui measure/layout/paint/events)"
+if grep -q 'def widget_measure' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def widget_layout' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def widget_paint' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def widget_handle_event' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null; then
+  ok "li-gui Widget protocol procs present"
+else
+  fail "li-gui Widget protocol missing (wsg-w1-widget-protocol)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  widget_smoke="$LIC_ROOT/packages/li-gui/li-tests/smoke/widget_protocol_measure_layout.li"
+  if [[ -f "$widget_smoke" ]]; then
+    lic_check "$widget_smoke" "widget_protocol_measure_layout" || fail "widget_protocol_measure_layout"
+  else
+    warn "widget_protocol_measure_layout smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"
