@@ -19,6 +19,14 @@ Output: installer\out\LiWorldStudio-Setup.exe
 
 ---
 
+## Performance budgets
+
+Viewport and UI interaction targets for release hardware are documented in
+[docs/release-notes/2026-06-01-wsg-w5-perf-budgets.md](../docs/release-notes/2026-06-01-wsg-w5-perf-budgets.md).
+Verify with `./scripts/verify-perf-budgets.py` and `./scripts/bench-studio-viewport-perf.sh`.
+
+---
+
 ## Credits and license
 
 - **Creator:** Julian

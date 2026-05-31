@@ -1,25 +1,28 @@
 {
   "pass": true,
-  "todo_id": "wsg-w5-installer-ci",
+  "todo_id": "wsg-w5-perf-budgets",
   "agent_run": "world_studio_builder",
-  "wps_touched": ["W5", "WP-PUB-01"],
+  "wps_touched": ["W5", "WP-UX-13", "PH-UX"],
   "smokes_run": [
-    "li-tests/smoke/studio_installer_ci.li"
+    "li-tests/smoke/studio_perf_budgets.li"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
   "phase0_styled_chrome": true,
-  "installer_ci": {
-    "workflow": ".github/workflows/world-studio-installers.yml",
-    "matrix": ["ubuntu-24.04", "windows-latest", "macos-14"],
-    "verify_script": "scripts/verify-installer-ci.py",
-    "windows_artifact": "installer/out/LiWorldStudio-Setup.exe",
-    "linux_appimage_verify": "scripts/verify-linux-appimage.py"
+  "perf_budgets": {
+    "release_notes": "docs/release-notes/2026-06-01-wsg-w5-perf-budgets.md",
+    "registry": "benchmarks/competitive/studio-ui.toml",
+    "verify_script": "scripts/verify-perf-budgets.py",
+    "viewport_fps_target": 60,
+    "panel_switch_ms_target": 100,
+    "studio_load_ms_target": 2000,
+    "memory_warn_peak_mib": 512
   },
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "verify_installer_ci": "pass"
+    "world_studio_gui_plan_completion_gate": "pass",
+    "verify_perf_budgets": "pass"
   },
-  "notes": "Installer CI matrix: verify-installer-ci.py gates workflow jobs (linux/windows/macos), Inno ISS, AppImage wiring; GHA runs verify on PR; live iscc/AppImage build soft-skip without lic demo binary.",
+  "notes": "Final wsg-w* todo: PH-UX perf budgets documented in release notes, registry v2, Li API constants + smoke cross-check render/gui budgets; GUI plan Phases W0–W5 complete.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

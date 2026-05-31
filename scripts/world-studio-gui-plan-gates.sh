@@ -680,6 +680,32 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 5 perf budgets (PH-UX gates documented, wsg-w5-perf-budgets)"
+if grep -q 'def studio_perf_budgets_version' "$ROOT/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_perf_budgets_smoke' "$ROOT/src/lib.li" 2>/dev/null \
+  && [[ -f "$ROOT/docs/release-notes/2026-06-01-wsg-w5-perf-budgets.md" ]] \
+  && [[ -f "$ROOT/benchmarks/competitive/studio-ui.toml" ]]; then
+  ok "perf budget release notes + registry present"
+else
+  fail "perf budgets missing (wsg-w5-perf-budgets)"
+fi
+if [[ -f "$ROOT/scripts/verify-perf-budgets.py" ]]; then
+  python3 "$ROOT/scripts/verify-perf-budgets.py" || fail "verify-perf-budgets.py"
+else
+  fail "missing scripts/verify-perf-budgets.py"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  perf_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_perf_budgets.li"
+  if [[ ! -f "$perf_smoke" ]]; then
+    perf_smoke="$ROOT/li-tests/smoke/studio_perf_budgets.li"
+  fi
+  if [[ -f "$perf_smoke" ]]; then
+    lic_check "$perf_smoke" "studio_perf_budgets" || fail "studio_perf_budgets"
+  else
+    fail "studio_perf_budgets smoke missing"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

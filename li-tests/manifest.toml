@@ -246,6 +246,12 @@ note = "wsg-w5-installer-ci: Windows Inno + Linux AppImage CI matrix wiring"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_perf_budgets.li"
+outcome = "check_ok"
+note = "wsg-w5-perf-budgets: PH-UX viewport/UI perf budgets documented + smoke constants"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_shell_demo_pattern_tick.li"
 outcome = "check_ok"
 note = "T-PKG-li-studio-shell-demo-pattern-tick STUDIO_DEMO_LOOP_TICK base"
