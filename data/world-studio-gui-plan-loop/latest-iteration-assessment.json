@@ -1,8 +1,8 @@
 {
   "pass": true,
   "todo_id": "wsg-w5-perf-budgets",
-  "agent_run": "world_studio_builder-67815015",
-  "iteration": "plan-complete-verification",
+  "agent_run": "world_studio_builder-68539695",
+  "iteration": "plan-complete-ci-fix",
   "wps_touched": ["W5", "WP-UX-13", "PH-UX"],
   "smokes_run": [
     "scripts/world-studio-gui-plan-gates.sh",
@@ -17,10 +17,11 @@
     "world_studio_gui_plan_completion_gate": "pass"
   },
   "ci_fixes": [
-    "Add .gitattributes eol=lf for *.sh (prevent Windows CRLF drift on shell scripts)",
-    "Prior iteration: ci.yml syncs src/ into ../lic/packages/li-studio before lic check",
-    "Prior iteration: studio-ui-ux-native.yml honest blocked_runner on GHA GPU-runner job"
+    "Rename lig_present_host_present_active -> lig_present_host_active in studio/src/lib.li (matches lig.present API)",
+    "studio-ui-ux-native.yml: ECOSYSTEM_REF from PR head + LIC_ROOT for token verify",
+    "checkout-ecosystem-siblings.sh: force-refresh lic on CI; export LIC_ROOT",
+    "studio-ui-ux-verify-tokens.py: resolve lic at ROOT.parent.parent/lic (GHA layout fallback)"
   ],
-  "notes": "GUI library plan W0–W5 complete (all wsg-w* todos done). Local gates + completion gate pass. PR #18 installer matrix green; check + native-sdl-capture still red on last GHA run (prior to .gitattributes).",
+  "notes": "GUI library plan W0–W5 complete (all wsg-w* todos done). Local gates + completion gate pass. CI fixes for check (wrong lig API name) and native-sdl-capture (lic main missing W0 typography tokens).",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

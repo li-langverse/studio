@@ -24,8 +24,9 @@ clone_repo() {
 clone_repo "$BENCHMARKS_ORG" "$PARENT/benchmarks" "$BENCHMARKS_REF"
 
 # Studio li.toml path deps expect ../lic — ensure sibling exists for capture gates.
-if [[ ! -d "$PARENT/lic/packages/li-ui" ]]; then
+if [[ ! -d "$PARENT/lic/packages/li-ui" ]] || [[ "${ECOSYSTEM_FORCE_REFRESH:-0}" == "1" ]]; then
   clone_repo "$LIC_ORG" "$PARENT/lic" "$REF"
 fi
 
+export LIC_ROOT="$PARENT/lic"
 echo "ecosystem siblings: $PARENT/benchmarks $PARENT/lic (ref=${REF})"

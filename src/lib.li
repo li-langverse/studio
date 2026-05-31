@@ -7133,7 +7133,7 @@ def studio_macos_wgpu_surface_smoke() -> int raises IO
   ensures result <= 8
   decreases 0
 =
-  if lig_present_host_present_active() != 1:
+  if lig_present_host_active() != 1:
     return 0
   if lig_present_wgpu_swapchain_active() != 1:
     return 0
@@ -7171,7 +7171,7 @@ def studio_linux_appimage_smoke() -> int raises IO
   ensures result <= 4
   decreases 0
 =
-  if lig_present_host_present_active() != 1:
+  if lig_present_host_active() != 1:
     return 0
   if studio_present_loop_raster_version() != 1:
     return 1

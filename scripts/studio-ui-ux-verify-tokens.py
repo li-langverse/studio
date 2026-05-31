@@ -17,7 +17,11 @@ def resolve_palette() -> Path:
         candidate = Path(lic_root) / "packages/li-ui/src/lib.li"
         if candidate.is_file():
             return candidate
-    for sibling in (ROOT.parent / "lic", ROOT / "packages/li-ui/src/lib.li"):
+    for sibling in (
+        ROOT.parent / "lic",
+        ROOT.parent.parent / "lic",
+        ROOT / "packages/li-ui/src/lib.li",
+    ):
         if sibling.is_file():
             return sibling
         candidate = sibling / "packages/li-ui/src/lib.li"

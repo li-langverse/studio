@@ -37,6 +37,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Checkout benchmarks sibling
+        env:
+          ECOSYSTEM_REF: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          ECOSYSTEM_FORCE_REFRESH: "1"
         run: |
           chmod +x scripts/checkout-ecosystem-siblings.sh
           ./scripts/checkout-ecosystem-siblings.sh
@@ -50,6 +53,7 @@ jobs:
       - name: Studio UI/UX gates (no lic build)
         env:
           STUDIO_UI_UX_GATES_SKIP_BUILD: "1"
+          LIC_ROOT: ${{ github.workspace }}/../lic
         run: |
           chmod +x scripts/studio-ui-ux-plan-gates.sh scripts/ci-studio-ui-ux-native.sh
           ./scripts/studio-ui-ux-plan-gates.sh
