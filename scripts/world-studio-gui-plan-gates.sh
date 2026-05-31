@@ -531,6 +531,34 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 4 headless golden (Li CPU raster PPM, no C paint_fb, wsg-w4-headless-golden)"
+if grep -q 'def studio_headless_golden_frame' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_vertical_capture_ppm' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'li_rt_studio_headless_raster_ppm' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && [[ -f "$LIC_ROOT/runtime/li_rt_studio_headless_raster.c" ]] \
+  && ! grep -qE '#include.*studio_shell_paint_fb|shell_paint_frame' "$LIC_ROOT/runtime/li_rt_studio_headless_raster.c" 2>/dev/null; then
+  ok "li-studio headless golden raster path present"
+else
+  fail "headless golden raster missing (wsg-w4-headless-golden)"
+fi
+if [[ -f "$ROOT/scripts/verify-headless-golden.py" ]]; then
+  python3 "$ROOT/scripts/verify-headless-golden.py" || fail "verify-headless-golden.py"
+else
+  fail "missing scripts/verify-headless-golden.py"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  for hg_smoke in \
+    "$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_headless_golden.li" \
+    "$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_headless_golden_capture.li" \
+    "$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_vertical_capture_ppm.li"; do
+    if [[ -f "$hg_smoke" ]]; then
+      lic_check "$hg_smoke" "$(basename "$hg_smoke")" || fail "$(basename "$hg_smoke")"
+    else
+      fail "$(basename "$hg_smoke") smoke missing under LIC_ROOT"
+    fi
+  done
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

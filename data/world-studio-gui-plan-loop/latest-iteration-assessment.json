@@ -1,32 +1,26 @@
 {
   "pass": true,
-  "todo_id": "wsg-w4-route-table",
-  "agent_run": "world_studio_builder-61566124",
-  "wps_touched": ["W4", "WP-UX-15", "PH-GD-1"],
+  "todo_id": "wsg-w4-headless-golden",
+  "agent_run": "world_studio_builder-62275387",
+  "wps_touched": ["W4", "WP-UX-14b", "PH-GD-1"],
   "smokes_run": [
-    "packages/li-studio/li-tests/smoke/studio_route_table.li"
+    "packages/li-studio/li-tests/smoke/studio_headless_golden.li",
+    "packages/li-studio/li-tests/smoke/studio_headless_golden_capture.li",
+    "packages/li-studio/li-tests/smoke/studio_vertical_capture_ppm.li"
   ],
   "native_only": true,
-  "route_table": {
-    "route_count": 9,
-    "keys": [
-      "author/game",
-      "simulate/scientific",
-      "adaptive/drug/litl-0",
-      "adaptive/drug/litl-1",
-      "adaptive/drug/litl-2",
-      "adaptive/drug/litl-3",
-      "adaptive/drug/litl-4",
-      "agent",
-      "bench"
-    ],
-    "env": "STUDIO_ROUTE",
-    "startup": "studio_route_resolve_startup"
+  "styled_chrome_minimum": true,
+  "phase0_styled_chrome": true,
+  "headless_golden": {
+    "raster_runtime": "li_rt_studio_headless_raster.c",
+    "paint_fb_mirror": false,
+    "capture_api": "studio_vertical_capture_ppm",
+    "digest_api": "studio_headless_golden_frame"
   },
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "studio_route_table": "pass"
+    "verify_headless_golden": "pass"
   },
-  "notes": "StudioRoute table maps named shell configs to profile, mode, layout variant, LITL stage, and primary region; startup resolves STUDIO_ROUTE or STUDIO_DEMO_PROFILE/STUDIO_BENCH_MODE; vertical demo compose uses route table.",
+  "notes": "Headless CI uses Li compose+paint+render_ui_raster_cpu_pass digest driving li_rt_studio_headless_raster_ppm; C paint_fb remains fenced in li_rt_studio_paint_capture only.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

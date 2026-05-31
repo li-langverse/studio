@@ -1,0 +1,20 @@
+# wsg-w4-headless-golden — Li CPU raster PPM digests (no C paint_fb mirror).
+# Update when studio_paint_shell_chrome cmd budget changes intentionally.
+
+[[frames]]
+profile = "game"
+frame_id = 0
+width = 320
+height = 180
+capture = "studio_vertical_capture_ppm"
+raster = "render_ui_raster_cpu_pass"
+native_only = true
+
+[[frames]]
+profile = "sim_scientific"
+frame_id = 1
+width = 320
+height = 180
+capture = "studio_vertical_capture_ppm"
+raster = "render_ui_raster_cpu_pass"
+native_only = true

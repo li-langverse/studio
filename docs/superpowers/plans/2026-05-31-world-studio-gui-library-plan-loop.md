@@ -79,7 +79,7 @@ todos:
     status: done
   - id: wsg-w4-headless-golden
     content: "Phase 4 — headless Li CPU rasterizer golden frames (no C paint mirror)"
-    status: pending
+    status: done
   - id: wsg-w5-windows-native
     content: "Phase 5 — Windows native present host (Win32 or SDL static), no WSL requirement"
     status: pending
