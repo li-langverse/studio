@@ -88,7 +88,7 @@ todos:
     status: done
   - id: wsg-w5-linux-appimage
     content: "Phase 5 — Linux AppImage with bundled SDL/wgpu"
-    status: pending
+    status: done
   - id: wsg-w5-installer-ci
     content: "Phase 5 — installer build green on CI matrix (Windows + Linux)"
     status: pending

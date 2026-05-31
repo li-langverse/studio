@@ -234,6 +234,12 @@ note = "wsg-w5-macos-wgpu: macOS aarch64 wgpu/Metal surface (PH-HW WP3)"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_linux_appimage_present.li"
+outcome = "check_ok"
+note = "wsg-w5-linux-appimage: AppDir/AppImage with bundled SDL2 + wgpu env"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_shell_demo_pattern_tick.li"
 outcome = "check_ok"
 note = "T-PKG-li-studio-shell-demo-pattern-tick STUDIO_DEMO_LOOP_TICK base"

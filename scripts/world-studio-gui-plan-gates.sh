@@ -620,6 +620,36 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 5 linux appimage (AppDir + bundled SDL/wgpu, wsg-w5-linux-appimage)"
+if grep -q 'def studio_linux_appimage_version' "$ROOT/src/lib.li" 2>/dev/null; then
+  ok "studio_linux_appimage_version present"
+else
+  fail "studio_linux_appimage_version missing (wsg-w5-linux-appimage)"
+fi
+if [[ -f "$ROOT/scripts/verify-linux-appimage.py" ]]; then
+  python3 "$ROOT/scripts/verify-linux-appimage.py" || fail "verify-linux-appimage.py"
+else
+  fail "missing scripts/verify-linux-appimage.py"
+fi
+if [[ -f "$ROOT/scripts/build-studio-linux-appimage.sh" ]] \
+  && [[ -f "$ROOT/scripts/start-li-world-studio-linux.sh" ]] \
+  && [[ -f "$ROOT/installer/linux/li-world-studio.desktop" ]]; then
+  ok "Linux AppImage scripts + desktop entry present"
+else
+  fail "Linux AppImage scripts missing (wsg-w5-linux-appimage)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  linux_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_linux_appimage_present.li"
+  if [[ ! -f "$linux_smoke" ]]; then
+    linux_smoke="$ROOT/li-tests/smoke/studio_linux_appimage_present.li"
+  fi
+  if [[ -f "$linux_smoke" ]]; then
+    lic_check "$linux_smoke" "studio_linux_appimage_present" || fail "studio_linux_appimage_present"
+  else
+    fail "studio_linux_appimage_present smoke missing"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

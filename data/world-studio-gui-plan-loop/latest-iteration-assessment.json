@@ -1,26 +1,26 @@
 {
   "pass": true,
-  "todo_id": "wsg-w5-macos-wgpu",
-  "agent_run": "world_studio_builder-63281379",
+  "todo_id": "wsg-w5-linux-appimage",
+  "agent_run": "world_studio_builder",
   "wps_touched": ["W5", "WP-GD-05", "PH-HW-WP3"],
   "smokes_run": [
-    "li-tests/smoke/studio_macos_wgpu_present.li"
+    "li-tests/smoke/studio_linux_appimage_present.li"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
   "phase0_styled_chrome": true,
-  "macos_wgpu_surface": {
-    "platform": "aarch64-apple-darwin",
-    "backend": "metal_wgpu_surface",
-    "build_script": "scripts/build-studio-shell-present-host-macos.sh",
-    "launch_script": "scripts/start-li-world-studio-macos.sh",
-    "probe_source": "deploy/studio-demo/native/lig_macos_wgpu_surface_probe.c",
+  "linux_appimage": {
+    "platform": "x86_64-linux-gnu",
+    "backend": "sdl_wgpu_appdir",
+    "build_script": "scripts/build-studio-linux-appimage.sh",
+    "launch_script": "scripts/start-li-world-studio-linux.sh",
+    "appdir": "installer/out/LiWorldStudio.AppDir",
     "env_contract": ["LIG_HOST_PRESENT=1", "LIG_WGPU_SWAPCHAIN=1", "LIG_GPU_RUNNER=1"]
   },
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "verify_macos_wgpu_present": "pass"
+    "verify_linux_appimage": "pass"
   },
-  "notes": "macOS Metal wgpu surface wiring: present host exports metal_wgpu_surface JSON on __APPLE__; probe + launch scripts set swapchain env; smoke studio_macos_wgpu_surface_smoke validates surface_ok path when host active.",
+  "notes": "Linux AppDir packages I/O-only present host with bundled SDL2 libs; AppRun sets wgpu swapchain env. verify-linux-appimage.py gates source wiring; live AppImage build when appimagetool available.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

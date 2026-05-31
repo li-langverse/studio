@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Li World Studio
+Comment=Li-native World Studio shell (SDL present host)
+Exec=studio_shell_present_host --persist
+Icon=li-world-studio
+Categories=Development;IDE;
+Terminal=false
+StartupWMClass=LiWorldStudio
