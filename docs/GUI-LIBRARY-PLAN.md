@@ -8,7 +8,7 @@ Related docs: [NATIVE-WINDOW.md](NATIVE-WINDOW.md), [WORLD-STUDIO-MASTER-PLAN.md
 
 ## Executive summary
 
-**What we are building.** A first-class GUI stack for Li World Studio and future Li applications: a compile-to-native UI framework where layout, state, and paint are expressed in Li, verified with `requires`/`ensures`, and rasterized through a stable **PaintCmd intermediate representation (IR)**. The shell is already sketched as `StudioShellCompose` — dock, outliner, viewport, timeline, inspector, agent strip, command palette — but today it renders as a **low-fidelity wireframe** (colored rectangles and grid lines) via CPU `paint_blit` or a mirrored C host (`studio_shell_paint_fb.c`). This plan turns that scaffold into a real product UI.
+**What we are building.** A first-class GUI stack for Li World Studio and future Li applications: a compile-to-native UI framework where every screen decomposes into **Function · Layout · Design** layers, verified with `requires`/`ensures`, and rasterized through a stable **PaintCmd intermediate representation (IR)**. The shell is already sketched as `StudioShellCompose` — dock, outliner, viewport, timeline, inspector, agent strip, command palette — but today it renders as a **low-fidelity wireframe** (colored rectangles and grid lines) via CPU `paint_blit` or a mirrored C host (`studio_shell_paint_fb.c`). This plan turns that scaffold into a real product UI with explicit layer boundaries.
 
 **Why Li-native, not Qt or React.**
 
@@ -20,33 +20,140 @@ Related docs: [NATIVE-WINDOW.md](NATIVE-WINDOW.md), [WORLD-STUDIO-MASTER-PLAN.md
 
 **Strategic bet.** Extend **`li-ui`** (tokens, layout IR, PaintCmd), **`li-gui`** (input, viewport, widget core), and **`li-render`/`lig`** (GPU viewport + future UI rasterizer) incrementally. Retire the duplicated C paint mirror once Li owns the full present loop. Keep Path B (CPU `paint_blit`) honest for CI until Path A (wgpu swapchain) lands per WP-GD-05.
 
+**Core philosophy: Function · Layout · Design.** Every screen in Li Studio decomposes into three explicit layers — programming functionality, structural layout, and visual design — the same separation Svelte users love in `.svelte` script / markup / style blocks, expressed in Li packages and proof contracts instead of a single tangled file. Qt and Next.js teach the same lesson under different names; Li makes the triad first-class in package boundaries, naming, and CI gates.
+
+---
+
+## The Li Screen Model: Function · Layout · Design
+
+Li adopts Svelte's screen decomposition as **core GUI philosophy**, not syntactic sugar. A route, panel, or vertical screen is always three cooperating layers. Each layer has a home in the Li stack, its own proof surface, and a clear handoff to the next.
+
+### The three layers
+
+| Layer | Responsibility | What it must not do |
+|-------|----------------|---------------------|
+| **Function** | Logic, data, behavior — models, stores, signals, event handlers, sim hooks, agent tool wiring, mode FSM transitions | Emit PaintCmds, hard-code pixel rects, or embed color literals |
+| **Layout** | Structure, regions, composition — widget trees, flex/grid constraints, slot placement, adaptive shell variants | Own business rules, fetch sim state directly, or choose theme colors |
+| **Design** | Visual styling — tokens, typography, radii, component recipes, motion specs, focus-ring recipes | Compute geometry, wire signals, or branch on application state |
+
+Data flows **Function → Layout → Design → PaintCmd**. Function produces typed models and action results; Layout maps them to measured regions; Design binds semantic roles to tokens and paint recipes; the rasterizer consumes PaintCmd IR.
+
+### Mapping to Li packages and files
+
+| Layer | Primary home | Studio vertical example |
+|-------|--------------|-------------------------|
+| **Function** | `studio/src/lib.li` (vertical logic), vertical packages (`sim_drug_design`, …), future `li-studio-function` helpers | `DrugDesignSession`, LITL stage FSM, DFT panel field descriptors, agent tool allowlist |
+| **Layout** | `lic/packages/li-gui` (Widget, FlexLayout, GridLayout, EventDispatcher), `li-ui` layout IR (`layout_studio_shell_adaptive`, `layout_studio_shell_drug_litl`) | `studio_compose_inspector_drug_litl`, shell region tree, adaptive inspector width stages |
+| **Design** | `studio/docs/design/studio-design-tokens.toml` → `li-ui` `studio_color_*()`, component style recipes, PaintCmd paint procs | `Button.primary`, `surface_elevated`, inspector chrome radii, `studio_paint_focus_ring` |
+
+Today these layers **coexist in `studio/src/lib.li`** — the plan moves them toward explicit boundaries without forking the shell.
+
+### Comparison: Svelte
+
+Svelte enforces separation with three blocks in one file:
+
+| Svelte block | Li layer | Li expression |
+|--------------|----------|---------------|
+| `<script>` — stores, handlers, derived state | **Function** | Vertical models, `Store<T>`, signal handlers, `requires`/`ensures` on transitions |
+| Markup — structure, `{#if}`, slots, `{@render}` | **Layout** | Compose procs, Widget tree, slot parameters, layout policies |
+| `<style>` — scoped CSS, design tokens | **Design** | Token accessors, semantic roles, paint recipes referencing tokens only |
+
+Li can mirror this either as **three files per screen** or **one module with three proc sections** (see naming proposal below). The compiler should treat cross-layer imports as one-directional: Design may not import Function; Layout reads Function outputs as props; Function never imports paint helpers.
+
+Compile-time reactivity (`$:` derived, runes) lives entirely in **Function**. Layout stays declarative regions. Design stays token-driven — no inline magic numbers that bypass `studio-design-tokens.toml`.
+
+### Comparison: Qt
+
+Qt spreads the same triad across runtime types:
+
+| Qt concept | Li layer | Li target |
+|------------|----------|-----------|
+| `QObject`, signals/slots, property notify, event filters | **Function** | Typed action enums → **`Signal<T>`** + **`Slot`** handlers; **`Store<T>`** with dependency edges; **`EventDispatcher`** on widget tree |
+| `QWidget` hierarchy, `QBoxLayout`, `QGridLayout`, size policies | **Layout** | **`Widget`** protocol in `li-gui`: measure, layout, handle_event; **`FlexLayout`**, **`GridLayout`**, shell adaptive policies in `li-ui` |
+| `QPalette`, Qt Style Sheets (QSS), style delegates | **Design** | **`studio-design-tokens.toml`** → compile-time `studio_color_*()`; semantic roles; component recipes — no runtime QSS parsing |
+
+We take Qt's **separation of concerns**, not its MOC, QObject heap, or stringly signal names.
+
+### Comparison: Next.js
+
+Next.js nests the triad across file types:
+
+| Next.js artifact | Li layer | Li target |
+|------------------|----------|-----------|
+| `page.tsx` — data fetching, handlers, client state | **Function** | Vertical module logic, sim snapshots, mode FSM, agent sync |
+| `layout.tsx` — persistent chrome, nested regions | **Layout** | **`ShellLayout`** → **`RouteLayout`** → **`PanelLayout`**; `layout_studio_shell_*` |
+| CSS modules / `globals.css` / design tokens | **Design** | TOML tokens, `li-ui` accessors, widget default styles |
+
+`StudioRoute` keys (`author/game`, `adaptive/drug/litl-2`) select **Layout** variants; vertical modules supply **Function**; tokens supply **Design** for all routes.
+
+### Li naming and convention proposal
+
+Two compatible conventions — pick per screen complexity:
+
+**Option A — three files per screen (Svelte-parity):**
+
+```
+studio/src/screens/drug_design/
+  screen_drug_design_function.li   # models, stores, handlers, sim hooks
+  screen_drug_design_layout.li     # compose tree, widget hierarchy, slots
+  screen_drug_design_design.li     # paint procs, token bindings, motion specs
+```
+
+**Option B — single module, three proc sections (co-located):**
+
+```li
+# screen_drug_design.li
+section function { ... }   # or prefix: drug_design_fn_*
+section layout   { ... }   # or prefix: drug_design_layout_*
+section design   { ... }   # or prefix: drug_design_paint_*
+```
+
+**Option C — package split (library vs product):**
+
+| Package | Layer | Contents |
+|---------|-------|----------|
+| `li-studio-function` (future) | Function | Shared store primitives, route FSM helpers, snapshot copy contracts |
+| `li-gui` | Layout | Widget, layout engines, EventDispatcher, focus model |
+| `li-ui` | Design + IR | Tokens, PaintCmd opcodes, typography, semantic color roles |
+
+Studio verticals import all three; smokes assert layer boundaries (e.g. Function files do not call `paint_op_*`).
+
+### Worked example: drug design screen
+
+| Layer | Drug design (`sim_drug_design` / LITL adaptive) |
+|-------|--------------------------------------------------|
+| **Function** | `DrugLitlStage` enum, selection model, DFT field descriptors, `studio_shell_apply_adaptive_panel_set`, agent tools for molecule ops |
+| **Layout** | `layout_studio_shell_drug_litl`, `studio_compose_inspector_drug_litl`, widened inspector slot, timeline + viewport region visibility |
+| **Design** | `surface_elevated` for inspector chrome, `text_muted` for field labels, LITL stage accent tokens, `studio_paint_inspector_*` using token accessors only |
+
+Mode switch `adaptive/drug/litl-2` changes **Layout** policy and **Function** field set; **Design** tokens stay stable unless the vertical adds new semantic roles to TOML.
+
 ---
 
 ## Lessons from Qt (apply to Li)
 
-Qt has forty years of desktop GUI wisdom. We take the architecture, not the runtime.
+Qt has forty years of desktop GUI wisdom. We take the **Function · Layout · Design** architecture, not the runtime. The sections below map Qt concepts to Li layers.
 
-### Object model and signals/slots → Li equivalent
+### Function layer — QObject, signals/slots, model/view data
 
-Qt's `QObject` tree plus signals/slots decouple producers from consumers. Li already has a cleaner substitute:
+Qt's `QObject` tree plus signals/slots decouple producers from consumers; `QAbstractItemModel` holds data separate from views. Li's **Function** layer absorbs both:
 
-| Qt | Li today | Li target |
-|----|----------|-----------|
+| Qt (Function) | Li today | Li target |
+|---------------|----------|-----------|
 | `QObject::connect` | Typed action enums (`studio_key_action_*`, palette actions) | **`Signal<T>`** store writes + **`Slot`** handlers registered at compose time |
 | Property notify | Manual field updates on `StudioShellCompose` | Compiler-tracked **`Store<T>`** with dependency edges |
 | Event filters | `gui_handle_studio_key`, `studio_shell_handle_*_pointer` | Central **`EventDispatcher`** with capture/bubble phases on widget tree |
+| `QAbstractItemModel` | Plain structs (`SceneGraphModel`, `TimelineModel`, `SelectionModel`) | Plain Li structs updated by sim/agent hooks; **`requires`/`ensures`** on transitions |
 
-**Apply:** Keep signals as **pure functions returning action IDs**, not callbacks. Handlers live in `studio/src/lib.li` or vertical packages; smokes assert transition legality. Avoid Qt-style stringly signal names.
+**Apply:** Keep signals as **pure functions returning action IDs**, not callbacks. Handlers live in Function modules (`studio/src/lib.li` or vertical packages); smokes assert transition legality. Models never call layout or paint procs.
 
-### Widget hierarchy and layout managers
+### Layout layer — widget hierarchy and layout managers
 
-Qt widgets form a parent/child tree; `QBoxLayout`, `QGridLayout`, and `QFormLayout` compute geometry.
-
-Li already has the seed:
+Qt widgets form a parent/child tree; `QBoxLayout`, `QGridLayout`, and `QFormLayout` compute geometry — pure **Layout**:
 
 - **Shell layout:** `layout_studio_shell_adaptive`, `layout_studio_shell_drug_litl` in `li-ui`
 - **Compose tree:** `StudioShellCompose` aggregates region composables (`StudioDockCompose`, `StudioTimelineCompose`, …)
-- **Paint tree:** `studio_paint_shell_chrome` walks compose and emits PaintCmds
+- **Paint tree walk:** layout results feed paint procs; geometry never lives in Function handlers
 
 **Apply:** Introduce a generic **`Widget` trait** (or structural protocol) in `li-gui`:
 
@@ -54,36 +161,38 @@ Li already has the seed:
 Widget
   measure(constraints) -> Size
   layout(size) -> LayoutResult   # child positions
-  paint(frame, layout) -> unit
-  handle_event(event) -> EventResult
+  paint(frame, layout) -> unit     # delegates to Design recipes
+  handle_event(event) -> EventResult  # dispatches to Function handlers
 ```
 
-Shell regions become widgets; `QBoxLayout` maps to **`FlexLayout`** (row/column, gap, align); `QGridLayout` maps to **`GridLayout`** for inspector field rows. Adaptive drug/LITL inspector widening stays a layout policy parameter, not a special case.
+Shell regions become widgets; `QBoxLayout` maps to **`FlexLayout`**; `QGridLayout` maps to **`GridLayout`**. Adaptive drug/LITL inspector widening is a **Layout** policy parameter, not a Function special case.
 
-### Model/View (QAbstractItemModel)
+### Model/View split across Function and Layout
 
-Qt separates data from presentation — critical for outliner, timeline, and inspector lists.
+Qt's Model/View pattern maps cleanly onto Li layers:
 
-**Apply:**
-
-| View | Model (Li) | View (compose + paint) |
-|------|------------|------------------------|
-| Outliner | `SceneGraphModel` — entity IDs, names, hierarchy | `studio_compose_outliner` |
-| Timeline | `TimelineModel` — tracks, keyframes, playhead | `studio_compose_timeline` |
-| Inspector | `SelectionModel` + typed field descriptors | `studio_compose_inspector_*` |
+| View (Layout) | Model (Function) | Compose entry |
+|---------------|------------------|---------------|
+| Outliner tree | `SceneGraphModel` — entity IDs, names, hierarchy | `studio_compose_outliner` |
+| Timeline tracks | `TimelineModel` — tracks, keyframes, playhead | `studio_compose_timeline` |
+| Inspector fields | `SelectionModel` + typed field descriptors | `studio_compose_inspector_*` |
 | Command palette | `PaletteModel` — fuzzy-filtered actions | `StudioCommandPaletteCompose` |
 
-Models are **plain Li structs** updated by sim/agent hooks; views are **pure functions** `(model, layout) -> Compose`. Diff-based invalidation (only repaint changed regions) comes in Phase 2.
+Views are **pure Layout functions** `(model, constraints) -> Compose`. Diff-based invalidation (Phase 2) tracks Function → Layout edges only.
 
-### Stylesheets vs palette tokens
+### Design layer — palette, stylesheets, QPainter recipes
 
-Qt Style Sheets (QSS) are runtime string CSS on widgets. Li already chose the better path: **`studio-design-tokens.toml`** is the source of truth; `li-ui` exposes `studio_color_*()` accessors verified by `studio-ui-ux-verify-tokens.py`.
+Qt Style Sheets (QSS) and `QPalette` are runtime styling on widgets — Li's **Design** layer replaces them with compile-time tokens:
 
-**Apply:** Treat tokens as **compile-time constants**, not runtime QSS parsing. Add semantic roles (`text_primary`, `text_muted`, `surface_elevated`, `danger`, `success`) and component recipes (`Button.primary`, `Input.default`). Phase 0 expands typography and spacing tokens; Phase 1 binds them to widget defaults.
+- **`studio-design-tokens.toml`** is the source of truth; `li-ui` exposes `studio_color_*()` accessors verified by `studio-ui-ux-verify-tokens.py`
+- Semantic roles (`text_primary`, `text_muted`, `surface_elevated`, `danger`, `success`) and component recipes (`Button.primary`, `Input.default`) live in Design modules only
+- `QPainter` draw calls map to **Design paint procs** that emit **`PaintCmd`** — the IR boundary between Design and rasterization
 
-### Scene graph / QPainter → PaintCmd IR
+**Apply:** Treat tokens as **compile-time constants**, not runtime QSS parsing. Phase 0 expands typography and spacing tokens; Phase 1 binds them to widget defaults. Layout procs pass semantic roles; Design procs resolve them to token values.
 
-Qt's `QPainter` records draw calls; modern Qt Quick uses a scene graph. Li's **`PaintCmd`** (`fill_rect`, `stroke_rect`, `viewport_grid`) is the IR — intentionally minimal.
+### PaintCmd IR — Design output, rasterizer input
+
+Qt's scene graph ultimately feeds a rasterizer. Li's **`PaintCmd`** (`fill_rect`, `stroke_rect`, `viewport_grid`) is the **output of the Design layer** — intentionally minimal, backend-agnostic.
 
 **Apply:** Extend PaintCmd opcodes incrementally:
 
@@ -121,56 +230,63 @@ Studio's `studio_vertical_demo_compose` tick becomes the reference loop; smokes 
 
 ## Lessons from Svelte (apply to Li)
 
-Svelte proves that **compile-time reactivity** beats runtime VDOM for performance and predictability — aligned with Li's compile-to-native model.
+Svelte's greatest lesson for Li is not runes or stores alone — it is the **Function · Layout · Design** triad in every `.svelte` file. Li adopts that separation explicitly, then adds compile-to-native performance and **`requires`/`ensures`** proofs per layer.
 
-### Compile-time reactivity (stores, `$:` derived)
+### Function layer — compile-time reactivity (stores, `$:` derived)
 
-Svelte stores (`writable`, `derived`) and `$:` statements compile to subscription wiring. Li can do better with **proofs**:
+Svelte's `<script>` block — stores, handlers, derived state — maps to Li **Function**. Svelte stores (`writable`, `derived`) and `$:` statements compile to subscription wiring. Li can do better with **proofs**:
 
 ```li
-# Conceptual target (Phase 2)
+# Conceptual target (Phase 2) — Function module only
 store SimTick: int
 derived TimelinePlayhead: float from SimTick, TimelineModel
-# compiler emits: re-compose timeline only when SimTick or model changes
+# compiler emits: invalidate Layout subtree when SimTick or model changes
 ```
 
-**Apply today:** `StudioShellCompose` fields are manually updated (`studio_agent_sync_chrome_from_run`, `studio_shell_apply_mode`). Smokes already enforce paint cmd counts per state — that is manual invalidation. Phase 2 adds **`@compose`** proc annotations or a `li-gui-macros` package that records field dependencies and emits diff scopes.
+**Apply today:** `StudioShellCompose` fields are manually updated (`studio_agent_sync_chrome_from_run`, `studio_shell_apply_mode`). Smokes already enforce paint cmd counts per state — that is manual Function → Layout invalidation. Phase 2 adds **`@compose`** proc annotations or a `li-gui-macros` package that records field dependencies and emits diff scopes. Reactivity never belongs in Design paint procs.
 
-### Component composition, props, slots
+### Layout layer — component composition, props, slots
 
-Svelte components accept props and expose slots for children. Li composables (`studio_compose_agent_chrome`, `studio_compose_inspector_selected`) are already components without the syntax sugar.
+Svelte markup — structure, `{#if}`, slots — maps to Li **Layout**. Li composables (`studio_compose_agent_chrome`, `studio_compose_inspector_selected`) are already layout components without the syntax sugar.
 
 **Apply:** Standardize on:
 
-- **Props** — function parameters with `requires`/`ensures`
+- **Props** — Function model snapshots passed into Layout procs, with `requires`/`ensures`
 - **Slots** — optional `Compose` parameters (e.g. inspector body varies by profile)
 - **Snippets** — named compose helpers per vertical (`studio_compose_shell_drug_litl`)
 
-Document component contracts in package READMEs; smokes per component.
+Layout procs are **declarative regions**: they place widgets and wire event dispatch upward to Function handlers. Document component contracts in package READMEs; smokes per component.
 
-### Minimal runtime — fits Li compile-to-native
+### Design layer — scoped styles, token-driven visuals
 
-Svelte 5 runes reduce runtime overhead. Li should have **zero VDOM, zero GC-heavy scene diff**. Compose procs allocate structs on the stack; paint emits a flat cmd buffer.
+Svelte `<style>` blocks — scoped CSS, design tokens — map to Li **Design**. No inline magic numbers in Layout or Function; all radii, colors, and typography flow from **`studio-design-tokens.toml`**.
 
-**Apply:** Reactive stores (Phase 2) compile to **invalidation bitsets**, not observer linked lists at runtime. Target: compose cost \< 1 ms for shell at 1080p on bench hardware (see `panel_switch_ms_max = 100` token).
+**Apply:** Design procs consume layout rects and semantic roles (`Button.primary`, `surface_elevated`) and emit PaintCmds. Widget defaults in Phase 1 bind Layout widget types to Design recipes. Contrast and token verification stay in Design CI gates.
 
-### Transitions/animations as declarative
+### Minimal runtime — Function + Layout only at tick time
 
-Svelte transitions (`fade`, `fly`) are declarative with CSS/easing. Li has **`studio_panel_transition_ms`** and panel switch timing in `gui_panel_switch_timing`.
+Svelte 5 runes reduce runtime overhead. Li should have **zero VDOM, zero GC-heavy scene diff**. Function and Layout procs allocate structs on the stack; Design emits a flat PaintCmd buffer.
+
+**Apply:** Reactive stores (Phase 2) compile to **invalidation bitsets** on the Function → Layout edge, not observer linked lists at runtime. Target: Layout compose cost \< 1 ms for shell at 1080p on bench hardware (see `panel_switch_ms_max = 100` token).
+
+### Design layer — transitions and motion as declarative tokens
+
+Svelte transitions (`fade`, `fly`) are declarative with CSS/easing — **Design** concerns. Li has **`studio_panel_transition_ms`** and panel switch timing in `gui_panel_switch_timing`.
 
 **Apply:** Add **`MotionSpec`** tokens (duration, easing enum) and PaintCmd **`interpolate_*`** for layout morphs (inspector width LITL stages, palette open). Keep animations **opt-in per widget**; default to instant for CI determinism unless `STUDIO_MOTION=1`.
 
-### How the Li compiler could track dependencies in compose procs
+### How the Li compiler tracks Function → Layout dependencies
 
 Concrete compiler strategy (Phase 2 spike):
 
-1. Parse `compose` procs that read `var state: ShellState` fields
-2. Build a dependency graph: field writes → downstream compose procs
-3. Emit a **`ComposePlan`** static table for the demo binary
-4. At tick: set dirty flags from changed stores; run only affected compose procs
-5. Verify: `ensures` on paint cmd counts still hold per dirty scope
+1. Parse **Function** modules for `Store<T>` writes and model field mutations
+2. Parse **Layout** compose procs that read those fields as props
+3. Build a dependency graph: Function writes → downstream Layout procs
+4. Emit a **`ComposePlan`** static table for the demo binary
+5. At tick: set dirty flags from changed stores; run only affected Layout procs; Design paint follows unchanged unless layout rects shift
+6. Verify: `ensures` on paint cmd counts still hold per dirty scope
 
-This mirrors Svelte's `$:` but remains **checkable** — if a dependency is missed, smoke cmd counts fail.
+This mirrors Svelte's `$:` block boundaries but remains **checkable** — if a Function → Layout dependency is missed, smoke cmd counts fail.
 
 ---
 
@@ -290,11 +406,13 @@ Phase 4 collapses these into **one Li-owned rasterizer** with C host reduced to 
 
 ## Phased roadmap
 
-Each phase has **goals**, **primary files/packages**, **smoke/gate criteria**, and **estimated complexity** (person-weeks for a solo dev familiar with the codebase).
+Each phase has **goals**, **layers advanced** (Function · Layout · Design), **primary files/packages**, **smoke/gate criteria**, and **estimated complexity** (person-weeks for a solo dev familiar with the codebase).
 
 ---
 
 ### Phase 0: Wireframe → styled chrome
+
+**Layers advanced:** **Design** (primary); **Layout** (minor — existing shell rects unchanged)
 
 **Goal.** Make the existing shell *look* like Studio — rounded panels, typography placeholders, consistent tokens — while staying on CPU `paint_blit`. No new widget abstraction yet.
 
@@ -329,6 +447,8 @@ Each phase has **goals**, **primary files/packages**, **smoke/gate criteria**, a
 
 ### Phase 1: li-gui core (Widget, layout engine, event dispatch)
 
+**Layers advanced:** **Layout** (primary); **Design** (widget default recipes); **Function** (EventDispatcher wiring)
+
 **Goal.** General-purpose GUI foundation in `li-gui` — not Studio-specific. Studio becomes the first consumer.
 
 **Deliverables**
@@ -360,6 +480,8 @@ Each phase has **goals**, **primary files/packages**, **smoke/gate criteria**, a
 
 ### Phase 2: Reactive compose (Svelte-like stores in Li)
 
+**Layers advanced:** **Function** (primary — stores, derived state); **Layout** (invalidation graph, partial re-compose)
+
 **Goal.** Stop manual field sync; compile or convention-based dependency tracking for compose invalidation.
 
 **Deliverables**
@@ -389,6 +511,8 @@ Each phase has **goals**, **primary files/packages**, **smoke/gate criteria**, a
 ---
 
 ### Phase 3: Rasterization (wgpu text/glyphs, textures)
+
+**Layers advanced:** **Design** (primary — glyphs, icons, extended PaintCmd); rasterizer executes Design output
 
 **Goal.** GPU-accelerated text and images; PaintCmd IR executes on CPU *or* wgpu UI pass.
 
@@ -423,6 +547,8 @@ Each phase has **goals**, **primary files/packages**, **smoke/gate criteria**, a
 
 ### Phase 4: Studio integration (replace paint_fb bridge)
 
+**Layers advanced:** **Function + Layout + Design** (integration — all three layers on Widget tree, route table, single paint path)
+
 **Goal.** One Li paint path end-to-end; retire duplicated C layout/paint mirror for product builds.
 
 **Deliverables**
@@ -455,6 +581,8 @@ Each phase has **goals**, **primary files/packages**, **smoke/gate criteria**, a
 
 ### Phase 5: Installer-ready native binaries per platform
 
+**Layers advanced:** **Design + Present** (ship-quality polish); all three layers exercised on each platform host
+
 **Goal.** Shippable `LiWorldStudio-Setup.exe`, Linux AppImage, macOS `.app` with production GUI — no WSL requirement for Windows.
 
 **Deliverables**
@@ -486,14 +614,14 @@ Each phase has **goals**, **primary files/packages**, **smoke/gate criteria**, a
 
 ### Roadmap summary
 
-| Phase | Outcome | Depends on | Cumulative |
-|-------|---------|------------|------------|
-| 0 | Styled chrome | — | 2–3 wks |
-| 1 | Widget + layout core | 0 | 6–9 wks |
-| 2 | Reactive compose | 1 | 12–19 wks |
-| 3 | GPU text/UI raster | 1 | 20–31 wks |
-| 4 | Li-owned present loop | 2, 3 | 25–39 wks |
-| 5 | Installers | 4 | 29–45 wks |
+| Phase | Outcome | Layers | Depends on | Cumulative |
+|-------|---------|--------|------------|------------|
+| 0 | Styled chrome | Design | — | 2–3 wks |
+| 1 | Widget + layout core | Layout, Design | 0 | 6–9 wks |
+| 2 | Reactive compose | Function, Layout | 1 | 12–19 wks |
+| 3 | GPU text/UI raster | Design | 1 | 20–31 wks |
+| 4 | Li-owned present loop | All three | 2, 3 | 25–39 wks |
+| 5 | Installers | All three + present | 4 | 29–45 wks |
 
 Phases 2 and 3 can partially overlap after Phase 1 lands.
 
@@ -501,7 +629,7 @@ Phases 2 and 3 can partially overlap after Phase 1 lands.
 
 ## Architecture diagram
 
-End-to-end data flow from input to pixels:
+End-to-end data flow from input to pixels, showing the **Function → Layout → Design → PaintCmd** pipeline:
 
 ```mermaid
 flowchart TB
@@ -511,14 +639,29 @@ flowchart TB
     Poll --> IS[InputState]
   end
 
-  subgraph Compose["Compose layer (Li)"]
+  subgraph Function["Function layer"]
     IS --> ED[EventDispatcher]
-    ED --> WS[Widget tree / StudioShellCompose]
-    ST[Stores / Sim snapshots] --> WS
-    RT[StudioRoute / mode FSM] --> WS
-    WS --> CR[Region composables]
-    CR --> PF[PaintFrame IR]
-    CR --> VDL[RenderDrawList]
+    ED --> FH[Handlers / Slot procs]
+    SIM[Sim snapshots / agent hooks] --> ST[Stores / models]
+    RT[StudioRoute / mode FSM] --> ST
+    FH --> ST
+  end
+
+  subgraph Layout["Layout layer"]
+    ST --> WS[Widget tree / StudioShellCompose]
+    WS --> LM[FlexLayout / GridLayout / shell adaptive]
+    LM --> CR[Region composables + slots]
+    CR --> LR[LayoutResult — rects, visibility]
+  end
+
+  subgraph Design["Design layer"]
+    LR --> PR[Paint recipes / token bindings]
+    TOK[studio-design-tokens.toml] --> PR
+    PR --> PF[PaintFrame / PaintCmd IR]
+  end
+
+  subgraph Viewport["Viewport (parallel)"]
+    ST --> VDL[RenderDrawList]
   end
 
   subgraph Rasterize
@@ -537,12 +680,13 @@ flowchart TB
   end
 
   subgraph Proof["CI / smokes"]
-    PF -. cmd counts .-> SM[lic check smokes]
+    ST -. transition legality .-> SM[lic check smokes]
+    PF -. cmd counts .-> SM
     WIN -. native_pixels .-> HON[UX-14 honesty JSON]
   end
 ```
 
-**Layer separation.** Viewport 3D (`RenderDrawList` → wgpu) and 2D chrome (`PaintFrame` → CPU/wgpu UI) composited before present. Honesty flags report which path produced real pixels.
+**Layer separation.** Function owns state and handlers; Layout owns geometry and composition; Design owns tokens and PaintCmd emission. Viewport 3D (`RenderDrawList` → wgpu) and 2D chrome (`PaintFrame` → CPU/wgpu UI) composited before present. Honesty flags report which path produced real pixels.
 
 ---
 
@@ -567,6 +711,10 @@ flowchart TB
 9. **Motion determinism.** Should sim/bench modes disable all animation for reproducible captures? Recommendation: yes — `STUDIO_MOTION=0` default in CI.
 
 10. **Cross-platform present priority.** Windows native first (installer) or macOS wgpu (PH-HW WP3)? Recommendation: Windows SDL + CPU in Phase 4; macOS wgpu in Phase 5 parallel track.
+
+11. **Layer separation strictness.** Enforce three files per screen (Option A), co-located sections (Option B), or package-only split (Option C)? Recommendation: start with naming prefixes + smokes that forbid `paint_op_*` in Function modules; migrate high-churn verticals (drug design) to three-file split in Phase 4.
+
+12. **Proofs per layer.** What `requires`/`ensures` contracts belong to each layer? Recommendation: Function — transition legality and store invariants; Layout — measure/layout determinism and hit-test order; Design — PaintCmd count bounds and token-only color sources. Layer-specific smokes in `li-ui`, `li-gui`, and `studio/li-tests`.
 
 ---
 
