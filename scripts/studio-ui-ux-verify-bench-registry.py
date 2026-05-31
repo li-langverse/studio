@@ -11,7 +11,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = Path(os.environ["BENCHMARKS_COMPETITIVE"]) / "studio-ui.toml"
 LATEST = ROOT / "data/studio-ui-ux-plan-loop/latest-bench.json"
-COMPETITIVE = Path(os.environ["BENCHMARKS_RESULTS"]) / "bench-studio-viewport-perf.json"
+
+
+def resolve_competitive_bench() -> Path:
+    primary = Path(os.environ["BENCHMARKS_RESULTS"]) / "bench-studio-viewport-perf.json"
+    if primary.is_file():
+        return primary
+    fallback = ROOT / "benchmarks/results/bench-studio-viewport-perf.json"
+    if fallback.is_file():
+        return fallback
+    return primary
+
+
+COMPETITIVE = resolve_competitive_bench()
 
 
 def resolve_repo_path(rel: str) -> Path:
