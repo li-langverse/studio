@@ -48,6 +48,13 @@ md_px = 6
 lg_px = 8
 pill_px = 999
 
+[icons]
+dock_scene = "dock_scene"
+dock_assets = "dock_assets"
+dock_sim = "dock_sim"
+dock_timeline = "dock_timeline"
+dock_settings = "dock_settings"
+
 [semantic]
 mock_banner = "MARKETING MOCK — HTML preview only; native Li Studio uses li-ui/li-gui"
 command_palette_hint = "⌘K Command palette"

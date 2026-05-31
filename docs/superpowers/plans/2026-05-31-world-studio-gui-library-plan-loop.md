@@ -64,7 +64,7 @@ todos:
     status: done
   - id: wsg-w3-icon-pipeline
     content: "Phase 3 — SVG → atlas icon pipeline referenced by token name"
-    status: pending
+    status: done
   - id: wsg-w4-present-loop
     content: "Phase 4 — li-studio-demo present loop calls Li rasterizer end-to-end"
     status: pending

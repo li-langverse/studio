@@ -69,6 +69,14 @@ STRING_LEN_MAP = {
     "mono": ("studio_typography_mono_family_len", "typography"),
 }
 
+ICON_LEN_MAP = {
+    "dock_scene": ("studio_icon_token_id_dock_scene", "studio_icon_token_name_len"),
+    "dock_assets": ("studio_icon_token_id_dock_assets", "studio_icon_token_name_len"),
+    "dock_sim": ("studio_icon_token_id_dock_sim", "studio_icon_token_name_len"),
+    "dock_timeline": ("studio_icon_token_id_dock_timeline", "studio_icon_token_name_len"),
+    "dock_settings": ("studio_icon_token_id_dock_settings", "studio_icon_token_name_len"),
+}
+
 
 def hex_to_rgb(hex_str: str) -> tuple[float, float, float]:
     h = hex_str.lstrip("#")
@@ -190,6 +198,27 @@ def main() -> int:
         actual = parse_palette_int(PALETTE, fn)
         if actual != expected_len:
             errors.append(f"{fn}: palette {actual} != TOML string len {expected_len}")
+
+    icons = parse_toml_section(TOKENS, "icons")
+    for key, (token_id_fn, name_len_fn) in ICON_LEN_MAP.items():
+        raw = icons.get(key)
+        if raw is None:
+            errors.append(f"missing TOML icons.{key}")
+            continue
+        if raw != key:
+            errors.append(f"icons.{key}: value {raw!r} must match token key {key!r}")
+        expected_len = len(raw)
+        block = PALETTE.read_text(encoding="utf-8")
+        pat_if = rf"if token_id == {re.escape(token_id_fn)}\(\):\s+return ([0-9]+)"
+        m = re.search(pat_if, block)
+        if not m:
+            errors.append(f"missing {name_len_fn} branch for {token_id_fn}")
+            continue
+        actual = int(m.group(1))
+        if actual != expected_len:
+            errors.append(f"{name_len_fn}({token_id_fn}): palette {actual} != TOML len {expected_len}")
+    if icons and parse_palette_int(PALETTE, "icon_atlas_slot_count") != len(icons):
+        errors.append("icon_atlas_slot_count != len(TOML [icons])")
 
     if errors:
         for e in errors:

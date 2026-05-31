@@ -1,18 +1,26 @@
 {
-  "timestamp": "2026-05-31T23:15:00+00:00",
+  "timestamp": "2026-05-31T20:45:00+00:00",
   "branch": "cursor/world-studio-gui-library-plan",
-  "todo": "wsg-w3-wgpu-viewport-pixels",
-  "next_todo": "wsg-w3-icon-pipeline",
-  "wps": ["WP-GD-05", "WP-UX-14", "PH-UX-13"],
-  "smokes": [
-    "lic check packages/li-render/li-tests/smoke/wgpu_viewport_swapchain.li",
-    "lic check packages/li-studio/li-tests/smoke/studio_native_pixels_wgpu_swapchain.li"
+  "todo": "wsg-w3-icon-pipeline",
+  "next_todo": "wsg-w4-present-loop",
+  "wps": ["WP-UX-01", "WP-GD-05", "PH-UX-13"],
+  "smokes_run": [
+    "lic check packages/li-ui/li-tests/smoke/icon_atlas_dock_tokens.li",
+    "lic check packages/li-studio/li-tests/smoke/studio_native_styled_chrome.li",
+    "lic check packages/li-studio/li-tests/smoke/studio_paint_panel_chrome.li"
   ],
-  "gates": "world-studio-gui-plan-gates.sh pass",
+  "gates": {
+    "world_studio_gui_plan_gates": "pass",
+    "studio_ui_ux_verify_tokens": "pass",
+    "build_icon_atlas": "pass",
+    "studio_ui_ux_verify_styled_chrome_native": "pass"
+  },
   "native_only": true,
   "pass": true,
+  "north_star_fit": "gaming PH-UX-13 native chrome; provable PaintCmd draw_image + token-named icon atlas",
   "design_review": {
-    "capture": "wgpu swapchain readback — RenderViewportSmoke.native_pixels=1 on GPU runner; blocked_runner honest on CPU CI",
+    "capture": "native PPM probe 640x360 — dock accent + gradient topbar; draw_image on active dock slot",
     "regressions": "none"
-  }
+  },
+  "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

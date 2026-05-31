@@ -6225,10 +6225,10 @@ def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose
 
 def studio_paint_dock_cmds() -> int
   requires true
-  ensures result == 3
+  ensures result == 4
   decreases 0
 =
-  return 3
+  return 4
 
 def studio_paint_timeline_cmds() -> int
   requires true
@@ -6463,14 +6463,19 @@ def studio_paint_viewport_menu(frame: var PaintFrame, menu: StudioViewportMenuCo
 
 def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose) -> unit
   requires frame.cmd_count >= 0
+  requires dock.active_slot >= 0
+  requires dock.active_slot < icon_atlas_slot_count()
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_dock_cmds()
-  ensures frame.last_kind == paint_op_stroke_round_rect()
+  ensures frame.last_kind == paint_op_draw_image()
   ensures frame.last_rect.w == dock.active_slot_rect.w
-  decreases 0
+  decreases dock.active_slot
 =
   paint_frame_push(frame, paint_cmd_fill_gradient(dock.rect, studio_color_bg_primary(), studio_color_bg_elevated()))
   paint_frame_push(frame, paint_cmd_fill_round(dock.active_slot_rect, studio_color_accent_cyan(), studio_radius_sm_px()))
   paint_frame_push(frame, paint_cmd_stroke_round(dock.active_slot_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
+  var icon_id: int = icon_atlas_image_for_dock_slot(dock.active_slot)
+  var icon_src: Rect = icon_atlas_src_rect(icon_id)
+  paint_frame_push(frame, paint_cmd_draw_image(dock.active_slot_rect, icon_id, icon_src, studio_color_text_primary()))
 
 def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose) -> unit
   requires frame.cmd_count >= 0

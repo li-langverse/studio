@@ -411,6 +411,28 @@ if [[ -f "$ROOT/scripts/studio-ui-ux-verify-wgpu-swapchain.py" ]]; then
   python3 "$ROOT/scripts/studio-ui-ux-verify-wgpu-swapchain.py" || warn "studio-ui-ux-verify-wgpu-swapchain soft-fail (CPU runner expected blocked_runner)"
 fi
 
+echo "==> phase 3 icon atlas pipeline (SVG bitmap + token names, wsg-w3-icon-pipeline)"
+if grep -q 'def icon_atlas_version' "$LIC_ROOT/packages/li-ui/src/icon_atlas.li" 2>/dev/null \
+  && grep -q 'def studio_icon_token_image_id' "$LIC_ROOT/packages/li-ui/src/icon_atlas.li" 2>/dev/null \
+  && grep -q 'paint_cmd_draw_image(dock.active_slot_rect' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null; then
+  ok "icon atlas + dock draw_image paint wired"
+else
+  fail "icon atlas pipeline missing (wsg-w3-icon-pipeline)"
+fi
+if [[ -f "$LIC_ROOT/scripts/build-icon-atlas.py" ]]; then
+  python3 "$LIC_ROOT/scripts/build-icon-atlas.py" --verify || fail "build-icon-atlas stale"
+else
+  fail "missing scripts/build-icon-atlas.py (wsg-w3-icon-pipeline)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  icon_smoke="$LIC_ROOT/packages/li-ui/li-tests/smoke/icon_atlas_dock_tokens.li"
+  if [[ -f "$icon_smoke" ]]; then
+    lic_check "$icon_smoke" "icon_atlas_dock_tokens" || fail "icon_atlas_dock_tokens"
+  else
+    fail "icon_atlas_dock_tokens smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"
