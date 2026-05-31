@@ -114,7 +114,9 @@ doc = {
     "peak_observed_mib": peak_observed_mib,
     "meets_budget": meets_budget,
     "rss_status": rss_status,
-    "registry_path": str(registry_path.relative_to(root)),
+    "registry_path": str(registry_path.relative_to(root))
+    if str(registry_path).startswith(str(root))
+    else str(registry_path),
     "notes": [
         "import peak = tracemalloc after loading animate_md",
         "rss peak = --skip-export --max-frames 4 when /usr/bin/time available",
