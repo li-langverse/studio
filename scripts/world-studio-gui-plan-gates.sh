@@ -190,6 +190,25 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 1 focus model (roving tabindex + studio_paint_focus_ring)"
+if grep -q 'def focus_model_roving_next' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def focus_model_roving_prev' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def focus_model_paint_flex_focus_rings' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def event_dispatcher_handle_tab_key' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def gui_focus_model_version' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null; then
+  ok "li-gui FocusModel procs present"
+else
+  fail "li-gui FocusModel missing (wsg-w1-focus-model)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  focus_smoke="$LIC_ROOT/packages/li-gui/li-tests/smoke/focus_model_roving_tab.li"
+  if [[ -f "$focus_smoke" ]]; then
+    lic_check "$focus_smoke" "focus_model_roving_tab" || fail "focus_model_roving_tab"
+  else
+    warn "focus_model_roving_tab smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

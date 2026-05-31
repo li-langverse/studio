@@ -34,7 +34,7 @@ todos:
     status: done
   - id: wsg-w1-focus-model
     content: "Phase 1 — roving tabindex + studio_paint_focus_ring integration"
-    status: pending
+    status: done
   - id: wsg-w1-inspector-pilot
     content: "Phase 1 — migrate inspector region to Widget tree pilot"
     status: pending

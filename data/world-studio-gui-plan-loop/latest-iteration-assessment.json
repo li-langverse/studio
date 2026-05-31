@@ -1,13 +1,11 @@
 {
   "pass": true,
-  "todo_id": "wsg-w1-base-widgets",
-  "agent_run": "world_studio_builder-53651015",
-  "wps_touched": ["W1", "WP-UX-06", "WP-UX-09"],
+  "todo_id": "wsg-w1-focus-model",
+  "agent_run": "world_studio_builder-54189328",
+  "wps_touched": ["W1", "WP-UX-09", "WP-UX-10"],
   "smokes_run": [
-    "packages/li-gui/li-tests/smoke/base_widgets.li",
-    "packages/li-gui/li-tests/smoke/widget_protocol_measure_layout.li",
-    "packages/li-gui/li-tests/smoke/layout_engines_flex_grid.li",
-    "packages/li-gui/li-tests/smoke/event_dispatcher_hit_focus.li"
+    "packages/li-gui/li-tests/smoke/focus_model_roving_tab.li",
+    "packages/li-ui/li-tests/smoke/studio_accessibility.li"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
@@ -16,13 +14,11 @@
   "layout_engines": true,
   "event_dispatcher": true,
   "base_widgets": true,
+  "focus_model": true,
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "base_widgets": "pass",
-    "widget_protocol_measure_layout": "pass",
-    "layout_engines_flex_grid": "pass",
-    "event_dispatcher_hit_focus": "pass"
+    "focus_model_roving_tab": "pass"
   },
-  "notes": "Added TextInput widget kind (monospace bitmap chars, focus on click) and ScrollArea composite (scroll_layout wrapper with paint/hit-test/event dispatch); smoke base_widgets.li; gui_base_widgets_version 1; li_std_gui_version 8.",
+  "notes": "Added WidgetNode.tab_index, focus_model_roving_next/prev with tab-order keys, event_dispatcher_handle_tab_key, focus_model_paint_flex_focus_rings via studio_paint_focus_ring; gui_focus_model_version 1; li_std_gui_version 9.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }
