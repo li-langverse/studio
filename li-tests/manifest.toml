@@ -204,6 +204,12 @@ note = "T-PKG-li-studio-present-loop-raster wsg-w4-present-loop"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_c_host_slim.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-c-host-slim wsg-w4-c-host-slim"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_shell_demo_pattern_tick.li"
 outcome = "check_ok"
 note = "T-PKG-li-studio-shell-demo-pattern-tick STUDIO_DEMO_LOOP_TICK base"

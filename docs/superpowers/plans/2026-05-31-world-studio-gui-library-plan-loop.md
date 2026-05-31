@@ -70,7 +70,7 @@ todos:
     status: done
   - id: wsg-w4-c-host-slim
     content: "Phase 4 — C host slimmed to window/input/surface I/O only"
-    status: pending
+    status: done
   - id: wsg-w4-widget-tree-all-regions
     content: "Phase 4 — all shell regions on Widget tree + reactive stores"
     status: pending

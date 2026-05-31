@@ -10,7 +10,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PAINT_C = ROOT / "deploy/studio-demo/native/studio_shell_paint_fb.c"
-HOST_BIN = ROOT / "deploy/studio-demo/native/studio_shell_present_host"
+HOST_C = ROOT / "deploy/studio-demo/native/studio_shell_present_host.c"
+CAPTURE_BIN = ROOT / "deploy/studio-demo/native/studio_verticals_present_host"
 OUT_DIR = ROOT / "installer/out"
 PPM_PATH = OUT_DIR / "styled-chrome-verify.ppm"
 
@@ -30,6 +31,14 @@ def check_source() -> None:
     if "fill_round_rect(rgb, width, height, layout.agent_strip" not in text:
         fail("agent strip must use fill_round_rect (styled chrome)")
     print("studio-ui-ux-verify-styled-chrome-native: C mirror has round-rect + gradient ops")
+    if not HOST_C.is_file():
+        fail(f"missing {HOST_C.relative_to(ROOT)}")
+    host_text = HOST_C.read_text(encoding="utf-8")
+    if "STUDIO_SHELL_HOST_IO_ONLY" not in host_text:
+        fail("present host must be I/O-only (STUDIO_SHELL_HOST_IO_ONLY)")
+    if "studio_shell_paint_fb.h" in host_text or "shell_paint_frame" in host_text:
+        fail("present host must not link C paint mirror (wsg-w4-c-host-slim)")
+    print("studio-ui-ux-verify-styled-chrome-native: present host is I/O-only")
 
 
 def read_ppm_rgb(path: Path) -> tuple[int, int, list[int]]:
@@ -99,47 +108,46 @@ def wsl_path(p: Path) -> str:
     return s
 
 
-def host_runnable() -> bool:
-    if not HOST_BIN.is_file():
+def host_runnable(bin_path: Path) -> bool:
+    if not bin_path.is_file():
         return False
     if sys.platform == "win32":
         try:
-            with HOST_BIN.open("rb") as f:
+            with bin_path.open("rb") as f:
                 magic = f.read(4)
-            # ELF/Linux binary — run via WSL, not CreateProcess on Windows.
             if magic[:4] == b"\x7fELF":
                 return shutil.which("wsl") is not None
         except OSError:
             return False
-    return os.access(HOST_BIN, os.X_OK)
+    return os.access(bin_path, os.X_OK)
 
 
 def try_screenshot() -> None:
     if os.environ.get("STUDIO_UI_UX_VERIFY_SKIP_NATIVE_RUN") == "1":
         print("studio-ui-ux-verify-styled-chrome-native: skip run (STUDIO_UI_UX_VERIFY_SKIP_NATIVE_RUN=1)")
         return
-    if not HOST_BIN.is_file():
-        print("studio-ui-ux-verify-styled-chrome-native: present host not built — source check only")
+    if not CAPTURE_BIN.is_file():
+        print("studio-ui-ux-verify-styled-chrome-native: verticals capture host not built — source check only")
         return
-    if not host_runnable():
-        print("studio-ui-ux-verify-styled-chrome-native: present host not runnable here — source check only")
+    if not host_runnable(CAPTURE_BIN):
+        print("studio-ui-ux-verify-styled-chrome-native: capture host not runnable here — source check only")
         return
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     ppm = PPM_PATH
-    host = str(HOST_BIN)
+    host = str(CAPTURE_BIN)
     out_ppm = str(ppm)
-    if sys.platform == "win32" and HOST_BIN.read_bytes()[:4] == b"\x7fELF":
-        host = wsl_path(HOST_BIN)
+    if sys.platform == "win32" and CAPTURE_BIN.read_bytes()[:4] == b"\x7fELF":
+        host = wsl_path(CAPTURE_BIN)
         out_ppm = wsl_path(ppm)
         cmd = [
             "wsl",
             "-e",
             "bash",
             "-lc",
-            f"'{host}' --width 640 --height 360 --screenshot '{out_ppm}'",
+            f"'{host}' --width 640 --height 360 --out '{wsl_path(OUT_DIR)}'",
         ]
     else:
-        cmd = [host, "--width", "640", "--height", "360", "--screenshot", out_ppm]
+        cmd = [host, "--width", "640", "--height", "360", "--out", str(OUT_DIR)]
     proc = subprocess.run(
         cmd,
         cwd=ROOT,
@@ -150,7 +158,7 @@ def try_screenshot() -> None:
     )
     if proc.returncode != 0:
         print(proc.stderr[-600:] if proc.stderr else proc.stdout)
-        fail(f"present host screenshot exit {proc.returncode}")
+        fail(f"verticals capture host exit {proc.returncode}")
     if not ppm.is_file():
         fail(f"screenshot missing {ppm.name}")
     sample_corner_gradient(ppm)

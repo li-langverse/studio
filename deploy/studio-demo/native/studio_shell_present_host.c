@@ -1,28 +1,106 @@
-﻿/* Li World Studio SDL present host — real native window with shell chrome paint blit.
- * Renders layout/paint contracts shared with li-studio studio_paint_shell_chrome (paint_fb).
- * Build: build-studio-shell-present-host.ps1 (or native-sdl-build.sh with paint_fb.c)
- * Run:  ./studio_shell_present_host --width 1280 --height 720 --persist
- *       LIG_HOST_PRESENT=1 li-studio-demo  (one-shot present tick via STUDIO_SHELL_PRESENT_HOST_BIN)
+﻿/* STUDIO_SHELL_HOST_IO_ONLY — SDL window/input/surface I/O; no C paint mirror.
+ * Product pixels: Li studio_shell_present_raster_and_blit → --rgb-ppm blit path.
+ * Build: build-studio-shell-present-host.ps1 (no studio_shell_paint_fb.c)
+ * Run:  LIG_HOST_PRESENT=1 ./studio_shell_present_host --width 1280 --height 720
+ *       ./studio_shell_present_host --width 640 --height 360 --rgb-ppm frame.ppm --persist
  */
 #include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "studio_shell_paint_fb.h"
+typedef struct {
+  int pointer_down;
+  float pointer_x;
+  float pointer_y;
+  int key_escape;
+  int key_cmd_k;
+  int key_digit;
+} HostInputState;
 
-static int profile_from_env_slug(const char** slug_out) {
-  const char* env = getenv("STUDIO_DEMO_PROFILE");
-  if (env == NULL || env[0] == '\0') {
-    return 0;
+static void host_input_reset(HostInputState* s) {
+  memset(s, 0, sizeof(*s));
+}
+
+static void host_input_map_keys(const Uint8* keys, HostInputState* s) {
+  if (keys[SDL_SCANCODE_ESCAPE]) {
+    s->key_escape = 1;
   }
-  for (int id = 1; id <= 7; id++) {
-    const ShellProfileVisual* p = shell_profile_find(id);
-    if (p != NULL && strcmp(p->slug, env) == 0) {
-      *slug_out = p->slug;
-      return p->id;
+  SDL_Keymod mod = SDL_GetModState();
+  if ((mod & KMOD_GUI) || (mod & KMOD_CTRL)) {
+    if (keys[SDL_SCANCODE_K]) {
+      s->key_cmd_k = 1;
     }
   }
+  static const SDL_Scancode digit_sc[] = {
+      SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3,
+      SDL_SCANCODE_4, SDL_SCANCODE_5,
+  };
+  for (int d = 0; d < 5; d++) {
+    if (keys[digit_sc[d]]) {
+      s->key_digit = d + 1;
+      break;
+    }
+  }
+}
+
+static void host_input_export_env(const HostInputState* s) {
+  char buf[64];
+  snprintf(buf, sizeof(buf), "%d", s->pointer_down);
+  setenv("STUDIO_SHELL_POINTER_DOWN", buf, 1);
+  snprintf(buf, sizeof(buf), "%.1f", s->pointer_x);
+  setenv("STUDIO_SHELL_POINTER_X", buf, 1);
+  snprintf(buf, sizeof(buf), "%.1f", s->pointer_y);
+  setenv("STUDIO_SHELL_POINTER_Y", buf, 1);
+  setenv("STUDIO_SHELL_KEY_ESCAPE", s->key_escape ? "1" : "0", 1);
+  setenv("STUDIO_SHELL_KEY_CMD_K", s->key_cmd_k ? "1" : "0", 1);
+  if (s->key_digit >= 1 && s->key_digit <= 5) {
+    snprintf(buf, sizeof(buf), "%d", s->key_digit);
+    setenv("STUDIO_SHELL_KEY_DIGIT", buf, 1);
+  } else {
+    unsetenv("STUDIO_SHELL_KEY_DIGIT");
+  }
+}
+
+static void host_input_poll_mouse(HostInputState* s) {
+  int mx = 0, my = 0;
+  Uint32 buttons = SDL_GetMouseState(&mx, &my);
+  s->pointer_x = (float)mx;
+  s->pointer_y = (float)my;
+  s->pointer_down = (buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) ? 1 : 0;
+}
+
+static int load_ppm_rgb(const char* path, unsigned char** rgb_out, int* w_out, int* h_out) {
+  FILE* f = fopen(path, "rb");
+  if (!f) {
+    return -1;
+  }
+  char magic[3] = {0};
+  if (fread(magic, 1, 2, f) != 2 || magic[0] != 'P' || magic[1] != '6') {
+    fclose(f);
+    return -1;
+  }
+  int w = 0, h = 0, maxv = 0;
+  if (fscanf(f, " %d %d %d", &w, &h, &maxv) != 3 || w <= 0 || h <= 0) {
+    fclose(f);
+    return -1;
+  }
+  fgetc(f);
+  size_t n = (size_t)w * (size_t)h * 3;
+  unsigned char* rgb = (unsigned char*)malloc(n);
+  if (!rgb) {
+    fclose(f);
+    return -1;
+  }
+  if (fread(rgb, 1, n, f) != n) {
+    free(rgb);
+    fclose(f);
+    return -1;
+  }
+  fclose(f);
+  *rgb_out = rgb;
+  *w_out = w;
+  *h_out = h;
   return 0;
 }
 
@@ -38,6 +116,23 @@ static int save_ppm(const unsigned char* rgb, int w, int h, const char* path) {
   }
   fclose(f);
   return 0;
+}
+
+static unsigned char* solid_rgb(int w, int h) {
+  size_t n = (size_t)w * (size_t)h * 3;
+  unsigned char* rgb = (unsigned char*)calloc(n, 1);
+  if (!rgb) {
+    return NULL;
+  }
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      unsigned char* p = rgb + (y * w + x) * 3;
+      p[0] = 13;
+      p[1] = 17;
+      p[2] = 23;
+    }
+  }
+  return rgb;
 }
 
 static SDL_Texture* upload_rgb(SDL_Renderer* ren, const unsigned char* rgb, int w, int h) {
@@ -58,72 +153,46 @@ static SDL_Texture* upload_rgb(SDL_Renderer* ren, const unsigned char* rgb, int 
   return tex;
 }
 
-static int render_shell_frame(SDL_Renderer* ren, int width, int height, int profile_id, float playhead_pct) {
-  const ShellProfileVisual* pv = shell_profile_find(profile_id);
-  if (!pv) {
-    return 1;
-  }
-  size_t n = (size_t)width * (size_t)height * 3;
-  unsigned char* rgb = (unsigned char*)calloc(n, 1);
-  if (!rgb) {
-    return 2;
-  }
-  shell_paint_frame(rgb, width, height, pv, 1, playhead_pct);
-
-  SDL_Texture* tex = upload_rgb(ren, rgb, width, height);
+static int present_rgb(SDL_Renderer* ren, const unsigned char* rgb, int w, int h) {
+  SDL_Texture* tex = upload_rgb(ren, rgb, w, h);
   if (!tex) {
-    free(rgb);
-    return 3;
+    return 1;
   }
   SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
   SDL_RenderClear(ren);
   SDL_RenderCopy(ren, tex, NULL, NULL);
   SDL_RenderPresent(ren);
   SDL_DestroyTexture(tex);
-  free(rgb);
   return 0;
 }
 
-static void print_json(int width, int height, int profile_id, const char* slug, int persist) {
-  const ShellProfileVisual* pv = shell_profile_find(profile_id);
-  const char* profile_slug = slug;
-  if (pv != NULL) {
-    profile_slug = pv->slug;
-  }
+static void print_json(int width, int height, int persist, const char* rgb_ppm, int li_pixels) {
+  const char* pixel_source = li_pixels ? "li_rgb_ppm" : "surface_io_only";
+  const char* backend = li_pixels ? "sdl_li_blit" : "sdl_io_only";
   printf(
-      "{\"presented\":1,\"native_pixels\":1,\"backend\":\"sdl_paint_blit\","
-      "\"capture_mode\":\"paint_blit\",\"pixel_source\":\"paint_blit\","
-      "\"width\":%d,\"height\":%d,\"profile_id\":%d,\"slug\":\"%s\","
-      "\"persist\":%d,\"chrome\":\"studio_paint_shell_chrome\"}\n",
-      width, height, profile_id, profile_slug, persist);
+      "{\"presented\":1,\"native_pixels\":1,\"backend\":\"%s\","
+      "\"capture_mode\":\"%s\",\"pixel_source\":\"%s\","
+      "\"host_io_only\":1,\"width\":%d,\"height\":%d,\"persist\":%d,"
+      "\"rgb_ppm\":%s,\"chrome\":\"li_studio_raster\"}\n",
+      backend, pixel_source, pixel_source, width, height, persist,
+      rgb_ppm ? "true" : "false");
   fflush(stdout);
 }
 
 int main(int argc, char** argv) {
   int width = 1280;
   int height = 720;
-  int profile_id = 1;
-  const char* slug = "game";
+  const char* rgb_ppm = NULL;
   const char* screenshot = NULL;
   int persist = 0;
-  float playhead_pct = 0.35f;
-
-  const int env_pid = profile_from_env_slug(&slug);
-  if (env_pid > 0) {
-    profile_id = env_pid;
-  }
 
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "--width") == 0 && i + 1 < argc) {
       width = atoi(argv[++i]);
     } else if (strcmp(argv[i], "--height") == 0 && i + 1 < argc) {
       height = atoi(argv[++i]);
-    } else if (strcmp(argv[i], "--profile-id") == 0 && i + 1 < argc) {
-      profile_id = atoi(argv[++i]);
-    } else if (strcmp(argv[i], "--slug") == 0 && i + 1 < argc) {
-      slug = argv[++i];
-    } else if (strcmp(argv[i], "--playhead") == 0 && i + 1 < argc) {
-      playhead_pct = (float)atof(argv[++i]);
+    } else if (strcmp(argv[i], "--rgb-ppm") == 0 && i + 1 < argc) {
+      rgb_ppm = argv[++i];
     } else if (strcmp(argv[i], "--screenshot") == 0 && i + 1 < argc) {
       screenshot = argv[++i];
     } else if (strcmp(argv[i], "--persist") == 0 || strcmp(argv[i], "--interactive") == 0) {
@@ -131,16 +200,12 @@ int main(int argc, char** argv) {
     }
   }
 
+  if (rgb_ppm == NULL) {
+    rgb_ppm = getenv("STUDIO_SHELL_RGB_PPM");
+  }
   if (getenv("STUDIO_SHELL_PERSIST") != NULL && getenv("STUDIO_SHELL_PERSIST")[0] == '1') {
     persist = 1;
   }
-
-  const ShellProfileVisual* pv = shell_profile_find(profile_id);
-  if (!pv) {
-    fprintf(stderr, "unknown profile_id %d\n", profile_id);
-    return 1;
-  }
-  slug = pv->slug;
 
   if (SDL_Init(SDL_INIT_VIDEO) != 0) {
     fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
@@ -152,9 +217,8 @@ int main(int argc, char** argv) {
     window_flags = SDL_WINDOW_HIDDEN;
   }
 
-  char title[128];
-  snprintf(title, sizeof(title), "Li World Studio — %s", slug);
-  SDL_Window* win = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, window_flags);
+  SDL_Window* win = SDL_CreateWindow(
+      "Li World Studio", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, window_flags);
   if (!win) {
     fprintf(stderr, "SDL_CreateWindow failed: %s\n", SDL_GetError());
     SDL_Quit();
@@ -172,27 +236,42 @@ int main(int argc, char** argv) {
     return 4;
   }
 
-  if (render_shell_frame(ren, width, height, profile_id, playhead_pct) != 0) {
-    fprintf(stderr, "render_shell_frame failed\n");
+  unsigned char* rgb = NULL;
+  int rgb_w = width;
+  int rgb_h = height;
+  int li_pixels = 0;
+  if (rgb_ppm != NULL && load_ppm_rgb(rgb_ppm, &rgb, &rgb_w, &rgb_h) == 0) {
+    li_pixels = 1;
+  } else {
+    rgb = solid_rgb(width, height);
+    if (!rgb) {
+      SDL_DestroyRenderer(ren);
+      SDL_DestroyWindow(win);
+      SDL_Quit();
+      return 5;
+    }
+    rgb_w = width;
+    rgb_h = height;
+  }
+
+  if (present_rgb(ren, rgb, rgb_w, rgb_h) != 0) {
+    free(rgb);
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     SDL_Quit();
-    return 5;
+    return 6;
   }
 
   if (screenshot != NULL) {
-    size_t n = (size_t)width * (size_t)height * 3;
-    unsigned char* rgb = (unsigned char*)calloc(n, 1);
-    if (rgb != NULL) {
-      shell_paint_frame(rgb, width, height, pv, 1, playhead_pct);
-      if (save_ppm(rgb, width, height, screenshot) != 0) {
-        fprintf(stderr, "save_ppm failed: %s\n", screenshot);
-      }
-      free(rgb);
+    if (save_ppm(rgb, rgb_w, rgb_h, screenshot) != 0) {
+      fprintf(stderr, "save_ppm failed: %s\n", screenshot);
     }
   }
 
-  print_json(width, height, profile_id, slug, persist);
+  print_json(width, height, persist, rgb_ppm, li_pixels);
+
+  HostInputState input;
+  host_input_reset(&input);
 
   if (persist) {
     int running = 1;
@@ -207,22 +286,27 @@ int main(int argc, char** argv) {
         } else if (ev.type == SDL_WINDOWEVENT && ev.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
           width = ev.window.data1;
           height = ev.window.data2;
-          render_shell_frame(ren, width, height, profile_id, playhead_pct);
         }
       }
+      const Uint8* keys = SDL_GetKeyboardState(NULL);
+      host_input_reset(&input);
+      host_input_map_keys(keys, &input);
+      host_input_poll_mouse(&input);
+      host_input_export_env(&input);
+
       Uint32 now = SDL_GetTicks();
       if (now - last >= 33) {
-        playhead_pct += 0.01f;
-        if (playhead_pct > 1.0f) {
-          playhead_pct = 0.0f;
+        if (rgb_ppm != NULL && load_ppm_rgb(rgb_ppm, &rgb, &rgb_w, &rgb_h) == 0) {
+          li_pixels = 1;
+          present_rgb(ren, rgb, rgb_w, rgb_h);
         }
-        render_shell_frame(ren, width, height, profile_id, playhead_pct);
         last = now;
       }
       SDL_Delay(1);
     }
   }
 
+  free(rgb);
   SDL_DestroyRenderer(ren);
   SDL_DestroyWindow(win);
   SDL_Quit();

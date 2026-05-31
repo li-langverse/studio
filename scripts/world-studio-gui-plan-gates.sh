@@ -457,6 +457,32 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 4 c-host slim (I/O only, wsg-w4-c-host-slim)"
+HOST_C="$ROOT/deploy/studio-demo/native/studio_shell_present_host.c"
+if [[ -f "$HOST_C" ]]; then
+  if grep -q 'STUDIO_SHELL_HOST_IO_ONLY' "$HOST_C" \
+    && ! grep -q 'studio_shell_paint_fb.h\|shell_paint_frame' "$HOST_C"; then
+    ok "present host slimmed to window/input/surface I/O"
+  else
+    fail "present host still links C paint mirror (wsg-w4-c-host-slim)"
+  fi
+else
+  fail "missing studio_shell_present_host.c"
+fi
+if [[ -f "$ROOT/scripts/studio-c-host-retirement-gate.sh" ]]; then
+  bash "$ROOT/scripts/studio-c-host-retirement-gate.sh" || fail "studio-c-host-retirement-gate"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  c_host_slim_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_c_host_slim.li"
+  if [[ -f "$c_host_slim_smoke" ]]; then
+    lic_check "$c_host_slim_smoke" "studio_c_host_slim" || fail "studio_c_host_slim"
+  elif [[ -f "$ROOT/li-tests/smoke/studio_c_host_slim.li" ]]; then
+    lic_check "$ROOT/li-tests/smoke/studio_c_host_slim.li" "studio_c_host_slim" || fail "studio_c_host_slim"
+  else
+    fail "studio_c_host_slim smoke missing"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"
