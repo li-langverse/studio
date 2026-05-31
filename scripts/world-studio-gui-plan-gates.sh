@@ -559,6 +559,37 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   done
 fi
 
+echo "==> phase 5 windows native present (SDL .exe, no WSL, wsg-w5-windows-native)"
+if grep -q 'def studio_windows_native_present_version' "$ROOT/src/lib.li" 2>/dev/null; then
+  ok "studio_windows_native_present_version present"
+else
+  fail "studio_windows_native_present_version missing (wsg-w5-windows-native)"
+fi
+if [[ -f "$ROOT/scripts/verify-windows-native-present.py" ]]; then
+  python3 "$ROOT/scripts/verify-windows-native-present.py" || fail "verify-windows-native-present.py"
+else
+  fail "missing scripts/verify-windows-native-present.py"
+fi
+if [[ -f "$ROOT/scripts/build-studio-shell-present-host.ps1" ]] \
+  && grep -q 'Build-PresentHostWindowsNative' "$ROOT/scripts/build-studio-shell-present-host.ps1" \
+  && grep -q 'Invoke-PresentHost' "$ROOT/scripts/_studio-paths.ps1" \
+  && grep -q 'Windows native (no WSL)' "$ROOT/scripts/start-li-world-studio-window.ps1"; then
+  ok "Windows native present host scripts wired"
+else
+  fail "Windows native present scripts missing (wsg-w5-windows-native)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  win_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_windows_native_present.li"
+  if [[ ! -f "$win_smoke" ]]; then
+    win_smoke="$ROOT/li-tests/smoke/studio_windows_native_present.li"
+  fi
+  if [[ -f "$win_smoke" ]]; then
+    lic_check "$win_smoke" "studio_windows_native_present" || fail "studio_windows_native_present"
+  else
+    fail "studio_windows_native_present smoke missing"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

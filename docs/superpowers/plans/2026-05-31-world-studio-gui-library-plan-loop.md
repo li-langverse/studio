@@ -82,7 +82,7 @@ todos:
     status: done
   - id: wsg-w5-windows-native
     content: "Phase 5 — Windows native present host (Win32 or SDL static), no WSL requirement"
-    status: pending
+    status: done
   - id: wsg-w5-macos-wgpu
     content: "Phase 5 — macOS aarch64 wgpu surface (PH-HW WP3 parallel track)"
     status: pending

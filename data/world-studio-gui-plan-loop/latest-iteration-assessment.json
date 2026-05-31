@@ -1,26 +1,27 @@
 {
   "pass": true,
-  "todo_id": "wsg-w4-headless-golden",
-  "agent_run": "world_studio_builder-62275387",
-  "wps_touched": ["W4", "WP-UX-14b", "PH-GD-1"],
+  "todo_id": "wsg-w5-windows-native",
+  "agent_run": "world_studio_builder-62830456",
+  "wps_touched": ["W5", "WP-UX-14", "PH-HW-WP3"],
   "smokes_run": [
-    "packages/li-studio/li-tests/smoke/studio_headless_golden.li",
-    "packages/li-studio/li-tests/smoke/studio_headless_golden_capture.li",
-    "packages/li-studio/li-tests/smoke/studio_vertical_capture_ppm.li"
+    "packages/li-studio/li-tests/smoke/studio_windows_native_present.li",
+    "li-tests/smoke/studio_windows_native_present.li"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
   "phase0_styled_chrome": true,
-  "headless_golden": {
-    "raster_runtime": "li_rt_studio_headless_raster.c",
-    "paint_fb_mirror": false,
-    "capture_api": "studio_vertical_capture_ppm",
-    "digest_api": "studio_headless_golden_frame"
+  "windows_native_present": {
+    "host_binary": "deploy/studio-demo/native/studio_shell_present_host.exe",
+    "build_script": "scripts/build-studio-shell-present-host.ps1",
+    "launch_script": "scripts/start-li-world-studio-window.ps1",
+    "wsl_required_for_window": false,
+    "host_io_only": true,
+    "pixel_path": "li_rgb_ppm_blit"
   },
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "verify_headless_golden": "pass"
+    "verify_windows_native_present": "pass"
   },
-  "notes": "Headless CI uses Li compose+paint+render_ui_raster_cpu_pass digest driving li_rt_studio_headless_raster_ppm; C paint_fb remains fenced in li_rt_studio_paint_capture only.",
+  "notes": "Windows native SDL present host builds via MinGW+SDL2 (.exe); start-li-world-studio-window.ps1 uses Invoke-PresentHost directly without WSL when PE binary available. C host uses host_setenv/_WIN32 portability.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

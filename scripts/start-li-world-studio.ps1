@@ -31,26 +31,25 @@ function Resolve-Demo {
     return $null
 }
 
-function Resolve-PresentHostBin([bool]$PreferWindows) {
-    $native = Join-Path $StudioRoot "deploy\studio-demo\native"
-    $win = Join-Path $native "studio_shell_present_host.exe"
-    $linux = Join-Path $native "studio_shell_present_host"
-    if ($PreferWindows -and (Test-Path -LiteralPath $win)) { return $win }
-    if (Test-Path -LiteralPath $linux) { return Convert-ToWslPath $linux }
-    if (Test-Path -LiteralPath $win) { return $win }
-    return $null
-}
-
 function Ensure-PresentHost {
     $demoPath = Resolve-Demo
     $preferWin = $demoPath -and -not (Test-ElfBinary $demoPath)
-    $bin = Resolve-PresentHostBin -PreferWindows:$preferWin
-    if ($bin) { return $bin }
+    if (-not $preferWin) { $preferWin = ($env:OS -eq "Windows_NT") }
+    $bin = Resolve-PresentHostBin -StudioRoot $StudioRoot -PreferWindowsNative:$preferWin
+    if ($bin) {
+        if (Test-PeBinary $bin) { return $bin }
+        if (Test-ElfBinary $bin) { return Convert-ToWslPath $bin }
+        return $bin
+    }
     $build = Join-Path $PSScriptRoot "build-studio-shell-present-host.ps1"
     if (-not (Test-Path -LiteralPath $build)) { throw "Present host missing: $build" }
     Write-Host "Building SDL present host..." -ForegroundColor Yellow
     & $build
-    Resolve-PresentHostBin -PreferWindows:$preferWin
+    $bin = Resolve-PresentHostBin -StudioRoot $StudioRoot -PreferWindowsNative:$preferWin
+    if (-not $bin) { throw "Present host missing after build" }
+    if (Test-PeBinary $bin) { return $bin }
+    if (Test-ElfBinary $bin) { return Convert-ToWslPath $bin }
+    return $bin
 }
 
 $lic = Resolve-LicBinary

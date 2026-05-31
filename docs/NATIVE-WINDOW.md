@@ -20,6 +20,16 @@ The old `studio_shell_present_host.c` drew a single cyan HUD rectangle in a **hi
 
 ## Real window launch (no installer)
 
+**Windows native (wsg-w5 — no WSL required when MinGW+SDL2 installed):**
+
+```powershell
+cd studio
+.\scripts\build-studio-shell-present-host.ps1 -WindowsNative
+.\scripts\start-li-world-studio-window.ps1 -Profile game
+```
+
+**WSL SDL fallback (Linux dev on Windows):**
+
 ```powershell
 cd studio
 .\scripts\start-li-world-studio-window.ps1 -Profile game
@@ -37,7 +47,7 @@ Equivalent:
 .\scripts\start-li-world-studio.ps1 -RealWindow -Profile game
 ```
 
-Requires WSL + SDL2 (`sudo apt install libsdl2-dev`) and X11/WSLg for visible window.
+Requires WSL + SDL2 (`sudo apt install libsdl2-dev`) and X11/WSLg for visible window when using ELF fallback. Windows native `.exe` path does not require WSL.
 
 ## li-gui roadmap: Qt vs Svelte-like
 
@@ -66,4 +76,5 @@ Full phased roadmap: [GUI-LIBRARY-PLAN.md](GUI-LIBRARY-PLAN.md).
 | HTML mock | false | Marketing only |
 | C paint_fb capture (no SDL) | true | CI / headless evidence |
 | SDL present host (this path) | true | Real window; Li raster → `--rgb-ppm` blit |
+| Windows native `.exe` host | true | Real window on desktop; no WSL (wsg-w5) |
 | wgpu swapchain | true (when GPU runner env) | Production target (Path A) |

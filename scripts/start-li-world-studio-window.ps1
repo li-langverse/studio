@@ -1,4 +1,5 @@
-# Open a real Li World Studio native SDL window (shell chrome paint blit - not HTML mock).
+# Open a real Li World Studio native SDL window (Li raster → --rgb-ppm blit, not HTML mock).
+# wsg-w5-windows-native: prefers Windows .exe (no WSL); falls back to WSL ELF when needed.
 param(
     [ValidateSet("game", "sim_rl", "sim_scientific", "sim_robotics", "sim_automotive", "sim_additive", "sim_drug_design")]
     [string]$Profile = "game",
@@ -6,15 +7,15 @@ param(
     [int]$Height = 720,
     [switch]$Build,
     [switch]$ScreenshotOnly,
-    [switch]$SkipLiDemo
+    [switch]$SkipLiDemo,
+    [switch]$WindowsNative
 )
 
 $ErrorActionPreference = "Stop"
 . "$PSScriptRoot\_studio-paths.ps1"
 
 $StudioRoot = Get-StudioRoot
-$native = Join-Path $StudioRoot "deploy\studio-demo\native"
-$hostBin = Join-Path $native "studio_shell_present_host"
+$paths = Get-PresentHostPaths $StudioRoot
 $outDir = Join-Path $StudioRoot "installer\out"
 $ppmPath = Join-Path $outDir "frame-000.ppm"
 $pngPath = Join-Path $outDir "studio-screenshot-real-window.png"
@@ -28,12 +29,17 @@ function Resolve-Demo {
 }
 
 function Ensure-PresentHost {
-    if (Test-Path -LiteralPath $hostBin) { return $hostBin }
-    & "$PSScriptRoot\build-studio-shell-present-host.ps1"
-    if (-not (Test-Path -LiteralPath $hostBin)) {
-        throw "Present host missing after build: $hostBin"
+    $preferWin = $WindowsNative.IsPresent -or ($env:OS -eq "Windows_NT")
+    $bin = Resolve-PresentHostBin -StudioRoot $StudioRoot -PreferWindowsNative:$preferWin
+    if ($bin) { return $bin }
+    if ($WindowsNative) {
+        & "$PSScriptRoot\build-studio-shell-present-host.ps1" -WindowsNative
+    } else {
+        & "$PSScriptRoot\build-studio-shell-present-host.ps1"
     }
-    return $hostBin
+    $bin = Resolve-PresentHostBin -StudioRoot $StudioRoot -PreferWindowsNative:$preferWin
+    if (-not $bin) { throw "Present host missing after build" }
+    return $bin
 }
 
 if ($Build) {
@@ -41,23 +47,35 @@ if ($Build) {
 }
 
 $hostBin = Ensure-PresentHost
+$useWindowsNative = Test-PeBinary $hostBin
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
 $env:STUDIO_DEMO_PROFILE = $Profile
-$wslHost = Convert-ToWslPath $hostBin
-$wslOut = Convert-ToWslPath $outDir
-$wslStudio = Convert-ToWslPath $StudioRoot
+
+$hostArgs = @("--width", $Width, "--height", $Height)
+if ($ScreenshotOnly) {
+    $hostArgs += @("--screenshot", $ppmPath)
+} else {
+    $hostArgs += "--persist"
+}
+
+$hostEnv = @{
+    STUDIO_DEMO_PROFILE = $Profile
+}
+if (-not $ScreenshotOnly) {
+    $hostEnv.STUDIO_SHELL_PERSIST = "1"
+}
 
 if ($ScreenshotOnly) {
-    wsl -e bash -lc @"
-set -euo pipefail
-export STUDIO_DEMO_PROFILE='$Profile'
-'$wslHost' --width $Width --height $Height --screenshot '$wslOut/frame-000.ppm'
-python3 '$wslStudio/scripts/studio-ppm-to-png.py' '$wslOut' '$wslOut'
-mv '$wslOut/frame-000.png' '$wslOut/studio-screenshot-real-window.png'
-"@
-    if ($LASTEXITCODE -ne 0) { throw "Screenshot capture failed" }
+    $rc = Invoke-PresentHost -HostBin $hostBin -HostArgs $hostArgs -Env $hostEnv
+    if ($rc -ne 0) { throw "Screenshot capture failed (exit $rc)" }
+    if (-not (Test-Path -LiteralPath $ppmPath)) { throw "Screenshot PPM missing: $ppmPath" }
+    python "$StudioRoot\scripts\studio-ppm-to-png.py" $outDir $outDir 2>$null
+    if (Test-Path -LiteralPath (Join-Path $outDir "frame-000.png")) {
+        Copy-Item -Force (Join-Path $outDir "frame-000.png") $pngPath
+    }
     Write-Host "Screenshot: $pngPath" -ForegroundColor Green
+    Write-Host "  backend: $(if ($useWindowsNative) { 'windows_native_sdl' } else { 'wsl_sdl' })" -ForegroundColor DarkGray
     exit 0
 }
 
@@ -67,7 +85,11 @@ if (-not $SkipLiDemo) {
         Write-Host "Running Li present loop (li-studio-demo)..." -ForegroundColor Cyan
         $env:LIG_HOST_PRESENT = "1"
         $env:STUDIO_DEMO_FRAMES = "3"
-        $env:STUDIO_SHELL_PRESENT_HOST_BIN = $hostBin
+        if ($useWindowsNative) {
+            $env:STUDIO_SHELL_PRESENT_HOST_BIN = $hostBin
+        } else {
+            $env:STUDIO_SHELL_PRESENT_HOST_BIN = Convert-ToWslPath $hostBin
+        }
         $rc = Invoke-LiStudioDemo -DemoPath $demo -StudioRoot $StudioRoot
         if ($rc -ne 0) {
             Write-Host "li-studio-demo returned $rc (continuing to open window)" -ForegroundColor Yellow
@@ -78,11 +100,7 @@ if (-not $SkipLiDemo) {
 }
 
 Write-Host "Opening Li World Studio window profile=$Profile (Escape to close)" -ForegroundColor Cyan
-$env:STUDIO_SHELL_PERSIST = "1"
-wsl -e bash -lc @"
-export STUDIO_DEMO_PROFILE='$Profile'
-export STUDIO_SHELL_PERSIST=1
-export DISPLAY=\${DISPLAY:-:0}
-'$wslHost' --width $Width --height $Height --persist
-"@
-exit $LASTEXITCODE
+Write-Host "  host: $hostBin" -ForegroundColor DarkGray
+Write-Host "  platform: $(if ($useWindowsNative) { 'Windows native (no WSL)' } else { 'WSL SDL' })" -ForegroundColor DarkGray
+
+exit (Invoke-PresentHost -HostBin $hostBin -HostArgs $hostArgs -Env $hostEnv)

@@ -97,7 +97,7 @@ if (-not $SkipDemoBuild) {
 }
 
 if (-not $SkipPresentHost) {
-    & "$PSScriptRoot\build-studio-shell-present-host.ps1"
+    & "$PSScriptRoot\build-studio-shell-present-host.ps1" -WindowsNative:$($env:OS -eq "Windows_NT")
 }
 
 & "$PSScriptRoot\ensure-studio-installer-assets.ps1"

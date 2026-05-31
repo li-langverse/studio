@@ -9,6 +9,26 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+static void host_setenv(const char* name, const char* value) {
+  char buf[512];
+  snprintf(buf, sizeof(buf), "%s=%s", name, value);
+  _putenv(buf);
+}
+static void host_unsetenv(const char* name) {
+  char buf[256];
+  snprintf(buf, sizeof(buf), "%s=", name);
+  _putenv(buf);
+}
+#else
+static void host_setenv(const char* name, const char* value) {
+  setenv(name, value, 1);
+}
+static void host_unsetenv(const char* name) {
+  unsetenv(name);
+}
+#endif
+
 typedef struct {
   int pointer_down;
   float pointer_x;
@@ -47,18 +67,18 @@ static void host_input_map_keys(const Uint8* keys, HostInputState* s) {
 static void host_input_export_env(const HostInputState* s) {
   char buf[64];
   snprintf(buf, sizeof(buf), "%d", s->pointer_down);
-  setenv("STUDIO_SHELL_POINTER_DOWN", buf, 1);
+  host_setenv("STUDIO_SHELL_POINTER_DOWN", buf);
   snprintf(buf, sizeof(buf), "%.1f", s->pointer_x);
-  setenv("STUDIO_SHELL_POINTER_X", buf, 1);
+  host_setenv("STUDIO_SHELL_POINTER_X", buf);
   snprintf(buf, sizeof(buf), "%.1f", s->pointer_y);
-  setenv("STUDIO_SHELL_POINTER_Y", buf, 1);
-  setenv("STUDIO_SHELL_KEY_ESCAPE", s->key_escape ? "1" : "0", 1);
-  setenv("STUDIO_SHELL_KEY_CMD_K", s->key_cmd_k ? "1" : "0", 1);
+  host_setenv("STUDIO_SHELL_POINTER_Y", buf);
+  host_setenv("STUDIO_SHELL_KEY_ESCAPE", s->key_escape ? "1" : "0");
+  host_setenv("STUDIO_SHELL_KEY_CMD_K", s->key_cmd_k ? "1" : "0");
   if (s->key_digit >= 1 && s->key_digit <= 5) {
     snprintf(buf, sizeof(buf), "%d", s->key_digit);
-    setenv("STUDIO_SHELL_KEY_DIGIT", buf, 1);
+    host_setenv("STUDIO_SHELL_KEY_DIGIT", buf);
   } else {
-    unsetenv("STUDIO_SHELL_KEY_DIGIT");
+    host_unsetenv("STUDIO_SHELL_KEY_DIGIT");
   }
 }
 

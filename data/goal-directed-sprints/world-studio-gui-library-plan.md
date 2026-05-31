@@ -38,7 +38,7 @@ Update each iteration. Mark `| **DONE** |` only when every `wsg-wN-*` todo in th
 | **W2** | Reactive compose — Store/Derived, compose invalidation, migrate manual sync, ComposeCache | **DONE** |
 | **W3** | Rasterization — font atlas, glyph PaintCmd ops, UI raster pass, wgpu viewport pixels, icon pipeline | **DONE** |
 | **W4** | Studio integration — Li-owned present loop, slim C host, full Widget tree, route table, headless golden | **DONE** |
-| **W5** | Installer-ready — Windows/macOS/Linux native hosts, CI installer matrix, perf budgets | pending |
+| **W5** | Installer-ready — Windows/macOS/Linux native hosts, CI installer matrix, perf budgets | **partial** (wsg-w5-windows-native done) |
 
 ## Progress gate
 
