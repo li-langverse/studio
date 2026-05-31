@@ -1089,20 +1089,8 @@ def studio_agent_sync_chrome_from_run(compose: var StudioShellCompose, run: Stud
   ensures compose.agent.task_state == run.task_state
   decreases run.task_state
 =
-  var ctx: int = run.agent_context_label
-  if ctx == studio_agent_context_none():
-    ctx = studio_agent_context_for_shell(compose.inspector.has_selection, run.task_state)
-  var tool: StudioAgentToolRequest = studio_agent_tool_request_for_run(run)
-  compose.agent = studio_compose_agent_chrome_with_tool(compose.layout, run.task_state, ctx, tool)
-  if run.task_state == studio_agent_task_running():
-    compose.agent.progress = studio_compose_agent_progress_run(run, compose.agent.status_rect)
-  if run.task_state == studio_agent_task_done():
-    compose.agent.progress = studio_compose_agent_progress_run(run, compose.agent.status_rect)
-  if run.task_state == studio_agent_task_idle():
-    if compose.mode == studio_mode_agent():
-      studio_shell_apply_mode(compose, studio_mode_author())
-  if run.task_state == studio_agent_task_done():
-    studio_shell_apply_mode(compose, studio_mode_author())
+  studio_reactive_resync_agent_task(compose, run.task_state)
+  studio_reactive_flush_agent_from_run(compose, run)
 
 def studio_shell_agent_run_tick(compose: var StudioShellCompose, run: var StudioAgentRun) -> int
   requires compose.layout.viewport_w > 0.0
@@ -2152,10 +2140,17 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 32
+  ensures result == 33
   decreases 0
 =
-  return 32
+  return 33
+
+def studio_reactive_shell_version() -> int
+  requires true
+  ensures result == gui_reactive_version()
+  decreases 0
+=
+  return gui_reactive_version()
 
 def studio_inspector_widget_pilot_version() -> int
   requires true
@@ -3042,8 +3037,10 @@ def studio_shell_apply_mode(compose: var StudioShellCompose, mode: int) -> unit
   decreases mode
 =
   compose.mode = mode
+  studio_reactive_resync_mode(compose, mode)
   var region: int = studio_mode_primary_region(mode)
   var _timing: PanelSwitchTiming = gui_panel_switch_to(compose.panel, region, 0.0)
+  studio_reactive_flush_mode_regions(compose)
 
 def studio_shell_handle_mode_trigger(compose: var StudioShellCompose, trigger: int) raises IO -> int
   requires studio_mode_valid(compose.mode) == 1
@@ -3075,6 +3072,16 @@ def studio_shell_sync_mode_from_env(compose: var StudioShellCompose) raises IO -
 =
   if studio_bench_mode_from_env() == 1:
     studio_shell_apply_mode(compose, studio_mode_bench())
+
+# Phase 2 — Function layer reactive stores on shell (agent FSM, palette, mode, timeline playhead).
+type StudioReactiveShell = object
+  public inv: ComposeInvalidation
+  public graph: ComposeDepGraph
+  public agent_task: StoreInt
+  public palette_open: StoreInt
+  public shell_mode: StoreInt
+  public timeline_tick: StoreFloat
+  public agent_progress: DerivedInt
 
 # PH-GD-2 — last WorldSnapshot tick cached on shell (game profile).
 type StudioWorldCheckpoint = object
@@ -3111,6 +3118,157 @@ type StudioShellCompose = object
   public scene_entity_count: int
   public loading: StudioShellLoadingState
   public world_checkpoint: StudioWorldCheckpoint
+  public reactive: StudioReactiveShell
+
+
+def studio_reactive_shell_new(task_state: int, palette_open: int, mode: int, playhead_pct: float) -> StudioReactiveShell
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  requires palette_open >= studio_palette_closed_flag()
+  requires palette_open <= studio_palette_open_flag()
+  requires studio_mode_valid(mode) == 1
+  requires playhead_pct >= 0.0
+  requires playhead_pct <= 1.0
+  ensures store_int_get(result.agent_task) == task_state
+  ensures store_int_get(result.palette_open) == palette_open
+  ensures store_int_get(result.shell_mode) == mode
+  ensures store_float_get(result.timeline_tick) == playhead_pct
+  decreases task_state
+=
+  var rs: StudioReactiveShell
+  rs.inv = compose_invalidation_new()
+  rs.graph = compose_dep_graph_new()
+  rs.agent_task = store_int_new(reactive_store_id_agent_task(), task_state)
+  rs.palette_open = store_int_new(reactive_store_id_palette_open(), palette_open)
+  rs.shell_mode = store_int_new(reactive_store_id_shell_mode(), mode)
+  rs.timeline_tick = store_float_new(reactive_store_id_timeline_tick(), playhead_pct)
+  rs.agent_progress = derived_int_new(0, reactive_store_id_agent_task(), derived_int_from_agent_task_state(task_state))
+  return rs
+
+def studio_reactive_shell_hydrate(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires studio_mode_valid(compose.mode) == 1
+  ensures compose.reactive.graph.agent_dirty == 0
+  ensures compose.reactive.graph.palette_dirty == 0
+  decreases compose.mode
+=
+  compose.reactive = studio_reactive_shell_new(compose.agent.task_state, compose.palette.is_open, compose.mode, compose.timeline.playhead_pct)
+
+def studio_reactive_resync_agent_task(compose: var StudioShellCompose, task_state: int) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  ensures store_int_get(compose.reactive.agent_task) == task_state
+  decreases task_state
+=
+  store_int_set_with_deps(compose.reactive.agent_task, task_state, compose.reactive.inv, compose.reactive.graph)
+
+def studio_reactive_resync_palette(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires compose.palette.is_open >= studio_palette_closed_flag()
+  requires compose.palette.is_open <= studio_palette_open_flag()
+  ensures store_int_get(compose.reactive.palette_open) == compose.palette.is_open
+  decreases compose.palette.is_open
+=
+  var pal: int = compose.palette.is_open
+  store_int_set_with_deps(compose.reactive.palette_open, pal, compose.reactive.inv, compose.reactive.graph)
+
+def studio_reactive_resync_mode(compose: var StudioShellCompose, mode: int) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires studio_mode_valid(mode) == 1
+  ensures store_int_get(compose.reactive.shell_mode) == mode
+  decreases mode
+=
+  store_int_set_with_deps(compose.reactive.shell_mode, mode, compose.reactive.inv, compose.reactive.graph)
+
+def studio_reactive_resync_timeline_playhead(compose: var StudioShellCompose, playhead_pct: float) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires playhead_pct >= 0.0
+  requires playhead_pct <= 1.0
+  ensures store_float_get(compose.reactive.timeline_tick) == playhead_pct
+  decreases 0
+=
+  store_float_set_with_deps(compose.reactive.timeline_tick, playhead_pct, compose.reactive.inv, compose.reactive.graph)
+
+def studio_reactive_flush_palette(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  ensures compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_palette()) == 0
+  decreases 0
+=
+  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_palette()) != 1:
+    return
+  var pal: int = store_int_get(compose.reactive.palette_open)
+  compose.palette = studio_compose_palette(compose.layout.viewport_w, compose.layout.viewport_h, pal)
+  compose.panel.palette_open = pal
+  compose_dep_clear_region(compose.reactive.graph, compose_region_id_palette())
+  store_int_clear_dirty(compose.reactive.palette_open, compose.reactive.inv)
+
+def studio_reactive_flush_timeline(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  ensures compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_timeline()) == 0
+  decreases 0
+=
+  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_timeline()) != 1:
+    return
+  var pct: float = store_float_get(compose.reactive.timeline_tick)
+  compose.timeline.playhead_pct = pct
+  compose.timeline.playhead_rect = studio_timeline_playhead_rect_at(compose.timeline.track_rect.x, compose.timeline.track_rect.y, compose.timeline.track_rect.w, compose.timeline.track_rect.h, pct)
+  compose_dep_clear_region(compose.reactive.graph, compose_region_id_timeline())
+  compose.reactive.timeline_tick.dirty = 0
+
+def studio_reactive_flush_mode_regions(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires studio_mode_valid(compose.mode) == 1
+  ensures store_int_get(compose.reactive.shell_mode) == compose.mode
+  decreases compose.mode
+=
+  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_dock()) == 1:
+    compose_dep_clear_region(compose.reactive.graph, compose_region_id_dock())
+  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_inspector()) == 1:
+    compose_dep_clear_region(compose.reactive.graph, compose_region_id_inspector())
+  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_viewport_hud()) == 1:
+    compose_dep_clear_region(compose.reactive.graph, compose_region_id_viewport_hud())
+  store_int_clear_dirty(compose.reactive.shell_mode, compose.reactive.inv)
+
+def studio_reactive_flush_agent_from_run(compose: var StudioShellCompose, run: StudioAgentRun) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires run.task_state >= studio_agent_task_idle()
+  requires run.task_state <= studio_agent_task_done()
+  ensures compose.agent.task_state == run.task_state
+  ensures compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_agent()) == 0
+  decreases run.task_state
+=
+  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_agent()) != 1:
+    return
+  var ctx: int = run.agent_context_label
+  if ctx == studio_agent_context_none():
+    ctx = studio_agent_context_for_shell(compose.inspector.has_selection, run.task_state)
+  var tool: StudioAgentToolRequest = studio_agent_tool_request_for_run(run)
+  compose.agent = studio_compose_agent_chrome_with_tool(compose.layout, run.task_state, ctx, tool)
+  if run.task_state == studio_agent_task_running():
+    compose.agent.progress = studio_compose_agent_progress_run(run, compose.agent.status_rect)
+  if run.task_state == studio_agent_task_done():
+    compose.agent.progress = studio_compose_agent_progress_run(run, compose.agent.status_rect)
+  if run.task_state == studio_agent_task_idle():
+    if compose.mode == studio_mode_agent():
+      studio_shell_apply_mode(compose, studio_mode_author())
+  if run.task_state == studio_agent_task_done():
+    studio_shell_apply_mode(compose, studio_mode_author())
+  derived_int_sync_agent_progress(compose.reactive.agent_progress, compose.reactive.agent_task, compose.reactive.inv)
+  compose_dep_clear_region(compose.reactive.graph, compose_region_id_agent())
+  store_int_clear_dirty(compose.reactive.agent_task, compose.reactive.inv)
+
+def studio_reactive_timeline_sync_playhead(compose: var StudioShellCompose, tick: int, duration_ticks: int) raises IO -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires tick >= 0
+  requires duration_ticks >= 1
+  ensures compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_timeline()) == 0
+  decreases tick
+=
+  var _synced: int = li_rt_studio_timeline_sync_sim_tick(tick, duration_ticks)
+  var pct: float = li_rt_studio_timeline_playhead_pct_from_tick(tick, duration_ticks)
+  studio_reactive_resync_timeline_playhead(compose, pct)
+  studio_reactive_flush_timeline(compose)
 
 
 def studio_shell_loading_on() -> int
@@ -4792,6 +4950,7 @@ def studio_shell_timeline_tick_sim_step(compose: var StudioShellCompose, config:
   var rc: int = studio_timeline_tick_sim_step(config, sim_out, dt, duration_ticks)
   if rc == 1:
     studio_shell_world_checkpoint_store(compose, sim_out)
+    studio_reactive_timeline_sync_playhead(compose, sim_out.tick, duration_ticks)
   return rc
 
 def studio_game_world_checkpoint_roundtrip(session: SimSessionStub) raises Alloc, IO -> int
@@ -5910,6 +6069,7 @@ def studio_compose_shell_profile(w: float, h: float, active_dock_slot: int, has_
   out.loading = studio_shell_loading_state_new()
   out.world_checkpoint = studio_world_checkpoint_empty()
   var mode0: int = studio_mode_from_profile(active_profile)
+  out.reactive = studio_reactive_shell_new(studio_agent_task_idle(), studio_palette_closed_flag(), mode0, profile_tl_pct)
   studio_shell_apply_mode(out, mode0)
   return out
 
@@ -5963,6 +6123,7 @@ def studio_compose_shell(w: float, h: float, active_dock_slot: int, has_selectio
   out.loading = studio_shell_loading_state_new()
   out.world_checkpoint = studio_world_checkpoint_empty()
   var mode0: int = studio_mode_default()
+  out.reactive = studio_reactive_shell_new(studio_agent_task_idle(), studio_palette_closed_flag(), mode0, shell_tl_pct)
   studio_shell_apply_mode(out, mode0)
   return out
 
@@ -6002,6 +6163,7 @@ def studio_compose_shell_palette(w: float, h: float, active_dock_slot: int, has_
   var slot_shell: int = active_dock_slot
   var out: StudioShellCompose = studio_compose_shell(w, h, slot_shell, has_selection, 0)
   out.palette = studio_compose_palette(out.layout.viewport_w, out.layout.viewport_h, palette_open)
+  studio_reactive_resync_palette(out)
   return out
 
 def studio_compose_shell_agent(w: float, h: float, active_dock_slot: int, has_selection: int, scene_entity_count: int, task_state: int) -> StudioShellCompose
@@ -6025,6 +6187,7 @@ def studio_compose_shell_agent(w: float, h: float, active_dock_slot: int, has_se
   var slot_shell: int = active_dock_slot
   var out: StudioShellCompose = studio_compose_shell(w, h, slot_shell, sel0, scene0)
   out.agent = studio_compose_agent_chrome(out.layout, task0, studio_agent_context_for_shell(ctx_sel0, ctx_task0))
+  studio_reactive_resync_agent_task(out, task0)
   return out
 
 
@@ -6656,6 +6819,9 @@ def studio_handle_studio_key(compose: var StudioShellCompose, input: InputState)
   var key_w: float = compose.layout.viewport_w
   var key_h: float = compose.layout.viewport_h
   var action: int = gui_handle_studio_key_palette(compose.panel, compose.palette, key_w, key_h, input)
+  if action != studio_key_action_none():
+    studio_reactive_resync_palette(compose)
+    studio_reactive_flush_palette(compose)
   if action == studio_key_action_palette_exec():
     var _applied: int = studio_palette_apply_action(compose, compose.panel.last_palette_action)
   return action

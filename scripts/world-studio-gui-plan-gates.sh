@@ -273,6 +273,25 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 2 migrate manual sync (StudioReactiveShell on StudioShellCompose)"
+if grep -q 'type StudioReactiveShell' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_reactive_flush_agent_from_run' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_reactive_resync_palette' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_reactive_timeline_sync_playhead' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'public reactive: StudioReactiveShell' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null; then
+  ok "li-studio reactive shell migration present"
+else
+  fail "li-studio reactive shell migration missing (wsg-w2-migrate-sync)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  reactive_shell_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_reactive_shell_sync.li"
+  if [[ -f "$reactive_shell_smoke" ]]; then
+    lic_check "$reactive_shell_smoke" "studio_reactive_shell_sync" || fail "studio_reactive_shell_sync"
+  else
+    warn "studio_reactive_shell_sync smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

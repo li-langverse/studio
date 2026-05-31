@@ -46,7 +46,7 @@ todos:
     status: done
   - id: wsg-w2-migrate-sync
     content: "Phase 2 — migrate agent FSM, palette, timeline playhead, mode transitions off manual sync"
-    status: pending
+    status: done
   - id: wsg-w2-compose-cache
     content: "Phase 2 — ComposeCache dirty flags + partial re-compose smokes"
     status: pending
