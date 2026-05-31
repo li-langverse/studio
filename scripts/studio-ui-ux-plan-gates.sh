@@ -52,6 +52,7 @@ li_phase "competitive intel doc"
 [[ -f "$BENCHMARKS_COMPETITIVE/studio-ui.toml" ]] || fail "studio-ui.toml bench registry"
 
 li_phase "studio-ui bench registry"
+chmod +x "$ROOT/scripts/bench-studio-viewport-perf.sh" 2>/dev/null || true
 "$ROOT/scripts/bench-studio-viewport-perf.sh" || fail "bench-studio-viewport-perf"
 python3 "$ROOT/scripts/studio-ui-ux-verify-bench-registry.py" || fail "studio-ui-ux-verify-bench-registry"
 
