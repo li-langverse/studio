@@ -1,14 +1,14 @@
 {
   "pass": true,
   "todo_id": "wsg-w5-perf-budgets",
-  "agent_run": "world_studio_builder-65463362",
-  "iteration": "verification",
+  "agent_run": "world_studio_builder-66336422",
+  "iteration": "ci-stabilization",
   "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "WP-UX-13", "PH-UX"],
   "smokes_run": [
-    "scripts/verify-perf-budgets.py",
-    "scripts/verify-installer-ci.py",
-    "scripts/verify-headless-golden.py",
-    "li-tests/smoke/studio_perf_budgets.li (CI via src/lib.li)"
+    "scripts/world-studio-gui-plan-gates.sh",
+    "scripts/world-studio-gui-plan-completion-gate.sh",
+    "scripts/ci-studio-ui-ux-wgpu.sh",
+    "scripts/ci-studio-ui-ux-wgpu-swapchain.sh"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
@@ -19,13 +19,13 @@
     "world_studio_gui_plan_completion_gate": "pass"
   },
   "ci_fixes": [
-    "ci.yml LLVM 22 + ../lic sibling checkout",
-    "verify-installer-ci.py powershell FileNotFoundError handling",
-    "checkout-ecosystem-siblings.sh for native capture workflow",
-    "_studio-env.sh prefer developer LIC_ROOT",
-    "li.toml UTF-8 BOM removed",
-    "world-studio-gui-plan-gates.sh studio-repo smoke soft-skip"
+    "scripts/lib vendored (li-ui, llvm-env, benchmarks-env)",
+    "ci.yml uses lic ci-install-llvm.sh for LLVM 22 on ubuntu-24.04",
+    "bench-studio-viewport-perf resolves ../lic hooks + wgpu_swapchain JSON",
+    "studio-ui-ux-verify-wgpu-swapchain resolves lic sibling",
+    "world-studio-installers.yml uses checkout-ecosystem-siblings.sh",
+    "_studio-env.sh Windows-safe partial ../lic symlink handling"
   ],
-  "notes": "GUI library plan Phases W0–W5 complete; verification iteration fixed local/CI gate regressions.",
+  "notes": "GUI library plan Phases W0–W5 complete; CI stabilization iteration fixes red PR #18 workflows.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

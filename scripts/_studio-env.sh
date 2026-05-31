@@ -36,7 +36,16 @@ _ensure_lic_sibling_link() {
     return 0
   fi
   if [[ -e "$link" && ! -L "$link" ]]; then
-    rm -rf "$link"
+    if [[ -n "$link_real" && "$lic_real" != "$link_real" ]]; then
+      if command -v cmd.exe >/dev/null 2>&1; then
+        cmd.exe //c "rmdir /s /q \"$(cygpath -w "$link" 2>/dev/null || echo "$link")\"" 2>/dev/null || true
+      fi
+      rm -rf "$link" 2>/dev/null || true
+    fi
+    if [[ -e "$link" && ! -L "$link" ]]; then
+      echo "_studio-env: warn partial ../lic blocks symlink; using LIC_ROOT=$LIC_ROOT" >&2
+      return 0
+    fi
   elif [[ -L "$link" ]]; then
     rm -f "$link"
   fi

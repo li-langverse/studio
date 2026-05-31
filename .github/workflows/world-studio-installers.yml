@@ -34,8 +34,9 @@ jobs:
 
       - name: Checkout lic sibling
         run: |
-          git clone --depth 1 https://github.com/li-langverse/lic.git ../lic || true
-          test -d ../lic/scripts/wsl-setup-build.sh || test -d ../lic/scripts/build.sh
+          chmod +x scripts/checkout-ecosystem-siblings.sh
+          ./scripts/checkout-ecosystem-siblings.sh
+          test -f ../lic/scripts/build.sh
 
       - name: Installer CI verify (wsg-w5-installer-ci)
         env:

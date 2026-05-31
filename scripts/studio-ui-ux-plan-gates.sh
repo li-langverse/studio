@@ -5,6 +5,8 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=lib/benchmarks-env.sh
 source "$ROOT/scripts/lib/benchmarks-env.sh"
 
+# shellcheck source=lib/llvm-env.sh
+source "$ROOT/scripts/lib/llvm-env.sh"
 # shellcheck source=lib/li-ui.sh
 source "$ROOT/scripts/lib/li-ui.sh"
 li_detect_compilers 2>/dev/null || true

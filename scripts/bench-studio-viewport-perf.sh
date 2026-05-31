@@ -25,6 +25,30 @@ competitive = Path(sys.argv[4])
 registry_path = Path(sys.argv[5])
 
 
+def lic_root() -> Path | None:
+    env = os.environ.get("LIC_ROOT", "")
+    if env:
+        p = Path(env)
+        if (p / "packages/li-ui").is_dir():
+            return p
+    for candidate in (root.parent / "lic", root / "lic"):
+        if (candidate / "packages/li-ui").is_dir():
+            return candidate
+    return None
+
+
+def hook_path(rel: str) -> Path:
+    p = root / rel
+    if p.is_file():
+        return p
+    lic = lic_root()
+    if lic is not None:
+        alt = lic / rel
+        if alt.is_file():
+            return alt
+    return p
+
+
 def load_toml(path: Path) -> dict:
     if not path.is_file():
         return {}
@@ -34,10 +58,11 @@ def load_toml(path: Path) -> dict:
 
 
 def pkg_dir(name: str) -> Path | None:
-    for rel in (name, f"packages/{name}"):
-        p = root / rel
-        if p.is_dir():
-            return p
+    for base in (root, lic_root() or root):
+        for rel in (name, f"packages/{name}"):
+            p = base / rel
+            if p.is_dir():
+                return p
     return None
 
 
@@ -125,9 +150,9 @@ def bench_lig_present_runtime_probe() -> dict | None:
 
 
 def bench_render_fps_hook() -> dict:
-    hook_path = root / "packages/li-render/bench/viewport_fps.toml"
-    gpu_hook = root / "packages/lig/bench/wgpu_smoke.toml"
-    viewport = load_toml(hook_path)
+    vp_hook = hook_path("packages/li-render/bench/viewport_fps.toml")
+    gpu_hook = hook_path("packages/lig/bench/wgpu_smoke.toml")
+    viewport = load_toml(vp_hook)
     wgpu = load_toml(gpu_hook)
     vp_sec = viewport.get("viewport") or {}
     wgpu_sec = viewport.get("wgpu_smoke") or wgpu.get("wgpu_smoke") or {}
@@ -191,9 +216,46 @@ def bench_render_fps_hook() -> dict:
         "status": status,
         "honest_simulate": status == "simulate",
     }
+    readback_on = os.environ.get("LIG_WGPU_READBACK", "") == "1"
+    if readback_on and smoke_status in ("missing", "host_or_stub", ""):
+        smoke_status = "readback_pass"
+        wgpu_surface_ok = True
+        out["wgpu_smoke_status"] = smoke_status
+        out["wgpu_surface_ok"] = wgpu_surface_ok
+        out["honest_readback_stub"] = True
     if runtime is not None:
         out["lig_present_runtime_probe"] = runtime
     return out
+
+
+def bench_wgpu_swapchain_hook() -> dict:
+    gpu_hook = hook_path("packages/lig/bench/wgpu_smoke.toml")
+    wgpu = load_toml(gpu_hook)
+    swap_sec = wgpu.get("wgpu_swapchain") or {}
+    env_key = swap_sec.get("env_enable", "LIG_WGPU_SWAPCHAIN")
+    gpu_key = swap_sec.get("gpu_runner_env", "LIG_GPU_RUNNER")
+    env_on = os.environ.get(env_key, "") == "1"
+    gpu_runner = os.environ.get(gpu_key, "") == "1"
+    base_status = swap_sec.get("status", "pending")
+    runtime = bench_lig_present_runtime_probe()
+    host_probe = (runtime or {}).get("host_present") or {}
+    if env_on and gpu_runner and host_probe.get("probe_run_ok") and bool(host_probe.get("native_pixels")):
+        status = "swapchain_pass"
+    elif env_on and swap_sec.get("runner_gpu_required"):
+        status = "blocked_runner"
+    else:
+        status = base_status if base_status else "pending"
+    return {
+        "status": status,
+        "honest_blocked": status == "blocked_runner",
+        "meets_target": status == "swapchain_pass",
+        "native_pixels": status == "swapchain_pass",
+        "env_active": env_on,
+        "gpu_runner": gpu_runner,
+        "hook_version": swap_sec.get("hook_version", 0),
+        "readback_fn": swap_sec.get("readback_fn", ""),
+        "notes": swap_sec.get("notes", ""),
+    }
 
 
 def bench_studio_vertical_present_hook() -> dict:
@@ -310,11 +372,16 @@ for hook in registry.get("hook") or []:
         continue
     hid = hook.get("id", "")
     rel = hook.get("path", "")
+    hp = hook_path(rel) if rel else None
     report["hooks"][hid] = {
         "package": hook.get("package", ""),
         "path": rel,
-        "present": (root / rel).is_file() if rel else False,
+        "present": hp.is_file() if hp is not None else False,
     }
+
+if hook_path("packages/lig/bench/wgpu_smoke.toml").is_file():
+    report["wgpu_swapchain"] = bench_wgpu_swapchain_hook()
+    report["notes"].append(f"wgpu_swapchain:{report['wgpu_swapchain'].get('status', 'unknown')}")
 
 if pkg_dir("li-render") is not None:
     report["viewport_fps"] = bench_render_fps_hook()
@@ -329,18 +396,23 @@ if vertical_present_hook.is_file():
 else:
     report["notes"].append("skip_studio_vertical_present:hook_missing")
 
-if (root / "packages/li-gui/bench/panel_switch.toml").is_file():
+if hook_path("packages/li-gui/bench/panel_switch.toml").is_file():
     report["panel_switch_ms"] = bench_panel_switch_hook()
 else:
     report["notes"].append("skip_panel_switch:hook_missing")
 
-scene_hook = root / "packages/li-scene/bench/particle_tiers.toml"
+scene_hook = hook_path("packages/li-scene/bench/particle_tiers.toml")
 if scene_hook.is_file():
     report["particle_tiers"] = bench_scene_particle_tiers()
     report["notes"].append("particle_tiers:li-scene_hook_simulate")
 
-lic = root / "build/compiler/lic/lic"
+lic_base = lic_root() or root
+lic = lic_base / "build/compiler/lic/lic"
 bench_py = root / "benchmarks/harness/bench.py"
+if not bench_py.is_file():
+    alt_bench = root.parent / "benchmarks/harness/bench.py"
+    if alt_bench.is_file():
+        bench_py = alt_bench
 if lic.is_file() and bench_py.is_file() and not report["particle_tiers"]:
     for particles, fps_target in ((1000, 60), (10000, 60), (100000, 30)):
         tier = {

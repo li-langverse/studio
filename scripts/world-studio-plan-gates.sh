@@ -2,6 +2,8 @@
 # Gates for World Studio master plan loop Â native li-studio smokes + plan docs.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=lib/llvm-env.sh
+source "$ROOT/scripts/lib/llvm-env.sh"
 # shellcheck source=lib/li-ui.sh
 source "$ROOT/scripts/lib/li-ui.sh"
 li_detect_compilers 2>/dev/null || true
