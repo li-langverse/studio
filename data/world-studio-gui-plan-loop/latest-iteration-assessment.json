@@ -1,0 +1,18 @@
+{
+  "pass": true,
+  "todo_id": "wsg-w0-studio-paint-polish",
+  "agent_run": "world_studio_builder-1780250173355",
+  "wps_touched": ["W0", "WP-UX-01", "WP-UX-13"],
+  "smokes_run": [
+    "packages/li-ui/li-tests/smoke/paint_studio_shell_chrome.li",
+    "packages/li-studio/li-tests/smoke/studio_compose_panels.li",
+    "packages/li-studio/li-tests/smoke/studio_paint_panel_chrome.li"
+  ],
+  "native_only": true,
+  "gates": {
+    "world_studio_gui_plan_gates": "pass",
+    "lic_check_wsl": "pass"
+  },
+  "notes": "Phase 0 paint polish: studio_paint_dock/timeline/inspector/outliner/agent/topbar use PaintCmd round-rect + gradient via paint_frame_push; shell_chrome delegates to panel paint procs; C studio_shell_paint_fb.c gradient/round parity; plan todos wsg-w0-paint-ops through wsg-w0-c-paint-parity marked done.",
+  "pr_url": ""
+}

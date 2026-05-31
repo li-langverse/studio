@@ -4,16 +4,16 @@ overview: Goal-directed agent executes GUI-LIBRARY-PLAN.md Phases 0–5 — Func
 todos:
   - id: wsg-w0-paint-ops
     content: "Phase 0 — PaintCmd fill_round_rect, stroke_round_rect, fill_gradient in li-ui"
-    status: pending
+    status: done
   - id: wsg-w0-typography-tokens
     content: "Phase 0 — typography + radius tokens from studio-design-tokens.toml → li-ui accessors"
-    status: pending
+    status: done
   - id: wsg-w0-studio-paint-polish
     content: "Phase 0 — studio_paint_* visual pass (dock icons, panel chrome, not wireframe rects)"
-    status: pending
+    status: done
   - id: wsg-w0-c-paint-parity
     content: "Phase 0 — C paint mirror parity for new ops (temporary until Phase 4)"
-    status: pending
+    status: done
   - id: wsg-w0-token-verify
     content: "Phase 0 — studio-ui-ux-verify-tokens.py extended verification green"
     status: pending

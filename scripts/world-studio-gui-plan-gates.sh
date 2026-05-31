@@ -104,10 +104,14 @@ fi
 
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
+  assess_py="$ASSESS"
+  if command -v cygpath >/dev/null 2>&1; then
+    assess_py="$(cygpath -w "$ASSESS")"
+  fi
   python3 -c "
 import json, sys
 from pathlib import Path
-d = json.loads(Path('$ASSESS').read_text(encoding='utf-8'))
+d = json.loads(Path(r'''$assess_py''').read_text(encoding='utf-8'))
 if not d.get('native_only', True):
     print('assessment: native_only must be true', file=sys.stderr)
     sys.exit(1)

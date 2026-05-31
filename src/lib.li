@@ -535,29 +535,27 @@ def studio_profile_color(profile_id: int) -> Color
 
 def studio_paint_topbar_profile_cmds() -> int
   requires true
-  ensures result == 1
+  ensures result == 2
   decreases 0
 =
-  return 1
+  return 2
 
 def studio_paint_topbar_profile(frame: var PaintFrame, topbar: Rect, profile_id: int) -> unit
   requires frame.cmd_count >= 0
   requires studio_profile_id_valid(profile_id) == 1
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_topbar_profile_cmds()
-  ensures frame.last_kind == paint_op_stroke_rect()
+  ensures frame.last_kind == paint_op_stroke_round_rect()
   decreases profile_id
 =
   var pid_chip: int = profile_id
   var pid_color: int = profile_id
-  frame.cmd_count = frame.cmd_count + studio_paint_topbar_profile_cmds()
-  frame.last_kind = paint_op_stroke_rect()
   var top_copy: Rect = topbar
   var top_x: float = top_copy.x
   var top_y: float = top_copy.y
   var top_w: float = top_copy.w
   var top_h: float = top_copy.h
-  frame.last_rect = studio_profile_chip_rect_at(top_x, top_y, top_w, top_h, pid_chip)
-  frame.last_color = studio_profile_color(pid_color)
+  var chip_rect: Rect = studio_profile_chip_rect_at(top_x, top_y, top_w, top_h, pid_chip)
+  paint_frame_push_accent_chip(frame, chip_rect, studio_profile_color(pid_color))
 
 
 
@@ -6064,43 +6062,34 @@ def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose
   decreases outliner.node_count
 =
   if outliner.node_count > 0:
-    frame.cmd_count = frame.cmd_count + 1
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = outliner.row0_rect
     if outliner.selected_node == outliner.node0.id:
-      frame.last_color = studio_color_accent_mint()
+      paint_frame_push(frame, paint_cmd_fill_round(outliner.row0_rect, studio_color_accent_mint(), studio_radius_sm_px()))
     if outliner.selected_node != outliner.node0.id:
-      frame.last_color = studio_color_border()
+      paint_frame_push(frame, paint_cmd_stroke_round(outliner.row0_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
   if outliner.node_count > 1:
-    frame.cmd_count = frame.cmd_count + 1
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = outliner.row1_rect
     if outliner.selected_node == outliner.node1.id:
-      frame.last_color = studio_color_accent_mint()
+      paint_frame_push(frame, paint_cmd_fill_round(outliner.row1_rect, studio_color_accent_mint(), studio_radius_sm_px()))
     if outliner.selected_node != outliner.node1.id:
-      frame.last_color = studio_color_border()
+      paint_frame_push(frame, paint_cmd_stroke_round(outliner.row1_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
   if outliner.node_count > 2:
-    frame.cmd_count = frame.cmd_count + 1
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = outliner.row2_rect
     if outliner.selected_node == outliner.node2.id:
-      frame.last_color = studio_color_accent_mint()
+      paint_frame_push(frame, paint_cmd_fill_round(outliner.row2_rect, studio_color_accent_mint(), studio_radius_sm_px()))
     if outliner.selected_node != outliner.node2.id:
-      frame.last_color = studio_color_border()
+      paint_frame_push(frame, paint_cmd_stroke_round(outliner.row2_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
 
 def studio_paint_dock_cmds() -> int
-  requires true
-  ensures result == 2
-  decreases 0
-=
-  return 2
-
-def studio_paint_timeline_cmds() -> int
   requires true
   ensures result == 3
   decreases 0
 =
   return 3
+
+def studio_paint_timeline_cmds() -> int
+  requires true
+  ensures result == 4
+  decreases 0
+=
+  return 4
 
 def studio_paint_inspector_empty_cmds() -> int
   requires true
@@ -6111,10 +6100,10 @@ def studio_paint_inspector_empty_cmds() -> int
 
 def studio_paint_inspector_selected_cmds() -> int
   requires true
-  ensures result == 3
+  ensures result == 4
   decreases 0
 =
-  return 3
+  return 4
 
 def studio_paint_inspector_cmds(has_selection: int) -> int
   requires has_selection >= 0
@@ -6329,25 +6318,24 @@ def studio_paint_viewport_menu(frame: var PaintFrame, menu: StudioViewportMenuCo
 def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose) -> unit
   requires frame.cmd_count >= 0
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_dock_cmds()
-  ensures frame.last_kind == paint_op_stroke_rect()
+  ensures frame.last_kind == paint_op_stroke_round_rect()
   ensures frame.last_rect.w == dock.active_slot_rect.w
   decreases 0
 =
-  frame.cmd_count = frame.cmd_count + studio_paint_dock_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = dock.active_slot_rect
-  frame.last_color = studio_color_accent_cyan()
+  paint_frame_push(frame, paint_cmd_fill_gradient(dock.rect, studio_color_bg_primary(), studio_color_bg_elevated()))
+  paint_frame_push(frame, paint_cmd_fill_round(dock.active_slot_rect, studio_color_accent_cyan(), studio_radius_sm_px()))
+  paint_frame_push(frame, paint_cmd_stroke_round(dock.active_slot_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
 
 def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose) -> unit
   requires frame.cmd_count >= 0
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_timeline_cmds()
-  ensures frame.last_kind == paint_op_stroke_rect()
+  ensures frame.last_kind == paint_op_stroke_round_rect()
   decreases 0
 =
-  frame.cmd_count = frame.cmd_count + studio_paint_timeline_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = timeline.playhead_rect
-  frame.last_color = studio_color_accent_amber()
+  paint_frame_push(frame, paint_cmd_fill_gradient(timeline.track_rect, studio_color_bg_primary(), studio_color_bg_elevated()))
+  paint_frame_push(frame, paint_cmd_stroke_round(timeline.track_rect, studio_color_border(), 1.0, studio_default_panel_radius_px()))
+  paint_frame_push(frame, paint_cmd_fill_round(timeline.playhead_rect, studio_color_accent_amber(), studio_radius_sm_px()))
+  paint_frame_push(frame, paint_cmd_stroke_round(timeline.play_btn_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
 
 def studio_paint_agent(frame: var PaintFrame, agent: StudioAgentChromeCompose) -> unit
   requires frame.cmd_count >= 0
@@ -6356,9 +6344,7 @@ def studio_paint_agent(frame: var PaintFrame, agent: StudioAgentChromeCompose) -
   decreases agent.task_state
 =
   frame.cmd_count = frame.cmd_count + studio_paint_agent_cmds(agent.task_state, agent.agent_context_label, agent.invoke_input_visible, agent.tool_trace_visible)
-  frame.last_kind = paint_op_fill_rect()
-  frame.last_rect = agent.rect
-  frame.last_color = studio_color_bg_elevated()
+  paint_frame_push(frame, paint_cmd_fill_round(agent.rect, studio_color_bg_elevated(), studio_default_panel_radius_px()))
   frame.last_kind = paint_op_fill_rect()
   frame.last_rect = agent.status_rect
   frame.last_color = studio_agent_status_color(agent.task_state)
@@ -6403,30 +6389,15 @@ def studio_paint_inspector(frame: var PaintFrame, inspector: StudioInspectorComp
   decreases inspector.has_selection
 =
   if inspector.has_selection == 0:
-    frame.cmd_count = frame.cmd_count + studio_paint_inspector_empty_cmds()
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = inspector.rect
-    frame.last_color = studio_color_border()
-    frame.last_kind = paint_op_fill_rect()
-    frame.last_rect = inspector.hint_line1_rect
-    frame.last_color = studio_color_border()
-    frame.last_kind = paint_op_fill_rect()
-    frame.last_rect = inspector.hint_line2_rect
-    frame.last_color = studio_color_border()
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = inspector.hint_box_rect
-    frame.last_color = studio_color_border()
+    paint_frame_push_elevated_panel(frame, inspector.rect)
+    paint_frame_push(frame, paint_cmd_fill_round(inspector.hint_line1_rect, studio_color_bg_elevated(), studio_radius_sm_px()))
+    paint_frame_push(frame, paint_cmd_fill_round(inspector.hint_line2_rect, studio_color_bg_elevated(), studio_radius_sm_px()))
+    paint_frame_push(frame, paint_cmd_stroke_round(inspector.hint_box_rect, studio_color_border(), 1.0, studio_default_panel_radius_px()))
   if inspector.has_selection == 1:
-    frame.cmd_count = frame.cmd_count + studio_paint_inspector_selected_cmds()
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = inspector.rect
-    frame.last_color = studio_color_accent_violet()
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = inspector.header_rect
-    frame.last_color = studio_color_accent_violet()
-    frame.last_kind = paint_op_fill_rect()
-    frame.last_rect = inspector.field_row_rect
-    frame.last_color = studio_color_bg_elevated()
+    paint_frame_push(frame, paint_cmd_fill_gradient(inspector.rect, studio_color_bg_primary(), studio_color_bg_elevated()))
+    paint_frame_push(frame, paint_cmd_stroke_round(inspector.rect, studio_color_accent_violet(), 1.0, studio_default_panel_radius_px()))
+    paint_frame_push(frame, paint_cmd_fill_round(inspector.header_rect, studio_color_accent_violet(), studio_radius_sm_px()))
+    paint_frame_push(frame, paint_cmd_fill_round(inspector.field_row_rect, studio_color_bg_elevated(), studio_radius_sm_px()))
 
 
 def studio_paint_compose_panels(frame: var PaintFrame, dock: StudioDockCompose, outliner: StudioOutlinerCompose, timeline: StudioTimelineCompose, inspector: StudioInspectorCompose) -> unit
@@ -6511,20 +6482,11 @@ def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose
   ensures frame.cmd_count == studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible)
   decreases compose.agent.task_state
 =
-  frame.cmd_count = frame.cmd_count + studio_paint_dock_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = compose.dock.active_slot_rect
-  frame.last_color = studio_color_accent_cyan()
+  studio_paint_dock(frame, compose.dock)
   studio_paint_outliner(frame, compose.outliner)
-  frame.cmd_count = frame.cmd_count + studio_paint_timeline_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = compose.timeline.playhead_rect
-  frame.last_color = studio_color_accent_amber()
+  studio_paint_timeline(frame, compose.timeline)
   studio_paint_inspector(frame, compose.inspector)
-  frame.cmd_count = frame.cmd_count + 1
-  frame.last_kind = paint_op_fill_rect()
-  frame.last_rect = compose.layout.topbar
-  frame.last_color = studio_color_bg_elevated()
+  paint_frame_push(frame, paint_cmd_fill_gradient(compose.layout.topbar, studio_color_bg_primary(), studio_color_bg_elevated()))
   var prof0: int = compose.config.active_profile
   studio_paint_topbar_profile(frame, compose.layout.topbar, prof0)
   if compose.viewport_error.visible == 1:
@@ -6776,21 +6738,6 @@ def studio_native_pixel_source_honest(source: int) -> int
     return 1
   return 0
 
-# PH-HW desktop — SDL present host sets host_cpu; valid when LIG_HOST_PRESENT=1.
-def studio_native_pixel_source_honest_host_present(source: int) -> int raises IO
-  requires source >= 0
-  requires source <= 4
-  ensures result >= 0
-  ensures result <= 1
-  decreases source
-=
-  if lig_native_pixel_source_honest_product(source) == 1:
-    return 1
-  if lig_present_host_active() == 1:
-    if source == lig_native_pixel_source_host_cpu():
-      return 1
-  return 0
-
 def studio_native_pixel_source_expected() -> int raises IO
   requires true
   ensures result >= 0
@@ -6799,9 +6746,6 @@ def studio_native_pixel_source_expected() -> int raises IO
 =
   if lig_present_wgpu_readback_active() == 1:
     return lig_native_pixel_source_wgpu_readback()
-  if lig_present_host_active() == 1:
-    if lig_present_host_native_pixel_source_flag() == lig_native_pixel_source_host_cpu():
-      return lig_native_pixel_source_host_cpu()
   return lig_native_pixel_source_paint_blit()
 
 def studio_native_pixels_wgpu_readback_host_smoke() -> int raises IO
@@ -6880,8 +6824,6 @@ def studio_vertical_demo_frame(profile_id: int, frame_id: int) -> int raises IO
   studio_paint_topbar_profile(frame, topbar, profile_id)
   if lig_present_host_active() == 1:
     var vp: ViewportRegion = gui_viewport_region_from_layout(compose.layout)
-    var present_w: float = 1280.0
-    var present_h: float = 720.0
     var blit_fail_code: int = 52 + frame_id
     if lig_present_wgpu_readback_active() == 1:
       blit_fail_code = 54
@@ -6892,17 +6834,14 @@ def studio_vertical_demo_frame(profile_id: int, frame_id: int) -> int raises IO
       render_draw_list_push_particles(draw_list, 1000, draw_mat)
       if render_draw_list_submit(vp, draw_list, profile_id) != 1:
         return 54 + frame_id
-    var paint_cmds: int = frame.cmd_count
-    if paint_cmds <= 0:
-      paint_cmds = studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible)
-    if lig_present_blit_paint_summary(present_w, present_h, profile_id, paint_cmds) != 1:
+    if lig_present_blit_paint_summary(vp.w, vp.h, profile_id, frame.cmd_count) != 1:
       return blit_fail_code
-    var _presented: LigPresentFrame = studio_shell_host_present_loop_tick(present_w, present_h, frame_id)
+    var _presented: LigPresentFrame = studio_shell_host_present_loop_tick(vp.w, vp.h, frame_id)
     if _presented.presented != 1:
       return 50 + frame_id
     if _presented.native_pixels != 1:
       return 51 + frame_id
-    if studio_native_pixel_source_honest_host_present(_presented.native_pixel_source) != 1:
+    if lig_native_pixel_source_honest_product(_presented.native_pixel_source) != 1:
       if lig_present_wgpu_readback_active() == 1:
         return 55
       return 53 + frame_id
