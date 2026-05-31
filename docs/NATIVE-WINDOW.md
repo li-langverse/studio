@@ -57,6 +57,8 @@ Requires WSL + SDL2 (`sudo apt install libsdl2-dev`) and X11/WSLg for visible wi
 
 **Recommendation:** extend **li-ui composables + li-gui input/viewport** first; add reactive store codegen when shell state grows (palette, agent FSM, timeline). wgpu path replaces paint_fb blit incrementally (WP-GD-05).
 
+Full phased roadmap: [GUI-LIBRARY-PLAN.md](GUI-LIBRARY-PLAN.md).
+
 ## Honesty labels
 
 | Source | `native_pixels` | Product? |

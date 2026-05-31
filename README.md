@@ -1,6 +1,6 @@
-ï»¿# Li World Studio (li-studio)
+# Li World Studio (li-studio)
 
-Product repo for **Li World Studio** â€” compose dock, timeline, inspector, vertical sim profiles, MCP tools, and platform installers.
+Product repo for **Li World Studio** — compose dock, timeline, inspector, vertical sim profiles, MCP tools, and platform installers.
 
 Import: `import studio`
 
@@ -14,6 +14,7 @@ Import: `import studio`
 | `deploy/studio-demo/` | Native SDL present host + demo capture |
 | `scripts/` | Build, run, plan-loop, and installer scripts |
 | `docs/game-dev/` | World Studio master plan and specs |
+| `docs/GUI-LIBRARY-PLAN.md` | Li-native GUI roadmap (Qt/Svelte/Next.js lessons, phased plan) |
 
 ## Prerequisites
 
@@ -61,12 +62,12 @@ Build demo first, then package using `installer/out/LiWorldStudio.AppDir` layout
 
 ## Dependencies
 
-`li.toml` path-deps point at `../lic/packages/*` (li-gui, li-ui, li-sim-*, li-render, lig, â€¦). Full build requires **lic** sibling + **lip** registry packages resolved by the compiler.
+`li.toml` path-deps point at `../lic/packages/*` (li-gui, li-ui, li-sim-*, li-render, lig, …). Full build requires **lic** sibling + **lip** registry packages resolved by the compiler.
 
 ## Related repos
 
-- **lic** â€” Li compiler and generic packages (not studio product)
-- **li-studio-ai** â€” agent orchestration (`import studio.ai`), still in lic monorepo for now
+- **lic** — Li compiler and generic packages (not studio product)
+- **li-studio-ai** — agent orchestration (`import studio.ai`), still in lic monorepo for now
 
 ## X demo (marketing reel)
 
