@@ -1,14 +1,12 @@
 {
   "pass": true,
   "todo_id": "wsg-w5-perf-budgets",
-  "agent_run": "world_studio_builder-66336422",
-  "iteration": "ci-stabilization",
-  "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "WP-UX-13", "PH-UX"],
+  "agent_run": "world_studio_builder-66824894",
+  "iteration": "ci-stabilization-pr18",
+  "wps_touched": ["W5", "WP-UX-13", "PH-UX"],
   "smokes_run": [
     "scripts/world-studio-gui-plan-gates.sh",
-    "scripts/world-studio-gui-plan-completion-gate.sh",
-    "scripts/ci-studio-ui-ux-wgpu.sh",
-    "scripts/ci-studio-ui-ux-wgpu-swapchain.sh"
+    "scripts/world-studio-gui-plan-completion-gate.sh"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
@@ -19,13 +17,11 @@
     "world_studio_gui_plan_completion_gate": "pass"
   },
   "ci_fixes": [
-    "scripts/lib vendored (li-ui, llvm-env, benchmarks-env)",
-    "ci.yml uses lic ci-install-llvm.sh for LLVM 22 on ubuntu-24.04",
-    "bench-studio-viewport-perf resolves ../lic hooks + wgpu_swapchain JSON",
-    "studio-ui-ux-verify-wgpu-swapchain resolves lic sibling",
-    "world-studio-installers.yml uses checkout-ecosystem-siblings.sh",
-    "_studio-env.sh Windows-safe partial ../lic symlink handling"
+    "ci.yml syncs src/ into ../lic/packages/li-studio before lic check (import_name resolution)",
+    "studio-ui-ux-plan-gates.sh chmod studio-ui-ux-generate-design-system.sh before run",
+    "studio-ui-ux-native.yml gpu-runner accepts honest blocked_runner on GHA CPU runners",
+    "world-studio-gui-plan-completion-gate.sh Windows-safe ASSESS_PATH env for Python"
   ],
-  "notes": "GUI library plan Phases W0–W5 complete; CI stabilization iteration fixes red PR #18 workflows.",
+  "notes": "GUI library plan W0–W5 complete; iteration stabilizes PR #18 CI (check, native-sdl-capture, wgpu-swapchain-gpu-runner).",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

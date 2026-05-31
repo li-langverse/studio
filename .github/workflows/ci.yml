@@ -52,19 +52,24 @@ jobs:
           chmod +x scripts/build.sh scripts/resolve-lic.sh 2>/dev/null || chmod +x scripts/build.sh
           ./scripts/build.sh
 
+      - name: Sync studio tree into lic workspace (import_name resolution)
+        run: |
+          set -euo pipefail
+          PKG=../lic/packages/li-studio
+          rsync -a --delete src/ "$PKG/src/"
+          if [[ -d li-tests ]]; then
+            mkdir -p "$PKG/li-tests"
+            rsync -a li-tests/ "$PKG/li-tests/"
+          fi
+
       - name: lic check + smoke
+        working-directory: ../lic
         env:
           LIC: ${{ github.workspace }}/../lic/build/compiler/lic/lic
         run: |
+          set -euo pipefail
           test -x "$LIC"
-          if [[ -f src/lib.li ]]; then
-            "$LIC" check src/lib.li
-          elif [[ -f src/main.li ]]; then
-            "$LIC" check src/main.li
-          else
-            echo "no src/lib.li or src/main.li"
-            exit 1
-          fi
-          if [[ -f li-tests/smoke/builds.li ]]; then
-            "$LIC" build li-tests/smoke/builds.li -o /dev/null
+          "$LIC" check packages/li-studio/src/lib.li
+          if [[ -f packages/li-studio/li-tests/smoke/builds.li ]]; then
+            "$LIC" build packages/li-studio/li-tests/smoke/builds.li -o /dev/null
           fi

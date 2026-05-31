@@ -37,10 +37,11 @@ fi
 # Phase 0 minimum: native window must not be wireframe-only.
 styled=0
 if [[ -f "$ASSESS" ]]; then
-  python3 -c "
-import json, sys
+  ASSESS_PATH="$ASSESS" python3 -c "
+import json, os, sys
 from pathlib import Path
-d = json.loads(Path('$ASSESS').read_text(encoding='utf-8'))
+p = Path(os.environ['ASSESS_PATH'])
+d = json.loads(p.read_text(encoding='utf-8'))
 sys.exit(0 if d.get('styled_chrome_minimum') or d.get('phase0_styled_chrome') else 1)
 " && styled=1 || true
 fi

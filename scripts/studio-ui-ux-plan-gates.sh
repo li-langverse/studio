@@ -20,6 +20,7 @@ li_phase "studio-ui-ux scripts"
 [[ -f "$ROOT/scripts/bench-studio-viewport-perf.sh" ]] || fail "missing bench-studio-viewport-perf.sh"
 
 li_phase "design system (tokens + demo CSS)"
+chmod +x "$ROOT/scripts/studio-ui-ux-generate-design-system.sh" 2>/dev/null || true
 "$ROOT/scripts/studio-ui-ux-generate-design-system.sh" || fail "studio-ui-ux-generate-design-system"
 [[ -f "$ROOT/docs/design/studio-design-tokens.toml" ]] || fail "studio-design-tokens.toml"
 [[ -f "$ROOT/deploy/studio-demo/screenshots/studio-tokens.css" ]] || fail "studio-tokens.css"
