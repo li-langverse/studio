@@ -1,8 +1,8 @@
 {
   "pass": true,
   "todo_id": "wsg-w5-perf-budgets",
-  "agent_run": "world_studio_builder-66824894",
-  "iteration": "ci-stabilization-pr18",
+  "agent_run": "world_studio_builder-67815015",
+  "iteration": "plan-complete-verification",
   "wps_touched": ["W5", "WP-UX-13", "PH-UX"],
   "smokes_run": [
     "scripts/world-studio-gui-plan-gates.sh",
@@ -17,11 +17,10 @@
     "world_studio_gui_plan_completion_gate": "pass"
   },
   "ci_fixes": [
-    "ci.yml syncs src/ into ../lic/packages/li-studio before lic check (import_name resolution)",
-    "studio-ui-ux-plan-gates.sh chmod studio-ui-ux-generate-design-system.sh before run",
-    "studio-ui-ux-native.yml gpu-runner accepts honest blocked_runner on GHA CPU runners",
-    "world-studio-gui-plan-completion-gate.sh Windows-safe ASSESS_PATH env for Python"
+    "Add .gitattributes eol=lf for *.sh (prevent Windows CRLF drift on shell scripts)",
+    "Prior iteration: ci.yml syncs src/ into ../lic/packages/li-studio before lic check",
+    "Prior iteration: studio-ui-ux-native.yml honest blocked_runner on GHA GPU-runner job"
   ],
-  "notes": "GUI library plan W0–W5 complete; iteration stabilizes PR #18 CI (check, native-sdl-capture, wgpu-swapchain-gpu-runner).",
+  "notes": "GUI library plan W0–W5 complete (all wsg-w* todos done). Local gates + completion gate pass. PR #18 installer matrix green; check + native-sdl-capture still red on last GHA run (prior to .gitattributes).",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }
