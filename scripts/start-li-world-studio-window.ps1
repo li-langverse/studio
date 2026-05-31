@@ -1,4 +1,4 @@
-﻿# Open a real Li World Studio native SDL window (shell chrome paint blit - not HTML mock).
+# Open a real Li World Studio native SDL window (shell chrome paint blit - not HTML mock).
 param(
     [ValidateSet("game", "sim_rl", "sim_scientific", "sim_robotics", "sim_automotive", "sim_additive", "sim_drug_design")]
     [string]$Profile = "game",
@@ -54,7 +54,7 @@ set -euo pipefail
 export STUDIO_DEMO_PROFILE='$Profile'
 '$wslHost' --width $Width --height $Height --screenshot '$wslOut/frame-000.ppm'
 python3 '$wslStudio/scripts/studio-ppm-to-png.py' '$wslOut' '$wslOut'
-cp '$wslOut/frame-000.png' '$wslOut/studio-screenshot-real-window.png'
+mv '$wslOut/frame-000.png' '$wslOut/studio-screenshot-real-window.png'
 "@
     if ($LASTEXITCODE -ne 0) { throw "Screenshot capture failed" }
     Write-Host "Screenshot: $pngPath" -ForegroundColor Green
