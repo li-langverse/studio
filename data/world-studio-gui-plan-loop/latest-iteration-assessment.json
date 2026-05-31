@@ -14,5 +14,5 @@
     "lic_check_wsl": "pass"
   },
   "notes": "Phase 0 paint polish: studio_paint_dock/timeline/inspector/outliner/agent/topbar use PaintCmd round-rect + gradient via paint_frame_push; shell_chrome delegates to panel paint procs; C studio_shell_paint_fb.c gradient/round parity; plan todos wsg-w0-paint-ops through wsg-w0-c-paint-parity marked done.",
-  "pr_url": ""
+  "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }
