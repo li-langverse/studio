@@ -1,25 +1,25 @@
 {
-  "timestamp": "2026-05-31T20:45:00+00:00",
+  "timestamp": "2026-05-31T21:00:00+00:00",
   "branch": "cursor/world-studio-gui-library-plan",
-  "todo": "wsg-w3-icon-pipeline",
-  "next_todo": "wsg-w4-present-loop",
-  "wps": ["WP-UX-01", "WP-GD-05", "PH-UX-13"],
+  "todo": "wsg-w4-present-loop",
+  "next_todo": "wsg-w4-c-host-slim",
+  "wps": ["WP-UX-14", "WP-GD-05", "PH-GD-1"],
   "smokes_run": [
-    "lic check packages/li-ui/li-tests/smoke/icon_atlas_dock_tokens.li",
-    "lic check packages/li-studio/li-tests/smoke/studio_native_styled_chrome.li",
-    "lic check packages/li-studio/li-tests/smoke/studio_paint_panel_chrome.li"
+    "lic check packages/li-studio/li-tests/smoke/studio_present_loop_raster.li",
+    "lic check packages/li-studio/li-tests/smoke/studio_shell_demo_present_loop.li"
   ],
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "studio_ui_ux_verify_tokens": "pass",
-    "build_icon_atlas": "pass",
-    "studio_ui_ux_verify_styled_chrome_native": "pass"
+    "studio_present_loop_raster": "pass",
+    "studio_shell_demo_present_loop": "pass"
   },
   "native_only": true,
   "pass": true,
-  "north_star_fit": "gaming PH-UX-13 native chrome; provable PaintCmd draw_image + token-named icon atlas",
+  "styled_chrome_minimum": true,
+  "phase0_styled_chrome": true,
+  "north_star_fit": "gaming PH-GD-1 Li-owned present loop; provable PaintFrame → render_ui_raster_pass → lig_present_blit",
   "design_review": {
-    "capture": "native PPM probe 640x360 — dock accent + gradient topbar; draw_image on active dock slot",
+    "capture": "headless CPU raster pass on studio_shell_demo_present_loop (3 frames)",
     "regressions": "none"
   },
   "pr_url": "https://github.com/li-langverse/studio/pull/18"

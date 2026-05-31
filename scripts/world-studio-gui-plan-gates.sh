@@ -433,6 +433,30 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 4 present loop (Li rasterizer → blit, wsg-w4-present-loop)"
+if grep -q 'def studio_shell_present_raster_and_blit' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_shell_present_raster_pass' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_present_loop_raster_version' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'studio_shell_present_raster_and_blit' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null; then
+  ok "li-studio present loop wired to Li UI rasterizer"
+else
+  fail "li-studio present loop raster wiring missing (wsg-w4-present-loop)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  present_raster_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_present_loop_raster.li"
+  if [[ -f "$present_raster_smoke" ]]; then
+    lic_check "$present_raster_smoke" "studio_present_loop_raster" || fail "studio_present_loop_raster"
+  else
+    fail "studio_present_loop_raster smoke missing under LIC_ROOT"
+  fi
+  present_loop_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_shell_demo_present_loop.li"
+  if [[ -f "$present_loop_smoke" ]]; then
+    lic_check "$present_loop_smoke" "studio_shell_demo_present_loop" || fail "studio_shell_demo_present_loop"
+  else
+    warn "studio_shell_demo_present_loop smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

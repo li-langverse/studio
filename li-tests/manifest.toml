@@ -198,6 +198,12 @@ note = "T-PKG-li-studio-shell-demo-present-loop PH-HW WP3"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_present_loop_raster.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-present-loop-raster wsg-w4-present-loop"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_shell_demo_pattern_tick.li"
 outcome = "check_ok"
 note = "T-PKG-li-studio-shell-demo-pattern-tick STUDIO_DEMO_LOOP_TICK base"

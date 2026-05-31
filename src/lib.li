@@ -2140,10 +2140,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 33
+  ensures result == 35
   decreases 0
 =
-  return 33
+  return 35
 
 def studio_reactive_shell_version() -> int
   requires true
@@ -6990,6 +6990,73 @@ def studio_vertical_demo_compose(profile_id: int, frame_id: int, key_compose: in
     studio_attach_viewport_shell(out)
   return out
 
+def studio_present_loop_raster_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+# Phase 4 (wsg-w4-present-loop) — PaintFrame → Li UI rasterizer (CPU or wgpu) before host blit.
+def studio_shell_present_raster_pass(shell_w: float, shell_h: float, frame: PaintFrame, profile_id: int) -> RenderUiRasterResult raises IO
+  requires shell_w >= 0.0
+  requires shell_h >= 0.0
+  requires studio_profile_id_valid(profile_id) == 1
+  requires frame.cmd_count >= 0
+  ensures result.cmd_count == frame.cmd_count
+  decreases frame.cmd_count
+=
+  if lig_present_host_active() == 1:
+    return render_ui_raster_pass(shell_w, shell_h, frame, profile_id)
+  return render_ui_raster_pass_pure(shell_w, shell_h, frame, profile_id)
+
+def studio_shell_present_raster_and_blit(compose: StudioShellCompose, frame: PaintFrame, profile_id: int, frame_id: int) -> int raises IO
+  requires studio_profile_id_valid(profile_id) == 1
+  requires compose.layout.viewport_w > 0.0
+  requires compose.layout.viewport_h > 0.0
+  requires frame_id >= 0
+  requires frame_id <= 2
+  requires frame.cmd_count >= 0
+  ensures result >= 0
+  decreases frame_id
+=
+  var shell_w: float = compose.layout.viewport_w
+  var shell_h: float = compose.layout.viewport_h
+  var raster: RenderUiRasterResult = studio_shell_present_raster_pass(shell_w, shell_h, frame, profile_id)
+  if frame.cmd_count > 0:
+    if render_ui_raster_result_ok(raster) != 1:
+      return 40 + frame_id
+  if lig_present_host_active() != 1:
+    return 0
+  var vp: ViewportRegion = gui_viewport_region_from_layout(compose.layout)
+  var blit_fail_code: int = 52 + frame_id
+  if lig_present_wgpu_readback_active() == 1:
+    blit_fail_code = 54
+    var draw_list: RenderDrawList = render_draw_list_new()
+    render_draw_list_push_clear(draw_list, 0.05, 0.07, 0.1)
+    var draw_mat: RenderPbrLiteMaterial = render_pbr_lite_material_default()
+    render_draw_list_push_mesh(draw_list, 1, draw_mat)
+    render_draw_list_push_particles(draw_list, 1000, draw_mat)
+    if render_draw_list_submit(vp, draw_list, profile_id) != 1:
+      return 54 + frame_id
+  if lig_present_blit_paint_summary(vp.w, vp.h, profile_id, frame.cmd_count) != 1:
+    return blit_fail_code
+  var _presented: LigPresentFrame = studio_shell_host_present_loop_tick(vp.w, vp.h, frame_id)
+  if _presented.presented != 1:
+    return 50 + frame_id
+  if _presented.native_pixels != 1:
+    return 51 + frame_id
+  if lig_native_pixel_source_honest_product(_presented.native_pixel_source) != 1:
+    if lig_present_wgpu_readback_active() == 1:
+      return 55
+    return 53 + frame_id
+  var expected_src: int = studio_native_pixel_source_expected()
+  if _presented.native_pixel_source != expected_src:
+    if lig_present_wgpu_readback_active() == 1:
+      return 55
+    return 53 + frame_id
+  return 0
+
 def studio_vertical_demo_frame(profile_id: int, frame_id: int) -> int raises IO
   requires studio_profile_id_valid(profile_id) == 1
   requires frame_id >= 0
@@ -7015,34 +7082,9 @@ def studio_vertical_demo_frame(profile_id: int, frame_id: int) -> int raises IO
   studio_paint_shell_chrome(frame, compose)
   var topbar: Rect = compose.layout.topbar
   studio_paint_topbar_profile(frame, topbar, profile_id)
-  if lig_present_host_active() == 1:
-    var vp: ViewportRegion = gui_viewport_region_from_layout(compose.layout)
-    var blit_fail_code: int = 52 + frame_id
-    if lig_present_wgpu_readback_active() == 1:
-      blit_fail_code = 54
-      var draw_list: RenderDrawList = render_draw_list_new()
-      render_draw_list_push_clear(draw_list, 0.05, 0.07, 0.1)
-      var draw_mat: RenderPbrLiteMaterial = render_pbr_lite_material_default()
-      render_draw_list_push_mesh(draw_list, 1, draw_mat)
-      render_draw_list_push_particles(draw_list, 1000, draw_mat)
-      if render_draw_list_submit(vp, draw_list, profile_id) != 1:
-        return 54 + frame_id
-    if lig_present_blit_paint_summary(vp.w, vp.h, profile_id, frame.cmd_count) != 1:
-      return blit_fail_code
-    var _presented: LigPresentFrame = studio_shell_host_present_loop_tick(vp.w, vp.h, frame_id)
-    if _presented.presented != 1:
-      return 50 + frame_id
-    if _presented.native_pixels != 1:
-      return 51 + frame_id
-    if lig_native_pixel_source_honest_product(_presented.native_pixel_source) != 1:
-      if lig_present_wgpu_readback_active() == 1:
-        return 55
-      return 53 + frame_id
-    var expected_src: int = studio_native_pixel_source_expected()
-    if _presented.native_pixel_source != expected_src:
-      if lig_present_wgpu_readback_active() == 1:
-        return 55
-      return 53 + frame_id
+  var present_rc: int = studio_shell_present_raster_and_blit(compose, frame, profile_id, frame_id)
+  if present_rc != 0:
+    return present_rc
   if frame_id == 0:
     return 0
   if frame_id == 1:

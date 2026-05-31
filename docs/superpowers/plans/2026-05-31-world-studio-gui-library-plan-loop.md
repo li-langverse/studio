@@ -67,7 +67,7 @@ todos:
     status: done
   - id: wsg-w4-present-loop
     content: "Phase 4 — li-studio-demo present loop calls Li rasterizer end-to-end"
-    status: pending
+    status: done
   - id: wsg-w4-c-host-slim
     content: "Phase 4 — C host slimmed to window/input/surface I/O only"
     status: pending
