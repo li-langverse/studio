@@ -129,6 +129,50 @@ static void stroke_hline(unsigned char* rgb, int w, int h, int x0, int x1, int y
   }
 }
 
+static void fill_gradient_v(unsigned char* rgb, int w, int h, ShellRect r, const unsigned char* top,
+                            const unsigned char* bot) {
+  if (r.h <= 0 || r.w <= 0) {
+    return;
+  }
+  for (int yy = r.y; yy < r.y + r.h && yy < h; yy++) {
+    float t = (r.h > 1) ? (float)(yy - r.y) / (float)(r.h - 1) : 0.0f;
+    unsigned char c[3];
+    c[0] = (unsigned char)((1.0f - t) * (float)top[0] + t * (float)bot[0]);
+    c[1] = (unsigned char)((1.0f - t) * (float)top[1] + t * (float)bot[1]);
+    c[2] = (unsigned char)((1.0f - t) * (float)top[2] + t * (float)bot[2]);
+    ShellRect row = {r.x, yy, r.w, 1};
+    fill_rect(rgb, w, h, row, c);
+  }
+}
+
+static void fill_round_rect(unsigned char* rgb, int w, int h, ShellRect r, const unsigned char* c, int radius) {
+  if (radius < 1) {
+    fill_rect(rgb, w, h, r, c);
+    return;
+  }
+  ShellRect core = {r.x + radius, r.y, r.w - 2 * radius, r.h};
+  if (core.w > 0) {
+    fill_rect(rgb, w, h, core, c);
+  }
+  ShellRect cap_top = {r.x, r.y + radius, r.w, radius};
+  ShellRect cap_bot = {r.x, r.y + r.h - radius, r.w, radius};
+  if (cap_top.h > 0) {
+    fill_rect(rgb, w, h, cap_top, c);
+  }
+  if (cap_bot.h > 0) {
+    fill_rect(rgb, w, h, cap_bot, c);
+  }
+}
+
+static void stroke_round_rect(unsigned char* rgb, int w, int h, ShellRect r, const unsigned char* c, int stroke,
+                              int radius) {
+  stroke_rect(rgb, w, h, r, c, stroke);
+  if (radius > 0 && r.w > 2 * radius && r.h > 2 * radius) {
+    ShellRect inner = {r.x + radius, r.y + radius, r.w - 2 * radius, r.h - 2 * radius};
+    stroke_rect(rgb, w, h, inner, c, 1);
+  }
+}
+
 static int dock_slot_offset_y(int slot) {
   int step = DOCK_SLOT + DOCK_GAP;
   return DOCK_PAD + slot * step;
@@ -199,23 +243,23 @@ static void paint_viewport_grid(unsigned char* rgb, int w, int h, ShellRect vp) 
 }
 
 static void paint_inspector_selected(unsigned char* rgb, int w, int h, ShellRect insp) {
-  stroke_rect(rgb, w, h, insp, k_accent_violet, 2);
+  fill_gradient_v(rgb, w, h, insp, k_bg_primary, k_bg_elevated);
+  stroke_round_rect(rgb, w, h, insp, k_accent_violet, 2, 6);
   ShellRect header = {insp.x, insp.y, insp.w, INSPECTOR_HEADER_H};
-  stroke_rect(rgb, w, h, header, k_accent_violet, 1);
+  fill_round_rect(rgb, w, h, header, k_accent_violet, 4);
   ShellRect field = {insp.x + 12, insp.y + INSPECTOR_HEADER_H + 12, insp.w - 24, 20};
-  fill_rect(rgb, w, h, field, k_bg_elevated);
+  fill_round_rect(rgb, w, h, field, k_bg_elevated, 4);
 }
 
 static void paint_inspector_empty(unsigned char* rgb, int w, int h, ShellRect insp) {
-  stroke_rect(rgb, w, h, insp, k_border, 1);
-  ShellRect header = {insp.x, insp.y, insp.w, INSPECTOR_HEADER_H};
-  stroke_rect(rgb, w, h, header, k_border, 1);
+  fill_gradient_v(rgb, w, h, insp, k_bg_primary, k_bg_elevated);
+  stroke_round_rect(rgb, w, h, insp, k_border, 1, 6);
   ShellRect line1 = {insp.x + 12, insp.y + INSPECTOR_HEADER_H + 16, insp.w - 24, 10};
   ShellRect line2 = {insp.x + 12, line1.y + 18, insp.w - 24, 10};
-  fill_rect(rgb, w, h, line1, k_border);
-  fill_rect(rgb, w, h, line2, k_border);
+  fill_round_rect(rgb, w, h, line1, k_bg_elevated, 4);
+  fill_round_rect(rgb, w, h, line2, k_bg_elevated, 4);
   ShellRect box = {insp.x + 12, line2.y + 20, insp.w - 24, 48};
-  stroke_rect(rgb, w, h, box, k_border, 1);
+  stroke_round_rect(rgb, w, h, box, k_border, 1, 6);
 }
 
 void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellProfileVisual* profile,
@@ -228,8 +272,8 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
   shell_layout_adaptive(width, height, insp_w, &layout);
 
   fill_rect(rgb, width, height, (ShellRect){0, 0, width, height}, k_bg_primary);
-  fill_rect(rgb, width, height, layout.topbar, k_bg_elevated);
-  fill_rect(rgb, width, height, layout.agent_strip, k_bg_elevated);
+  fill_gradient_v(rgb, width, height, layout.topbar, k_bg_primary, k_bg_elevated);
+  fill_round_rect(rgb, width, height, layout.agent_strip, k_bg_elevated, 6);
 
   stroke_vline(rgb, width, height, layout.dock.x + layout.dock.w, layout.topbar.y,
                layout.topbar.y + layout.topbar.h - 1, k_border);
@@ -238,17 +282,25 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
   stroke_hline(rgb, width, height, layout.timeline.x, layout.timeline.x + layout.timeline.w - 1,
                layout.timeline.y, k_border);
 
+  fill_gradient_v(rgb, width, height, layout.dock, k_bg_primary, k_bg_elevated);
   for (int slot = 0; slot < 5; slot++) {
     ShellRect slot_r = dock_active_slot_rect(layout.dock, slot);
-    const unsigned char* c = (slot == 0) ? k_accent_cyan : k_border;
-    stroke_rect(rgb, width, height, slot_r, c, slot == 0 ? 2 : 1);
+    if (slot == 0) {
+      fill_round_rect(rgb, width, height, slot_r, k_accent_cyan, 4);
+      stroke_round_rect(rgb, width, height, slot_r, k_border, 1, 4);
+    } else {
+      stroke_round_rect(rgb, width, height, slot_r, k_border, 1, 4);
+    }
   }
 
   ShellRect strip = outliner_strip(layout.dock);
   for (int row = 0; row < 3; row++) {
     ShellRect row_r = outliner_row(strip, row);
-    const unsigned char* c = (row == 0) ? k_accent_mint : k_border;
-    stroke_rect(rgb, width, height, row_r, c, 1);
+    if (row == 0) {
+      fill_round_rect(rgb, width, height, row_r, k_accent_mint, 4);
+    } else {
+      stroke_round_rect(rgb, width, height, row_r, k_border, 1, 4);
+    }
   }
 
   paint_viewport_grid(rgb, width, height, layout.viewport);
@@ -260,12 +312,13 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
   }
 
   ShellRect track = timeline_track(layout.timeline);
-  stroke_rect(rgb, width, height, track, k_border, 1);
+  fill_gradient_v(rgb, width, height, track, k_bg_primary, k_bg_elevated);
+  stroke_round_rect(rgb, width, height, track, k_border, 1, 6);
   ShellRect play = timeline_playhead(track, playhead_pct);
-  fill_rect(rgb, width, height, play, k_accent_amber);
+  fill_round_rect(rgb, width, height, play, k_accent_amber, 2);
 
   ShellRect play_btn = {layout.timeline.x + 8, layout.timeline.y + (layout.timeline.h - 20) / 2, 20, 20};
-  stroke_rect(rgb, width, height, play_btn, k_accent_cyan, 1);
+  stroke_round_rect(rgb, width, height, play_btn, k_accent_cyan, 1, 4);
 
   ShellRect agent_status = {layout.agent_strip.x + 12, layout.agent_strip.y + 8,
                             layout.agent_strip.w / 3, layout.agent_strip.h - 16};
@@ -274,7 +327,7 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
   if (profile != NULL) {
     ShellRect chip = profile_chip(layout.topbar, profile->tag_h);
     unsigned char chip_c[] = {profile->chip_r, profile->chip_g, profile->chip_b};
-    fill_rect(rgb, width, height, chip, chip_c);
-    stroke_rect(rgb, width, height, chip, chip_c, 1);
+    fill_round_rect(rgb, width, height, chip, chip_c, 4);
+    stroke_round_rect(rgb, width, height, chip, k_border, 1, 4);
   }
 }

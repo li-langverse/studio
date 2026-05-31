@@ -1,18 +1,20 @@
 {
   "pass": true,
-  "todo_id": "wsg-w0-token-verify",
-  "agent_run": "world_studio_builder-51492189",
-  "wps_touched": ["W0", "WP-UX-01"],
+  "todo_id": "wsg-w0-native-styled-chrome",
+  "agent_run": "world_studio_builder-51843745",
+  "wps_touched": ["W0", "WP-UX-01", "WP-GD-00"],
   "smokes_run": [
-    "packages/li-ui/li-tests/smoke/paint_studio_shell_chrome.li",
-    "packages/li-ui/li-tests/smoke/studio_typography_tokens.li"
+    "li-tests/smoke/studio_native_styled_chrome.li",
+    "packages/li-ui/li-tests/smoke/paint_studio_shell_chrome.li"
   ],
   "native_only": true,
+  "styled_chrome_minimum": true,
+  "phase0_styled_chrome": true,
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "studio_ui_ux_verify_tokens": "pass",
-    "lic_check_wsl": "pass"
+    "studio_ui_ux_verify_styled_chrome_native": "pass",
+    "studio_ui_ux_verify_tokens": "pass"
   },
-  "notes": "Extended studio-ui-ux-verify-tokens.py: LIC_ROOT palette resolve, full color/spacing/motion/typography/radius/string-len maps; studio-design-tokens.toml synced with lic [radius] and typography scale; gates hard-fail on token verify.",
+  "notes": "Synced C present-host paint mirror (fill_round_rect, stroke_round_rect, fill_gradient_v) with li-ui/studio_paint; added studio_native_styled_chrome smoke and studio-ui-ux-verify-styled-chrome-native.py gate.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

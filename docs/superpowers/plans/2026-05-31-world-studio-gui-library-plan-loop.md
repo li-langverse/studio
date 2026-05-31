@@ -19,7 +19,7 @@ todos:
     status: done
   - id: wsg-w0-native-styled-chrome
     content: "Phase 0 — native window shows styled chrome (round rects/tokens), not wireframe-only"
-    status: pending
+    status: done
   - id: wsg-w1-widget-protocol
     content: "Phase 1 — Widget protocol (measure, layout, paint, handle_event) in li-gui"
     status: pending

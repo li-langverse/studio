@@ -33,7 +33,7 @@ Update each iteration. Mark `| **DONE** |` only when every `wsg-wN-*` todo in th
 
 | Phase | Scope | Status |
 |-------|-------|--------|
-| **W0** | Styled chrome — PaintCmd round rects, typography tokens, studio_paint polish, native window not wireframe-only | pending |
+| **W0** | Styled chrome — PaintCmd round rects, typography tokens, studio_paint polish, native window not wireframe-only | **DONE** |
 | **W1** | li-gui core — Widget protocol, flex/grid/scroll layout, EventDispatcher, base widgets, inspector pilot | pending |
 | **W2** | Reactive compose — Store/Derived, compose invalidation, migrate manual sync, ComposeCache | pending |
 | **W3** | Rasterization — font atlas, glyph PaintCmd ops, UI raster pass, wgpu viewport pixels, icon pipeline | pending |

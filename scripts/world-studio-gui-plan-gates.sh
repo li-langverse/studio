@@ -98,11 +98,24 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   done
 fi
 
-echo "==> phase 0 styled-chrome probe (informational until W0 done)"
+echo "==> phase 0 styled-chrome (native window + li-ui ops)"
 if grep -q 'fill_round_rect\|stroke_round_rect\|paint_op_fill_round' "$LIC_ROOT/packages/li-ui/src/lib.li" 2>/dev/null; then
   ok "li-ui has round-rect paint ops"
 else
-  warn "li-ui round-rect paint ops not landed yet (wsg-w0-paint-ops)"
+  fail "li-ui round-rect paint ops missing (wsg-w0-paint-ops)"
+fi
+if [[ -f "$ROOT/scripts/studio-ui-ux-verify-styled-chrome-native.py" ]]; then
+  python3 "$ROOT/scripts/studio-ui-ux-verify-styled-chrome-native.py" || fail "studio-ui-ux-verify-styled-chrome-native"
+else
+  fail "missing studio-ui-ux-verify-styled-chrome-native.py"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  styled_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_native_styled_chrome.li"
+  if [[ -f "$styled_smoke" ]]; then
+    lic_check "$styled_smoke" "studio_native_styled_chrome" || fail "studio_native_styled_chrome"
+  else
+    warn "studio_native_styled_chrome smoke missing under LIC_ROOT"
+  fi
 fi
 
 echo "==> iteration assessment"
