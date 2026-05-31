@@ -49,7 +49,7 @@ todos:
     status: done
   - id: wsg-w2-compose-cache
     content: "Phase 2 — ComposeCache dirty flags + partial re-compose smokes"
-    status: pending
+    status: done
   - id: wsg-w3-font-atlas
     content: "Phase 3 — Inter + ui-monospace font atlas (SDF or bitmap) at build time"
     status: pending

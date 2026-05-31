@@ -1,10 +1,11 @@
 {
   "pass": true,
-  "todo_id": "wsg-w2-migrate-sync",
-  "agent_run": "world_studio_builder-56115362",
+  "todo_id": "wsg-w2-compose-cache",
+  "agent_run": "world_studio_builder-56581238",
   "wps_touched": ["W2", "WP-UX-06", "WP-UX-15"],
   "smokes_run": [
-    "packages/li-studio/li-tests/smoke/studio_reactive_shell_sync.li"
+    "packages/li-gui/li-tests/smoke/compose_cache_partial_recompose.li",
+    "packages/li-studio/li-tests/smoke/studio_compose_cache_partial.li"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
@@ -18,10 +19,12 @@
   "reactive_stores": true,
   "compose_dep_graph": true,
   "reactive_shell_migration": true,
+  "compose_cache": true,
   "gates": {
     "world_studio_gui_plan_gates": "pass",
-    "studio_reactive_shell_sync": "pass"
+    "compose_cache_partial_recompose": "pass",
+    "studio_compose_cache_partial": "pass"
   },
-  "notes": "StudioReactiveShell embedded on StudioShellCompose; agent FSM, palette, shell mode, and timeline playhead write through StoreInt/StoreFloat + ComposeDepGraph region invalidation; partial flush procs replace manual sync in studio_agent_sync_chrome_from_run, studio_shell_apply_mode, studio_handle_studio_key, studio_shell_timeline_tick_sim_step; li_std_studio_version 33.",
+  "notes": "ComposeCache tracks per-region store generations on StudioReactiveShell; compose_cache_should_recompose + tally_partial skip clean subtrees; flush procs note recompose/skip; smokes verify agent-only and palette-only invalidation recomposes 1 of 6 regions; gui_reactive_version 3, li_std_gui_version 12, li_std_studio_version 34.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

@@ -292,6 +292,32 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 2 compose cache (ComposeCache dirty flags + partial re-compose)"
+if grep -q 'type ComposeCache' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null \
+  && grep -q 'def compose_cache_should_recompose' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null \
+  && grep -q 'def compose_cache_tally_partial' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null \
+  && grep -q 'def compose_cache_version' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null \
+  && grep -q 'public cache: ComposeCache' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null \
+  && grep -q 'def studio_reactive_cache_tally' "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null; then
+  ok "li-gui ComposeCache + li-studio partial re-compose present"
+else
+  fail "ComposeCache missing (wsg-w2-compose-cache)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  cache_smoke="$LIC_ROOT/packages/li-gui/li-tests/smoke/compose_cache_partial_recompose.li"
+  if [[ -f "$cache_smoke" ]]; then
+    lic_check "$cache_smoke" "compose_cache_partial_recompose" || fail "compose_cache_partial_recompose"
+  else
+    warn "compose_cache_partial_recompose smoke missing under LIC_ROOT"
+  fi
+  studio_cache_smoke="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_compose_cache_partial.li"
+  if [[ -f "$studio_cache_smoke" ]]; then
+    lic_check "$studio_cache_smoke" "studio_compose_cache_partial" || fail "studio_compose_cache_partial"
+  else
+    warn "studio_compose_cache_partial smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"
