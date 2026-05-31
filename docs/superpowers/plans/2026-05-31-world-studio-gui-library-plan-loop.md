@@ -25,7 +25,7 @@ todos:
     status: done
   - id: wsg-w1-layout-engines
     content: "Phase 1 — FlexLayout, GridLayout, PaddingLayout, ScrollLayout in li-gui"
-    status: pending
+    status: done
   - id: wsg-w1-event-dispatcher
     content: "Phase 1 — EventDispatcher hit-test tree + focus manager"
     status: pending

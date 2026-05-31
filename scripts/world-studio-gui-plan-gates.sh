@@ -136,6 +136,24 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 1 layout engines (Flex, Grid, Padding, Scroll)"
+if grep -q 'def flex_layout_measure' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def grid_layout_layout' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def padding_layout_layout' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null \
+  && grep -q 'def scroll_layout_layout' "$LIC_ROOT/packages/li-gui/src/lib.li" 2>/dev/null; then
+  ok "li-gui layout engines present"
+else
+  fail "li-gui layout engines missing (wsg-w1-layout-engines)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  layout_smoke="$LIC_ROOT/packages/li-gui/li-tests/smoke/layout_engines_flex_grid.li"
+  if [[ -f "$layout_smoke" ]]; then
+    lic_check "$layout_smoke" "layout_engines_flex_grid" || fail "layout_engines_flex_grid"
+  else
+    warn "layout_engines_flex_grid smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"
