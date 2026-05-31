@@ -104,7 +104,11 @@ if grep -q 'fill_round_rect\|stroke_round_rect\|paint_op_fill_round' "$LIC_ROOT/
 else
   fail "li-ui round-rect paint ops missing (wsg-w0-paint-ops)"
 fi
+if [[ -x "$ROOT/scripts/build-studio-verticals-host.sh" ]]; then
+  bash "$ROOT/scripts/build-studio-verticals-host.sh" || warn "build-studio-verticals-host soft-fail"
+fi
 if [[ -f "$ROOT/scripts/studio-ui-ux-verify-styled-chrome-native.py" ]]; then
+  export STUDIO_UI_UX_VERIFY_REQUIRE_PPM="${STUDIO_UI_UX_VERIFY_REQUIRE_PPM:-1}"
   python3 "$ROOT/scripts/studio-ui-ux-verify-styled-chrome-native.py" || fail "studio-ui-ux-verify-styled-chrome-native"
 else
   fail "missing studio-ui-ux-verify-styled-chrome-native.py"

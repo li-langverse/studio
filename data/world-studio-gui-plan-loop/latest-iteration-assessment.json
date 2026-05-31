@@ -1,27 +1,21 @@
 {
-  "timestamp": "2026-05-31T22:50:00+00:00",
-  "branch": "cursor/world-studio-gui-library-plan",
-  "todo": "wsg-w4-c-host-slim",
-  "next_todo": "wsg-w4-widget-tree-all-regions",
-  "wps": ["WP-UX-14b", "WP-GD-05", "PH-GD-1"],
-  "smokes_run": [
-    "lic check packages/li-studio/li-tests/smoke/studio_c_host_slim.li",
-    "lic check li-tests/smoke/studio_c_host_retirement_gate.li",
-    "studio-c-host-retirement-gate.sh"
-  ],
-  "gates": {
-    "world_studio_gui_plan_gates": "pass",
-    "studio_c_host_slim": "pass",
-    "studio_c_host_retirement_gate": "pass"
-  },
-  "native_only": true,
   "pass": true,
+  "todo_id": "wsg-w0-native-styled-chrome",
+  "agent_run": "world_studio_builder-60530457",
+  "wps_touched": ["W0", "WP-UX-01", "WP-UX-14"],
+  "smokes_run": [
+    "li-tests/smoke/studio_native_styled_chrome.li",
+    "packages/li-studio/li-tests/smoke/studio_native_styled_chrome.li"
+  ],
+  "native_only": true,
   "styled_chrome_minimum": true,
   "phase0_styled_chrome": true,
-  "north_star_fit": "gaming PH-GD-1 provable Li-owned pixels; C host I/O-only fence",
-  "design_review": {
-    "capture": "paint_fb mirror via verticals_present_host PPM probe; present host I/O-only source gate",
-    "regressions": "none"
+  "ppm_probe": true,
+  "gates": {
+    "world_studio_gui_plan_gates": "pass",
+    "studio_ui_ux_verify_styled_chrome_native": "pass",
+    "build_studio_verticals_host": "pass"
   },
+  "notes": "Native styled chrome verified: C paint_blit host PPM gradient + dock cyan probe; Li studio_native_styled_chrome smoke asserts round-rect/gradient/icon PaintCmd IR; build-studio-verticals-host.sh + frame-000.ppm path fix in verify script.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

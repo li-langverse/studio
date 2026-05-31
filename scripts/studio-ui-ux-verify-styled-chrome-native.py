@@ -12,8 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 PAINT_C = ROOT / "deploy/studio-demo/native/studio_shell_paint_fb.c"
 HOST_C = ROOT / "deploy/studio-demo/native/studio_shell_present_host.c"
 CAPTURE_BIN = ROOT / "deploy/studio-demo/native/studio_verticals_present_host"
+BUILD_HOST = ROOT / "scripts/build-studio-verticals-host.sh"
 OUT_DIR = ROOT / "installer/out"
-PPM_PATH = OUT_DIR / "styled-chrome-verify.ppm"
+PPM_PATH = OUT_DIR / "frame-000.ppm"
 
 
 def fail(msg: str) -> None:
@@ -122,14 +123,40 @@ def host_runnable(bin_path: Path) -> bool:
     return os.access(bin_path, os.X_OK)
 
 
+def try_build_host() -> None:
+    if CAPTURE_BIN.is_file() and os.environ.get("STUDIO_VERTICALS_HOST_FORCE_REBUILD") != "1":
+        return
+    if not BUILD_HOST.is_file():
+        return
+    proc = subprocess.run(
+        ["bash", str(BUILD_HOST)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+    if proc.returncode != 0:
+        tail = (proc.stderr or proc.stdout or "")[-400:]
+        if os.environ.get("STUDIO_UI_UX_VERIFY_REQUIRE_PPM") == "1":
+            fail(f"build-studio-verticals-host failed: {tail}")
+        print("studio-ui-ux-verify-styled-chrome-native: build host failed — source check only")
+        print(tail)
+
+
 def try_screenshot() -> None:
     if os.environ.get("STUDIO_UI_UX_VERIFY_SKIP_NATIVE_RUN") == "1":
         print("studio-ui-ux-verify-styled-chrome-native: skip run (STUDIO_UI_UX_VERIFY_SKIP_NATIVE_RUN=1)")
         return
+    try_build_host()
     if not CAPTURE_BIN.is_file():
+        if os.environ.get("STUDIO_UI_UX_VERIFY_REQUIRE_PPM") == "1":
+            fail("verticals capture host not built (run scripts/build-studio-verticals-host.sh)")
         print("studio-ui-ux-verify-styled-chrome-native: verticals capture host not built — source check only")
         return
     if not host_runnable(CAPTURE_BIN):
+        if os.environ.get("STUDIO_UI_UX_VERIFY_REQUIRE_PPM") == "1":
+            fail("capture host not runnable on this platform (need WSL for ELF on Windows)")
         print("studio-ui-ux-verify-styled-chrome-native: capture host not runnable here — source check only")
         return
     OUT_DIR.mkdir(parents=True, exist_ok=True)

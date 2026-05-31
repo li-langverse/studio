@@ -186,6 +186,12 @@ note = "T-PKG-li-studio-shell-loading-ux10-ux11"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_native_styled_chrome.li"
+outcome = "check_ok"
+note = "wsg-w0-native-styled-chrome: dock/timeline/shell PaintCmd round-rect + gradient + icon atlas"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_shell_demo.li"
 outcome = "check_ok"
 note = "T-PKG-li-studio-shell-demo PH-GD-1"
