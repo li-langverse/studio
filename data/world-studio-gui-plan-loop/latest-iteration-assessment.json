@@ -1,9 +1,10 @@
 {
   "pass": true,
-  "todo_id": "wsg-w2-store-primitives",
-  "agent_run": "world_studio_builder-55242139",
+  "todo_id": "wsg-w2-compose-deps",
+  "agent_run": "world_studio_builder-55718617",
   "wps_touched": ["W2", "WP-UX-06"],
   "smokes_run": [
+    "packages/li-gui/li-tests/smoke/compose_dep_invalidation.li",
     "packages/li-gui/li-tests/smoke/reactive_store_derived.li"
   ],
   "native_only": true,
@@ -16,10 +17,12 @@
   "focus_model": true,
   "inspector_pilot": true,
   "reactive_stores": true,
+  "compose_dep_graph": true,
   "gates": {
     "world_studio_gui_plan_gates": "pass",
+    "compose_dep_invalidation": "pass",
     "reactive_store_derived": "pass"
   },
-  "notes": "StoreInt/StoreFloat + DerivedInt/DerivedFloat in li-gui/src/reactive.li (mirrored in lib.li for import gui); ComposeInvalidation dirty counts for partial re-compose; shell slot ids for agent task, palette, mode, timeline; derived_int_sync_agent_progress maps task_state→progress pct; li_std_gui_version 11, gui_reactive_version 1.",
+  "notes": "ComposeDepGraph + static ComposePlan table in li-gui/src/reactive.li; store→region edges for agent/palette/shell_mode/timeline_tick; store_int_set_with_deps and store_float_set_with_deps wire Store writes to layout region dirty flags; compose_dep_plan_store_at/region_at introspection; gui_reactive_version 2.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }

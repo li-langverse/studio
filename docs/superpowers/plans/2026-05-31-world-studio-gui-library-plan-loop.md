@@ -43,7 +43,7 @@ todos:
     status: done
   - id: wsg-w2-compose-deps
     content: "Phase 2 — @compose dependency annotations or convention-based invalidation graph"
-    status: pending
+    status: done
   - id: wsg-w2-migrate-sync
     content: "Phase 2 — migrate agent FSM, palette, timeline playhead, mode transitions off manual sync"
     status: pending

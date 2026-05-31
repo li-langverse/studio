@@ -255,6 +255,24 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 2 compose dependency graph (ComposePlan store → region invalidation)"
+if grep -q 'type ComposeDepGraph' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null \
+  && grep -q 'def compose_dep_invalidate_store' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null \
+  && grep -q 'def store_int_set_with_deps' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null \
+  && grep -q 'def compose_dep_plan_version' "$LIC_ROOT/packages/li-gui/src/reactive.li" 2>/dev/null; then
+  ok "li-gui ComposeDepGraph + ComposePlan present"
+else
+  fail "li-gui compose dependency graph missing (wsg-w2-compose-deps)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  compose_dep_smoke="$LIC_ROOT/packages/li-gui/li-tests/smoke/compose_dep_invalidation.li"
+  if [[ -f "$compose_dep_smoke" ]]; then
+    lic_check "$compose_dep_smoke" "compose_dep_invalidation" || fail "compose_dep_invalidation"
+  else
+    warn "compose_dep_invalidation smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"
