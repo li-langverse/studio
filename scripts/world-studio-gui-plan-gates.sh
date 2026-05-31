@@ -365,6 +365,24 @@ if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || 
   fi
 fi
 
+echo "==> phase 3 UI raster pass (li-render CPU fallback + wgpu chrome pipeline)"
+if grep -q 'def render_ui_raster_pass' "$LIC_ROOT/packages/li-render/src/lib.li" 2>/dev/null \
+  && grep -q 'def render_ui_raster_cpu_pass' "$LIC_ROOT/packages/li-render/src/lib.li" 2>/dev/null \
+  && grep -q 'def lig_wgpu_ui_raster_submit' "$LIC_ROOT/packages/lig/present/lib.li" 2>/dev/null \
+  && grep -q 'def render_ui_raster_version' "$LIC_ROOT/packages/li-render/src/lib.li" 2>/dev/null; then
+  ok "li-render UI raster pass + lig wgpu submit present"
+else
+  fail "li-render UI raster pass missing (wsg-w3-ui-raster)"
+fi
+if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" != "1" ]] && { [[ -n "$LIC_BIN" ]] || [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]]; }; then
+  ui_raster_smoke="$LIC_ROOT/packages/li-render/li-tests/smoke/ui_raster_pass.li"
+  if [[ -f "$ui_raster_smoke" ]]; then
+    lic_check "$ui_raster_smoke" "ui_raster_pass" || fail "ui_raster_pass"
+  else
+    fail "ui_raster_pass smoke missing under LIC_ROOT"
+  fi
+fi
+
 echo "==> iteration assessment"
 if [[ -f "$ASSESS" ]]; then
   assess_py="$ASSESS"

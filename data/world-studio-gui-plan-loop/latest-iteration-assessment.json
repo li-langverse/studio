@@ -1,17 +1,17 @@
 {
-  "timestamp": "2026-05-31T22:15:00+00:00",
+  "timestamp": "2026-05-31T22:45:00+00:00",
   "branch": "cursor/world-studio-gui-library-plan",
-  "todo": "wsg-w3-paintcmd-glyphs",
-  "next_todo": "wsg-w3-ui-raster",
+  "todo": "wsg-w3-ui-raster",
+  "next_todo": "wsg-w3-wgpu-viewport-pixels",
   "wps": ["WP-GD-05", "PH-UX-13"],
   "smokes": [
-    "lic check packages/li-ui/li-tests/smoke/paint_cmds_ext_phase3.li"
+    "lic check packages/li-render/li-tests/smoke/ui_raster_pass.li"
   ],
   "gates": "world-studio-gui-plan-gates.sh pass",
   "native_only": true,
   "pass": true,
   "design_review": {
-    "capture": "PaintCmd IR extension — raster/text golden deferred to wsg-w3-ui-raster",
-    "regressions": "none — paint_studio_shell_chrome kind_max updated"
+    "capture": "UI raster pass — CPU chrome estimate + wgpu stub; viewport pixel golden deferred to wsg-w3-wgpu-viewport-pixels",
+    "regressions": "none"
   }
 }

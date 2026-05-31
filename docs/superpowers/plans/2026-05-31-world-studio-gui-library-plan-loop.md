@@ -58,7 +58,7 @@ todos:
     status: done
   - id: wsg-w3-ui-raster
     content: "Phase 3 — li-render UI raster pass (CPU fallback + wgpu pipeline)"
-    status: pending
+    status: done
   - id: wsg-w3-wgpu-viewport-pixels
     content: "Phase 3 — real wgpu swapchain/readback pixels (WP-GD-05 Path A progress)"
     status: pending
