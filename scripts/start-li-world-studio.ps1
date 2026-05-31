@@ -69,10 +69,18 @@ if ($Build) {
         $lic = Resolve-LicBinary
     }
     if (-not $lic) { throw "lic not found" }
-    $main = Join-Path $StudioRoot "src\main.li"
     $out = Join-Path $StudioRoot "build\li-studio-demo"
     New-Item -ItemType Directory -Force -Path (Split-Path $out) | Out-Null
-    & $lic build --allow-open-vc --no-lean-verify $main -o $out
+    Write-Host "Building li-studio-demo via WSL (lic package graph)..." -ForegroundColor Yellow
+    $wslLic = Convert-ToWslPath $LicRoot
+    $wslStudio = Convert-ToWslPath $StudioRoot
+    $wslLicBin = Convert-ToWslPath $lic
+    wsl -e bash -lc @"
+set -euo pipefail
+mkdir -p '$wslStudio/build'
+'$wslLicBin' build --allow-open-vc --no-lean-verify --numerically-stable '$wslStudio/src/main.li' -o '$wslStudio/build/li-studio-demo'
+"@
+    if ($LASTEXITCODE -ne 0) { throw "lic build failed (try WSL: clang-22 + --numerically-stable)" }
     $demo = Resolve-Demo
 }
 

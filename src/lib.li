@@ -6880,6 +6880,8 @@ def studio_vertical_demo_frame(profile_id: int, frame_id: int) -> int raises IO
   studio_paint_topbar_profile(frame, topbar, profile_id)
   if lig_present_host_active() == 1:
     var vp: ViewportRegion = gui_viewport_region_from_layout(compose.layout)
+    var present_w: float = 1280.0
+    var present_h: float = 720.0
     var blit_fail_code: int = 52 + frame_id
     if lig_present_wgpu_readback_active() == 1:
       blit_fail_code = 54
@@ -6890,9 +6892,12 @@ def studio_vertical_demo_frame(profile_id: int, frame_id: int) -> int raises IO
       render_draw_list_push_particles(draw_list, 1000, draw_mat)
       if render_draw_list_submit(vp, draw_list, profile_id) != 1:
         return 54 + frame_id
-    if lig_present_blit_paint_summary(vp.w, vp.h, profile_id, frame.cmd_count) != 1:
+    var paint_cmds: int = frame.cmd_count
+    if paint_cmds <= 0:
+      paint_cmds = studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible)
+    if lig_present_blit_paint_summary(present_w, present_h, profile_id, paint_cmds) != 1:
       return blit_fail_code
-    var _presented: LigPresentFrame = studio_shell_host_present_loop_tick(vp.w, vp.h, frame_id)
+    var _presented: LigPresentFrame = studio_shell_host_present_loop_tick(present_w, present_h, frame_id)
     if _presented.presented != 1:
       return 50 + frame_id
     if _presented.native_pixels != 1:

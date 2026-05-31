@@ -1,4 +1,4 @@
-﻿# Build Li World Studio Windows installer (Inno Setup).
+# Build Li World Studio Windows installer (Inno Setup).
 param(
     [switch]$SkipDemoBuild,
     [switch]$SkipPresentHost,
@@ -60,7 +60,7 @@ set -euo pipefail
 mkdir -p '$wslStudio/build'
 if [[ -x '$wslLicBin' ]]; then
   cd '$wslLic'
-  '$wslLicBin' build --allow-open-vc --no-lean-verify '$wslStudio/src/main.li' -o '$wslStudio/build/li-studio-demo'
+  '$wslLicBin' build --allow-open-vc --no-lean-verify --numerically-stable '$wslStudio/src/main.li' -o '$wslStudio/build/li-studio-demo'
 fi
 "@
 
