@@ -7,7 +7,8 @@ param(
     [switch]$HostPresent,
     [switch]$CheckOnly,
     [switch]$Build,
-    [switch]$SkipPresentHostBuild
+    [switch]$SkipPresentHostBuild,
+    [switch]$RealWindow
 )
 
 $ErrorActionPreference = "Stop"
@@ -93,6 +94,11 @@ if ($HostPresent) {
     if (-not $SkipPresentHostBuild) { $env:STUDIO_SHELL_PRESENT_HOST_BIN = Ensure-PresentHost }
 } else {
     Remove-Item Env:LIG_HOST_PRESENT -ErrorAction SilentlyContinue
+}
+
+if ($RealWindow) {
+    & "$PSScriptRoot\start-li-world-studio-window.ps1" -Profile $Profile -Build:$Build
+    exit $LASTEXITCODE
 }
 
 Write-Host "Li World Studio profile=$Profile demo=$demo host_present=$($HostPresent.IsPresent)" -ForegroundColor Cyan
