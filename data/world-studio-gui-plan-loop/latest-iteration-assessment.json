@@ -1,8 +1,8 @@
 {
   "pass": true,
-  "todo_id": "wsg-w5-perf-budgets",
-  "agent_run": "world_studio_builder-68539695",
-  "iteration": "plan-complete-ci-green",
+  "todo_id": "plan-complete",
+  "agent_run": "world_studio_builder-69814848",
+  "iteration": "verification-pass-all-wsg-done",
   "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "WP-UX-13", "PH-UX"],
   "smokes_run": [
     "scripts/world-studio-gui-plan-gates.sh",
@@ -17,17 +17,17 @@
     "world_studio_gui_plan_completion_gate": "pass"
   },
   "ci_status": {
-    "pr_18_check": "pass",
-    "pr_18_native_sdl_capture": "pass",
-    "pr_18_installer_matrix": "pass"
+    "studio_pr_18_check": "pass",
+    "studio_pr_18_native_sdl_capture": "pass",
+    "studio_pr_18_installer_matrix": "pass",
+    "lic_pr_682": "fail"
   },
-  "ci_fixes": [
-    "lig_present_host_present_active -> lig_present_host_active",
-    "ECOSYSTEM_REF + LIC_ROOT for native capture workflow",
-    "verify scripts resolve lic package paths via LIC_ROOT",
-    "sync ui-ux-by-dimension.md + profile-animate-memory.sh into studio",
-    "chmod bench scripts; bench registry studio-local JSON fallback"
+  "local_notes": [
+    "All 32 wsg-w* todos status: done in plan YAML",
+    "Completion gate exit 0 on Windows agent workspace",
+    "Studio-repo smokes soft-fail import resolve (expected; CI checks src/lib.li)",
+    "Windows native .exe build skipped locally (MSYS2 MinGW not installed)"
   ],
-  "notes": "GUI library plan W0–W5 complete. All wsg-w* todos done. Local completion gate pass. PR #18 CI fully green after studio-repo consolidation fixes.",
+  "notes": "GUI library plan W0–W5 complete. Verification iteration confirms gates green and PR #18 CI fully green. Lic PR #682 CI still red — merge blocker for cross-repo stack.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }
