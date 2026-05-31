@@ -6776,6 +6776,21 @@ def studio_native_pixel_source_honest(source: int) -> int
     return 1
   return 0
 
+# PH-HW desktop — SDL present host sets host_cpu; valid when LIG_HOST_PRESENT=1.
+def studio_native_pixel_source_honest_host_present(source: int) -> int raises IO
+  requires source >= 0
+  requires source <= 4
+  ensures result >= 0
+  ensures result <= 1
+  decreases source
+=
+  if lig_native_pixel_source_honest_product(source) == 1:
+    return 1
+  if lig_present_host_active() == 1:
+    if source == lig_native_pixel_source_host_cpu():
+      return 1
+  return 0
+
 def studio_native_pixel_source_expected() -> int raises IO
   requires true
   ensures result >= 0
@@ -6784,6 +6799,9 @@ def studio_native_pixel_source_expected() -> int raises IO
 =
   if lig_present_wgpu_readback_active() == 1:
     return lig_native_pixel_source_wgpu_readback()
+  if lig_present_host_active() == 1:
+    if lig_present_host_native_pixel_source_flag() == lig_native_pixel_source_host_cpu():
+      return lig_native_pixel_source_host_cpu()
   return lig_native_pixel_source_paint_blit()
 
 def studio_native_pixels_wgpu_readback_host_smoke() -> int raises IO
@@ -6879,7 +6897,7 @@ def studio_vertical_demo_frame(profile_id: int, frame_id: int) -> int raises IO
       return 50 + frame_id
     if _presented.native_pixels != 1:
       return 51 + frame_id
-    if lig_native_pixel_source_honest_product(_presented.native_pixel_source) != 1:
+    if studio_native_pixel_source_honest_host_present(_presented.native_pixel_source) != 1:
       if lig_present_wgpu_readback_active() == 1:
         return 55
       return 53 + frame_id

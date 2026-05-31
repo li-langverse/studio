@@ -87,5 +87,5 @@ if ($HostPresent) {
     Remove-Item Env:LIG_HOST_PRESENT -ErrorAction SilentlyContinue
 }
 
-Write-Host "Li World Studio profile=$Profile demo=$demo" -ForegroundColor Cyan
-& $demo; exit $LASTEXITCODE
+Write-Host "Li World Studio profile=$Profile demo=$demo host_present=$($HostPresent.IsPresent)" -ForegroundColor Cyan
+exit (Invoke-LiStudioDemo -DemoPath $demo -StudioRoot $StudioRoot)

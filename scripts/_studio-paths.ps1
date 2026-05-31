@@ -1,4 +1,4 @@
-﻿# Studio repo path helpers — lic compiler lives in sibling ../lic (or $env:LIC_ROOT).
+# Studio repo path helpers � lic compiler lives in sibling ../lic (or $env:LIC_ROOT).
 function Get-StudioRoot {
     if ($env:STUDIO_ROOT) { return $env:STUDIO_ROOT }
     return (Split-Path $PSScriptRoot -Parent)
@@ -35,6 +35,40 @@ function Convert-ToWslPath([string]$WinPath) {
     return $p
 }
 
+
+function Test-ElfBinary([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path)) { return $false }
+    $b = [System.IO.File]::ReadAllBytes($Path)
+    return $b.Length -ge 4 -and $b[0] -eq 0x7F -and $b[1] -eq 0x45 -and $b[2] -eq 0x4C -and $b[3] -eq 0x46
+}
+
+function Invoke-LiStudioDemo {
+    param(
+        [Parameter(Mandatory)][string]$DemoPath,
+        [string]$StudioRoot = (Get-StudioRoot)
+    )
+    if (-not (Test-ElfBinary $DemoPath)) {
+        & $DemoPath
+        return $LASTEXITCODE
+    }
+    if (-not (Get-Command wsl -ErrorAction SilentlyContinue)) {
+        throw "li-studio-demo is a Linux (WSL) binary. Install WSL2: wsl --install"
+    }
+    $wslStudio = Convert-ToWslPath $StudioRoot
+    $wslDemo = Convert-ToWslPath $DemoPath
+    $parts = @("cd '$wslStudio'")
+    foreach ($name in @('STUDIO_DEMO_PROFILE','STUDIO_DEMO_FRAMES','LIG_HOST_PRESENT','STUDIO_SHELL_PRESENT_HOST_BIN','STUDIO_DEMO_LOOP_TICK','LIG_WGPU_READBACK')) {
+        $v = [Environment]::GetEnvironmentVariable($name)
+        if ($v) {
+            if ($name -eq 'STUDIO_SHELL_PRESENT_HOST_BIN') { $v = Convert-ToWslPath $v }
+            $escaped = $v -replace "'", "'\''"
+            $parts += "export $name='$escaped'"
+        }
+    }
+    $parts += "'$wslDemo'"
+    wsl -e bash -lc ($parts -join ' && ')
+    return $LASTEXITCODE
+}
 function Resolve-LicBinary {
     $licRoot = Get-LicRoot
     foreach ($rel in @(
