@@ -2,8 +2,8 @@
   "pass": true,
   "todo_id": "wsg-w5-perf-budgets",
   "agent_run": "world_studio_builder-68539695",
-  "iteration": "plan-complete-ci-fix",
-  "wps_touched": ["W5", "WP-UX-13", "PH-UX"],
+  "iteration": "plan-complete-ci-green",
+  "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "WP-UX-13", "PH-UX"],
   "smokes_run": [
     "scripts/world-studio-gui-plan-gates.sh",
     "scripts/world-studio-gui-plan-completion-gate.sh"
@@ -16,12 +16,18 @@
     "world_studio_gui_plan_gates": "pass",
     "world_studio_gui_plan_completion_gate": "pass"
   },
+  "ci_status": {
+    "pr_18_check": "pass",
+    "pr_18_native_sdl_capture": "pass",
+    "pr_18_installer_matrix": "pass"
+  },
   "ci_fixes": [
-    "Rename lig_present_host_present_active -> lig_present_host_active in studio/src/lib.li (matches lig.present API)",
-    "studio-ui-ux-native.yml: ECOSYSTEM_REF from PR head + LIC_ROOT for token verify",
-    "checkout-ecosystem-siblings.sh: force-refresh lic on CI; export LIC_ROOT",
-    "studio-ui-ux-verify-*.py: resolve lic package bench hooks via LIC_ROOT sibling"
+    "lig_present_host_present_active -> lig_present_host_active",
+    "ECOSYSTEM_REF + LIC_ROOT for native capture workflow",
+    "verify scripts resolve lic package paths via LIC_ROOT",
+    "sync ui-ux-by-dimension.md + profile-animate-memory.sh into studio",
+    "chmod bench scripts; bench registry studio-local JSON fallback"
   ],
-  "notes": "GUI library plan W0–W5 complete (all wsg-w* todos done). Local gates + completion gate pass. CI fixes for check (wrong lig API name) and native-sdl-capture (lic main missing W0 typography tokens).",
+  "notes": "GUI library plan W0–W5 complete. All wsg-w* todos done. Local completion gate pass. PR #18 CI fully green after studio-repo consolidation fixes.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }
