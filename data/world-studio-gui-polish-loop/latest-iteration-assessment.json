@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-01T13:25:00Z",
+  "timestamp": "2026-06-01T14:00:00Z",
   "iteration_status": "sprint_complete_verified",
   "todo": "wsp-w5-no-html-proof",
   "wave": "W5",
@@ -21,5 +21,5 @@
   "north_star_fit": "gaming PH-UX — provable native Li chrome; HTML mocks reference-only",
   "smokes": "li-tests/smoke/studio_polish_w0_typography.li through studio_polish_w4_vertical_chrome.li",
   "pr": "https://github.com/li-langverse/studio/pull/19",
-  "agent_run_note": "world_studio_builder 2026-06-01: re-verified all wsp-w* done; progress + completion gates PASS"
+  "agent_run_note": "world_studio_builder 2026-06-01: merged cursor/world-studio-gui-polish; re-verified all wsp-w* done; progress + completion gates PASS"
 }
