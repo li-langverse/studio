@@ -1,9 +1,9 @@
 {
   "pass": true,
   "todo_id": "plan-complete",
-  "agent_run": "world_studio_builder-73183754",
-  "iteration": "verification-gui-plan-complete-2026-06-01-r3",
-  "verified_at": "2026-06-01T00:45:00Z",
+  "agent_run": "world_studio_builder-73591884",
+  "iteration": "verification-gui-plan-complete-2026-06-01-r4",
+  "verified_at": "2026-06-01T01:05:00Z",
   "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "WP-GD-05", "WP-PUB-01", "PH-UX"],
   "smokes_run": [
     "scripts/world-studio-gui-plan-gates.sh",
@@ -21,6 +21,7 @@
   },
   "ci_status": {
     "studio_pr_18": "pass",
+    "lic_pr_682": "native-sdl-capture fix pending (bench path alignment)",
     "jobs": [
       "check",
       "linux-installer-matrix",
@@ -34,10 +35,12 @@
   },
   "local_notes": [
     "All 32 wsg-w* todos status: done in plan YAML",
-    "Completion gate exit 0 on isolated workspace (2026-06-01)",
+    "Completion gate exit 0 on isolated workspace (2026-06-01 r4)",
     "Windows native .exe build skipped locally (MSYS2 MinGW + SDL2 absent); source checks sufficient",
-    "Inno Setup LiWorldStudio-Setup.exe present locally (2.1 MB) from prior build"
+    "lic check studio smokes soft-fail on Windows (import path); CI checks src/lib.li",
+    "Fixed lic bench-studio-viewport-perf.sh BENCHMARKS_RESULTS path for verify-bench-registry CI"
   ],
-  "notes": "GUI library plan W0–W5 complete. Re-verified gates + completion gate on isolated workspace. Studio PR #18 CI all green including Windows + Linux installer matrix.",
-  "pr_url": "https://github.com/li-langverse/studio/pull/18"
+  "notes": "GUI library plan W0–W5 complete. Re-verified gates + completion gate. Studio PR #18 CI all green. Lic PR #682 native-sdl-capture fix pushed (bench competitive JSON path).",
+  "pr_url": "https://github.com/li-langverse/studio/pull/18",
+  "lic_pr_url": "https://github.com/li-langverse/lic/pull/682"
 }
