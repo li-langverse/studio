@@ -7027,10 +7027,10 @@ def studio_paint_timeline_cmds() -> int
 
 def studio_paint_inspector_empty_cmds() -> int
   requires true
-  ensures result == 2 + 1 + studio_paint_glyph_run_cmds() + studio_paint_glyph_run_cmds()
+  ensures result == inspector_pilot_paint_cmds(0)
   decreases 0
 =
-  return 2 + 1 + studio_paint_glyph_run_cmds() + studio_paint_glyph_run_cmds()
+  return inspector_pilot_paint_cmds(0)
 
 def studio_paint_inspector_selected_cmds() -> int
   requires true
@@ -7042,8 +7042,8 @@ def studio_paint_inspector_selected_cmds() -> int
 def studio_paint_inspector_cmds(has_selection: int) -> int
   requires has_selection >= 0
   requires has_selection <= 1
-  ensures result >= 3
-  ensures result <= 4
+  ensures result >= inspector_pilot_paint_cmds(0)
+  ensures result <= inspector_pilot_paint_cmds(1) + studio_paint_inspector_field_glyph_cmds()
   decreases has_selection
 =
   if has_selection == 0:

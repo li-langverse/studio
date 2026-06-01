@@ -4,6 +4,7 @@
 
 ### Added
 
+- **World Studio GUI polish W0–W2 (native chrome)** — typography glyphs on outliner/dock/topbar/inspector; atlas dock icons + viewport HUD + inspector field labels; pointer hover on dock/outliner/timeline, panel focus ring, command-palette shortcut hints; smokes `studio_polish_w0_typography.li`, `studio_polish_w1_glyphs.li`, `studio_polish_w2_{hover,focus_ring,shortcut_hints}.li`; `li_std_studio_version` → 42 — [2026-06-01-world-studio-gui-polish-w0-w2.md](docs/release-notes/2026-06-01-world-studio-gui-polish-w0-w2.md) (plan: [studio#18](https://github.com/li-langverse/studio/pull/18)).
 - **wsg-w5-perf-budgets PH-UX perf budgets** — release notes `docs/release-notes/2026-06-01-wsg-w5-perf-budgets.md`, `benchmarks/competitive/studio-ui.toml` v2, `studio_perf_budgets_*` API + smoke `studio_perf_budgets.li`, `verify-perf-budgets.py`; `li_std_studio_version` → 39.
 - **wsg-w5-macos-wgpu macOS Metal wgpu surface** — `studio_macos_wgpu_present_version`, `studio_macos_wgpu_surface_smoke`; macOS build/launch scripts, `lig_macos_wgpu_surface_probe.c`, CI `macos-wgpu-surface-smoke` on `macos-14`; smoke `studio_macos_wgpu_present.li`.
 - **WP-PUB-03 publish_bundle reproducibility manifest** — `studio_publish_bundle`, `studio_publish_bundle_three_click_flow` (Select → lic build proof → Export zip manifest); MCP `publish_bundle` writes manifest contract after proof pass; smoke `studio_publish_bundle.li`; `li_std_studio_version` → 31.
