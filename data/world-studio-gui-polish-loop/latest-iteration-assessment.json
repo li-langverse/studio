@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-06-01T21:45:00Z",
+  "todo": "wsp-w0-typography-readable",
+  "wps": ["WP-UX-01", "WP-UX-10"],
+  "smokes": [
+    "lic check packages/li-studio/li-tests/smoke/studio_polish_w0_typography.li",
+    "lic check packages/li-studio/li-tests/smoke/studio_outliner.li"
+  ],
+  "gates": "world-studio-gui-polish-gates.sh pass",
+  "native_only": true,
+  "polish_phase": "W0",
+  "polish_screenshot_paths": [
+    "installer/out/studio-screenshot-polish-baseline.png"
+  ],
+  "changes": [
+    "Topbar profile chip draws draw_glyph with text_primary at 14px line height",
+    "Outliner rows use studio_paint_outliner_row with per-label codepoints (S/C/M)",
+    "studio_contrast_ratio_ok documents ~12:1 text_primary on bg_primary (WCAG AA 4.5)",
+    "li_std_studio_version 40"
+  ],
+  "design_review": {
+    "UX-01": {"score": 2, "note": "Glyphs on topbar/outliner; full labels in W1"},
+    "UX-10": {"score": 2, "note": "Token contrast ratio stub now 12.0 vs 4.5 AA target"}
+  },
+  "pr": null
+}

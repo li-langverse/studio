@@ -1,11 +1,8 @@
 {
-    "paths":  [
-                  "c:\\Users\\Julian\\Documents\\Programming\\li\\studio\\installer\\out\\studio-screenshot-polish-baseline.png"
-              ],
-    "timestamp":  "2026-06-01T08:04:51.1814699Z",
-    "native_only":  true,
-    "baseline":  "studio/installer/out/studio-screenshot-polish-baseline.png",
-    "polish_pngs":  [
-
-                    ]
+  "timestamp": "2026-06-01T21:23:57.122985+00:00",
+  "native_only": true,
+  "paths": [
+    "C:\\Users\\Julian\\Documents\\Programming\\li\\li-cursor-agents\\data\\workspaces\\li-langverse\\studio\\world_studio_builder-1780348697225\\repo\\installer\\out\\studio-screenshot-polish-baseline.png"
+  ],
+  "polish_pngs": []
 }
