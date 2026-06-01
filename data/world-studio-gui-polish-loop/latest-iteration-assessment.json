@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-01T22:00:00Z",
+  "timestamp": "2026-06-02T00:10:00Z",
   "iteration_status": "sprint_complete_verified",
   "todo": "wsp-w5-no-html-proof",
   "wave": "W5",
@@ -20,5 +20,5 @@
   "north_star_fit": "gaming PH-UX — provable native Li chrome; HTML mocks reference-only",
   "smokes": "li-tests/smoke/studio_polish_w0_typography.li through studio_polish_w4_vertical_chrome.li (lic packages/li-studio)",
   "pr": "https://github.com/li-langverse/studio/pull/19",
-  "agent_run_note": "world_studio_builder 2026-06-01T22:00Z: merged polish sprint into agent branch; progress + completion gates PASS; all wsp-w0–w5 done; capture skipped (WORLD_STUDIO_POLISH_SKIP_CAPTURE); PR #19 CI green"
+  "agent_run_note": "world_studio_builder 2026-06-02: re-verified progress + completion gates PASS; all wsp-w0–w5 done; PR #19 CI green (8/8 checks)"
 }
