@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-01T18:30:00Z",
-  "todo": "wsp-w4-vertical-polish",
+  "timestamp": "2026-06-01T12:20:00Z",
+  "todo": "wsp-w5-no-html-proof",
   "wsp_todos_done": [
     "wsp-w0-typography-readable",
     "wsp-w0-token-contrast",
@@ -18,18 +18,27 @@
     "wsp-w3-game-profile-viz",
     "wsp-w4-gradients-shadows",
     "wsp-w4-spacing-rhythm",
-    "wsp-w4-vertical-polish"
+    "wsp-w4-vertical-polish",
+    "wsp-w5-polish-png-set",
+    "wsp-w5-game-1280x720",
+    "wsp-w5-screenshot-manifest",
+    "wsp-w5-no-html-proof"
   ],
-  "wave": "W4",
-  "wps": ["WP-UX-01", "WP-UX-13", "GUI-LIBRARY-PLAN Phase 4"],
+  "wave": "W5",
+  "wps": ["WP-UX-01", "WP-UX-13", "WP-PUB-01", "GUI-LIBRARY-PLAN Phase 5"],
   "native_only": true,
   "polish_screenshot_paths": [
-    "installer/out/studio-screenshot-polish-baseline.png"
+    "docs/demo/media/native-verticals/png/polish-game.png",
+    "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/polish-sim_rl.png",
+    "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
+    "installer/out/studio-screenshot-polish-baseline.png",
+    "installer/out/studio-screenshot-iteration-0.png"
   ],
   "gates": {
     "world_studio_gui_polish_gates": "pass",
-    "lic_check_smoke": "studio_polish_w4_shadows_spacing.li, studio_polish_w4_vertical_chrome.li"
+    "world_studio_gui_polish_completion_gate": "pass"
   },
-  "baseline_diff_note": "W4: panel drop-shadow fill_round under dock/timeline/outliner/inspector/agent; 4/8px spacing_unit/rhythm on outliner gaps and glyph padding; topbar profile accent strip per vertical; drug_design viewport stick preview; li_std_studio_version 45.",
-  "north_star_fit": "gaming PH-UX — native slick chrome (shadows + rhythm) without HTML product runtime"
+  "baseline_diff_note": "W5: native polish PNG set at 1280x720 via paint_blit shell (game blocks, sim particles, drug sticks); baseline ~3.7KB wireframe vs polish-game ~15KB with 230+ framebuffer colors; completion gate PNG decoder fixed for filter-byte rows.",
+  "north_star_fit": "gaming PH-UX — shippable native chrome screenshots gate; HTML mocks never product proof"
 }

@@ -35,18 +35,45 @@ else
   fail "missing studio-ui-ux-verify-tokens.py"
 fi
 
-find_present_host() {
-  local native="$ROOT/li-native"
+find_verticals_host() {
+  local native="$ROOT/deploy/studio-demo/native"
   for c in \
-    "$native/studio_shell_present_host.exe" \
-    "$native/studio_shell_present_host" \
-    "$ROOT/native/out/studio_shell_present_host.exe" \
-    "$ROOT/native/out/studio_shell_present_host"; do
+    "$native/studio_verticals_present_host.exe" \
+    "$native/studio_verticals_present_host" \
+    "$ROOT/li-native/studio_verticals_present_host.exe" \
+    "$ROOT/li-native/studio_verticals_present_host"; do
     if [[ -x "$c" ]]; then
       echo "$c"
       return 0
     fi
   done
+  return 1
+}
+
+build_verticals_host() {
+  local native="$ROOT/deploy/studio-demo/native"
+  local bin="$native/studio_verticals_present_host"
+  if [[ -x "$bin" ]]; then
+    echo "$bin"
+    return 0
+  fi
+  if [[ ! -f "$native/studio_shell_paint_fb.c" ]]; then
+    return 1
+  fi
+  if command -v cc >/dev/null 2>&1; then
+    cc -std=c11 -Wall -Wextra -O2 \
+      "$native/studio_shell_paint_fb.c" \
+      "$native/studio_verticals_present_host.c" \
+      -o "$bin" 2>/dev/null || return 1
+    chmod +x "$bin" 2>/dev/null || true
+    echo "$bin"
+    return 0
+  fi
+  if [[ -x "$native/native-sdl-build.sh" && -f "$native/studio_verticals_present_host.c" ]]; then
+    bash "$native/native-sdl-build.sh" "$native/studio_verticals_present_host.c" "$bin" 2>/dev/null || return 1
+    echo "$bin"
+    return 0
+  fi
   return 1
 }
 
@@ -59,25 +86,30 @@ capture_profile_png() {
     out_name="polish-game-1280x720.png"
   fi
   local dest="$POLISH_DIR/$out_name"
-  local ppm="$INSTALLER_OUT/frame-polish-${profile}.ppm"
+  local tmp
+  tmp="$(mktemp -d)"
   local host_bin=""
-  if ! host_bin="$(find_present_host)"; then
-    warn "present host not built — skip live capture for $profile"
+  if ! host_bin="$(find_verticals_host)"; then
+    host_bin="$(build_verticals_host)" || true
+  fi
+  if [[ -z "$host_bin" || ! -x "$host_bin" ]]; then
+    warn "verticals present host not built — skip live capture for $profile"
+    rm -rf "$tmp"
     return 0
   fi
-  STUDIO_DEMO_PROFILE="$profile" \
-    "$host_bin" --width "$width" --height "$height" --screenshot "$ppm" || warn "screenshot host failed profile=$profile"
-  if [[ -f "$ppm" ]]; then
-    python3 "$ROOT/scripts/studio-ppm-to-png.py" "$(dirname "$ppm")" "$(dirname "$ppm")" 2>/dev/null || true
-    local png="$(dirname "$ppm")/frame-polish-${profile}.png"
-    if [[ ! -f "$png" ]]; then
-      png="$(dirname "$ppm")/frame-000.png"
-    fi
-    if [[ -f "$png" ]]; then
-      cp -f "$png" "$dest"
+  if STUDIO_DEMO_PROFILE="$profile" \
+    "$host_bin" --slug "$profile" --width "$width" --height "$height" --out "$tmp" 2>/dev/null \
+    | grep -q '"native_pixels":1'; then
+    if python3 "$ROOT/scripts/studio-ppm-to-png.py" "$tmp" "$tmp" >/dev/null 2>&1 \
+      && [[ -f "$tmp/frame-000.png" ]]; then
+      cp -f "$tmp/frame-000.png" "$dest"
+      cp -f "$tmp/frame-000.png" "$INSTALLER_OUT/studio-screenshot-iteration-${WORLD_STUDIO_POLISH_ITERATION:-0}.png" 2>/dev/null || true
       ok "captured $dest"
     fi
+  else
+    warn "verticals capture failed profile=$profile"
   fi
+  rm -rf "$tmp"
 }
 
 echo "==> native screenshot capture (best effort)"

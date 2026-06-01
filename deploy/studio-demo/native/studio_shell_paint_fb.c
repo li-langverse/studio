@@ -28,6 +28,12 @@ static const unsigned char k_accent_mint[] = {46, 230, 168};
 static const unsigned char k_accent_amber[] = {255, 179, 71};
 static const unsigned char k_accent_violet[] = {124, 92, 255};
 static const unsigned char k_agent_idle[] = {48, 54, 61};
+static const unsigned char k_panel_shadow[] = {8, 10, 14};
+static const unsigned char k_text_primary[] = {230, 237, 243};
+static const unsigned char k_text_muted[] = {139, 148, 158};
+static const unsigned char k_text_dim[] = {96, 105, 115};
+static const unsigned char k_hover_tint[] = {32, 38, 48};
+static const unsigned char k_focus_ring[] = {61, 214, 255};
 
 static const ShellProfileVisual k_profiles[] = {
     {1, "game", 21, 61, 214, 255},
@@ -226,20 +232,140 @@ static ShellRect profile_chip(ShellRect topbar, int tag_h) {
 
 static void paint_viewport_grid(unsigned char* rgb, int w, int h, ShellRect vp) {
   for (int x = vp.x; x < vp.x + vp.w; x += 64) {
-    stroke_vline(rgb, w, h, x, vp.y, vp.y + vp.h - 1, k_border);
+    unsigned char grid_c[3] = {
+        (unsigned char)(k_border[0] + (x % 3)),
+        (unsigned char)(k_border[1] + (x % 5)),
+        (unsigned char)(k_border[2] + (x % 7)),
+    };
+    stroke_vline(rgb, w, h, x, vp.y, vp.y + vp.h - 1, grid_c);
   }
   for (int y = vp.y; y < vp.y + vp.h; y += 64) {
-    stroke_hline(rgb, w, h, vp.x, vp.x + vp.w - 1, y, k_border);
+    unsigned char grid_c[3] = {
+        (unsigned char)(k_border[0] + (y % 5)),
+        (unsigned char)(k_border[1] + (y % 3)),
+        (unsigned char)(k_border[2] + (y % 11)),
+    };
+    stroke_hline(rgb, w, h, vp.x, vp.x + vp.w - 1, y, grid_c);
   }
-  int pad = 24;
-  ShellRect frame = {vp.x + pad, vp.y + pad, vp.w - pad * 2, vp.h - pad * 2};
-  if (frame.w > 0 && frame.h > 0) {
-    stroke_rect(rgb, w, h, frame, k_border, 1);
-    ShellRect title = {frame.x + 40, frame.y + frame.h / 3, frame.w / 2, 12};
-    fill_rect(rgb, w, h, title, k_border);
-    ShellRect cta = {frame.x + frame.w / 4, frame.y + frame.h / 2, frame.w / 2, 28};
-    stroke_rect(rgb, w, h, cta, k_border, 1);
+  int ox = vp.x + 48;
+  int oy = vp.y + vp.h - 48;
+  stroke_vline(rgb, w, h, ox, vp.y + 24, oy, k_accent_cyan);
+  stroke_hline(rgb, w, h, ox, vp.x + vp.w - 24, oy, k_accent_cyan);
+}
+
+static void paint_panel_shadow(unsigned char* rgb, int w, int h, ShellRect panel, int offset) {
+  ShellRect shadow = {panel.x + offset, panel.y + offset, panel.w, panel.h};
+  fill_round_rect(rgb, w, h, shadow, k_panel_shadow, 6);
+}
+
+static void paint_glyph_bar(unsigned char* rgb, int w, int h, ShellRect bar, const unsigned char* base) {
+  if (bar.w <= 0 || bar.h <= 0) {
+    return;
   }
+  for (int xx = bar.x; xx < bar.x + bar.w && xx < w; xx += 7) {
+    unsigned char c[3] = {
+        (unsigned char)(base[0] > 8 ? base[0] - (xx % 5) : base[0]),
+        (unsigned char)(base[1] > 8 ? base[1] - (xx % 7) : base[1]),
+        (unsigned char)(base[2] > 8 ? base[2] - (xx % 3) : base[2]),
+    };
+    ShellRect ch = {xx, bar.y, 5, bar.h};
+    fill_rect(rgb, w, h, ch, c);
+  }
+}
+
+static void paint_topbar_accent(unsigned char* rgb, int w, int h, ShellRect topbar, const unsigned char* accent) {
+  ShellRect strip = {topbar.x, topbar.y, topbar.w, 3};
+  fill_rect(rgb, w, h, strip, accent);
+  ShellRect title = {topbar.x + 16, topbar.y + 14, topbar.w / 4, 12};
+  paint_glyph_bar(rgb, w, h, title, k_text_primary);
+  ShellRect sub = {title.x, title.y + 16, topbar.w / 5, 8};
+  paint_glyph_bar(rgb, w, h, sub, k_text_muted);
+}
+
+static void paint_viewport_particles(unsigned char* rgb, int w, int h, ShellRect vp, const unsigned char* accent) {
+  for (int i = 0; i < 64; i++) {
+    int px = vp.x + 40 + (i * 37) % (vp.w > 80 ? vp.w - 80 : 1);
+    int py = vp.y + 40 + (i * 53) % (vp.h > 80 ? vp.h - 80 : 1);
+    unsigned char c[3] = {
+        (unsigned char)((accent[0] + i * 3) % 256),
+        (unsigned char)((accent[1] + i * 5) % 256),
+        (unsigned char)((accent[2] + i * 7) % 256),
+    };
+    ShellRect dot = {px, py, 3 + (i % 4), 3 + (i % 3)};
+    fill_round_rect(rgb, w, h, dot, c, 2);
+  }
+}
+
+static void paint_viewport_game_blocks(unsigned char* rgb, int w, int h, ShellRect vp) {
+  int cols = 6;
+  int rows = 4;
+  int bw = (vp.w - 80) / cols;
+  int bh = (vp.h - 80) / rows;
+  if (bw < 12) {
+    bw = 12;
+  }
+  if (bh < 12) {
+    bh = 12;
+  }
+  for (int row = 0; row < rows; row++) {
+    for (int col = 0; col < cols; col++) {
+      int x = vp.x + 40 + col * (bw + 8);
+      int y = vp.y + 40 + row * (bh + 8);
+      unsigned char c[3] = {
+          (unsigned char)(40 + col * 28 + row * 11),
+          (unsigned char)(80 + row * 22),
+          (unsigned char)(120 + col * 18),
+      };
+      ShellRect block = {x, y, bw, bh};
+      fill_round_rect(rgb, w, h, block, c, 4);
+      stroke_round_rect(rgb, w, h, block, k_border, 1, 4);
+    }
+  }
+}
+
+static void paint_viewport_drug_sticks(unsigned char* rgb, int w, int h, ShellRect vp) {
+  for (int i = 0; i < 12; i++) {
+    int x = vp.x + 48 + i * 56;
+    int base_y = vp.y + vp.h - 80;
+    int stick_h = 40 + (i % 5) * 18;
+    unsigned char c[3] = {
+        (unsigned char)(100 + i * 12),
+        (unsigned char)(60 + (i * 17) % 80),
+        (unsigned char)(180 + (i * 9) % 60),
+    };
+    ShellRect stick = {x, base_y - stick_h, 18, stick_h};
+    fill_round_rect(rgb, w, h, stick, c, 3);
+  }
+}
+
+static void paint_viewport_hud(unsigned char* rgb, int w, int h, ShellRect vp, const char* mode_label) {
+  (void)mode_label;
+  ShellRect hud = {vp.x + vp.w - 168, vp.y + 12, 156, 52};
+  fill_round_rect(rgb, w, h, hud, k_bg_elevated, 6);
+  stroke_round_rect(rgb, w, h, hud, k_border, 1, 6);
+  ShellRect mode = {hud.x + 10, hud.y + 10, hud.w - 20, 10};
+  ShellRect sel = {hud.x + 10, hud.y + 26, hud.w - 20, 8};
+  paint_glyph_bar(rgb, w, h, mode, k_text_primary);
+  paint_glyph_bar(rgb, w, h, sel, k_accent_mint);
+  ShellRect legend = {vp.x + 12, vp.y + vp.h - 36, 120, 24};
+  fill_round_rect(rgb, w, h, legend, k_bg_elevated, 4);
+  paint_glyph_bar(rgb, w, h, (ShellRect){legend.x + 8, legend.y + 8, 80, 8}, k_text_dim);
+}
+
+static void paint_viewport_profile(unsigned char* rgb, int w, int h, ShellRect vp, const ShellProfileVisual* profile) {
+  paint_viewport_grid(rgb, w, h, vp);
+  if (profile == NULL) {
+    return;
+  }
+  unsigned char accent[3] = {profile->chip_r, profile->chip_g, profile->chip_b};
+  if (profile->id == 1) {
+    paint_viewport_game_blocks(rgb, w, h, vp);
+  } else if (profile->id == 7) {
+    paint_viewport_drug_sticks(rgb, w, h, vp);
+  } else {
+    paint_viewport_particles(rgb, w, h, vp, accent);
+  }
+  paint_viewport_hud(rgb, w, h, vp, profile->slug);
 }
 
 static void paint_inspector_selected(unsigned char* rgb, int w, int h, ShellRect insp) {
@@ -249,6 +375,9 @@ static void paint_inspector_selected(unsigned char* rgb, int w, int h, ShellRect
   fill_round_rect(rgb, w, h, header, k_accent_violet, 4);
   ShellRect field = {insp.x + 12, insp.y + INSPECTOR_HEADER_H + 12, insp.w - 24, 20};
   fill_round_rect(rgb, w, h, field, k_bg_elevated, 4);
+  paint_glyph_bar(rgb, w, h, (ShellRect){field.x + 6, field.y + 5, field.w - 12, 10}, k_text_primary);
+  ShellRect val = {field.x, field.y + 28, field.w, 16};
+  paint_glyph_bar(rgb, w, h, val, k_accent_violet);
 }
 
 static void paint_inspector_empty(unsigned char* rgb, int w, int h, ShellRect insp) {
@@ -272,8 +401,15 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
   shell_layout_adaptive(width, height, insp_w, &layout);
 
   fill_rect(rgb, width, height, (ShellRect){0, 0, width, height}, k_bg_primary);
+  paint_panel_shadow(rgb, width, height, layout.dock, 4);
+  paint_panel_shadow(rgb, width, height, layout.inspector, 4);
+  paint_panel_shadow(rgb, width, height, layout.timeline, 3);
   fill_gradient_v(rgb, width, height, layout.topbar, k_bg_primary, k_bg_elevated);
   fill_round_rect(rgb, width, height, layout.agent_strip, k_bg_elevated, 6);
+  if (profile != NULL) {
+    unsigned char accent[3] = {profile->chip_r, profile->chip_g, profile->chip_b};
+    paint_topbar_accent(rgb, width, height, layout.topbar, accent);
+  }
 
   stroke_vline(rgb, width, height, layout.dock.x + layout.dock.w, layout.topbar.y,
                layout.topbar.y + layout.topbar.h - 1, k_border);
@@ -286,24 +422,34 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
   for (int slot = 0; slot < 5; slot++) {
     ShellRect slot_r = dock_active_slot_rect(layout.dock, slot);
     if (slot == 0) {
+      fill_round_rect(rgb, width, height, slot_r, k_hover_tint, 4);
       fill_round_rect(rgb, width, height, slot_r, k_accent_cyan, 4);
-      stroke_round_rect(rgb, width, height, slot_r, k_border, 1, 4);
+      stroke_round_rect(rgb, width, height, slot_r, k_focus_ring, 2, 4);
     } else {
+      fill_round_rect(rgb, width, height, slot_r, k_hover_tint, 4);
       stroke_round_rect(rgb, width, height, slot_r, k_border, 1, 4);
     }
+    ShellRect icon = {slot_r.x + 10, slot_r.y + 10, slot_r.w - 20, slot_r.h - 20};
+    unsigned char icon_c[3] = {k_text_muted[0], k_text_muted[1], (unsigned char)(k_text_muted[2] + slot * 9)};
+    paint_glyph_bar(rgb, width, height, icon, icon_c);
   }
 
   ShellRect strip = outliner_strip(layout.dock);
   for (int row = 0; row < 3; row++) {
     ShellRect row_r = outliner_row(strip, row);
     if (row == 0) {
+      fill_round_rect(rgb, width, height, row_r, k_hover_tint, 4);
       fill_round_rect(rgb, width, height, row_r, k_accent_mint, 4);
+      stroke_round_rect(rgb, width, height, row_r, k_focus_ring, 1, 4);
     } else {
+      fill_round_rect(rgb, width, height, row_r, k_bg_elevated, 4);
       stroke_round_rect(rgb, width, height, row_r, k_border, 1, 4);
     }
+    ShellRect label = {row_r.x + 6, row_r.y + 4, row_r.w - 12, row_r.h - 8};
+    paint_glyph_bar(rgb, width, height, label, row == 0 ? k_text_primary : k_text_muted);
   }
 
-  paint_viewport_grid(rgb, width, height, layout.viewport);
+  paint_viewport_profile(rgb, width, height, layout.viewport, profile);
 
   if (has_selection) {
     paint_inspector_selected(rgb, width, height, layout.inspector);
@@ -322,7 +468,11 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
 
   ShellRect agent_status = {layout.agent_strip.x + 12, layout.agent_strip.y + 8,
                             layout.agent_strip.w / 3, layout.agent_strip.h - 16};
-  fill_rect(rgb, width, height, agent_status, k_agent_idle);
+  fill_round_rect(rgb, width, height, agent_status, k_agent_idle, 4);
+  paint_glyph_bar(rgb, width, height, (ShellRect){agent_status.x + 8, agent_status.y + 6, agent_status.w - 16, 10},
+                  k_text_muted);
+  ShellRect hint = {layout.agent_strip.x + layout.agent_strip.w - 140, layout.agent_strip.y + 8, 128, 16};
+  paint_glyph_bar(rgb, width, height, hint, k_text_dim);
 
   if (profile != NULL) {
     ShellRect chip = profile_chip(layout.topbar, profile->tag_h);

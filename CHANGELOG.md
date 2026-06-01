@@ -4,6 +4,7 @@
 
 ### Added
 
+- **World Studio GUI polish W5 (screenshot gate)** — `polish-*.png` at 1280×720 (game, sim_rl, sim_drug_design); paint_blit shell shadows/glyphs/viewport previews; completion gate PNG color decode fix; sprint `wsp-w*` all done.
 - **World Studio GUI polish W4 (slick native pass)** — panel shadows, 4/8px spacing rhythm, topbar profile accent strip, drug viewport stick preview; smokes `studio_polish_w4_{shadows_spacing,vertical_chrome}.li`; `li_std_studio_version` → 45.
 - **World Studio GUI polish W0–W2 (native chrome)** — typography glyphs on outliner/dock/topbar/inspector; atlas dock icons + viewport HUD + inspector field labels; pointer hover on dock/outliner/timeline, panel focus ring, command-palette shortcut hints; smokes `studio_polish_w0_typography.li`, `studio_polish_w1_glyphs.li`, `studio_polish_w2_{hover,focus_ring,shortcut_hints}.li`; `li_std_studio_version` → 42 — [2026-06-01-world-studio-gui-polish-w0-w2.md](docs/release-notes/2026-06-01-world-studio-gui-polish-w0-w2.md) (plan: [studio#18](https://github.com/li-langverse/studio/pull/18)).
 - **wsg-w5-perf-budgets PH-UX perf budgets** — release notes `docs/release-notes/2026-06-01-wsg-w5-perf-budgets.md`, `benchmarks/competitive/studio-ui.toml` v2, `studio_perf_budgets_*` API + smoke `studio_perf_budgets.li`, `verify-perf-budgets.py`; `li_std_studio_version` → 39.

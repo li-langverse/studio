@@ -55,16 +55,16 @@ todos:
     status: done
   - id: wsp-w5-polish-png-set
     content: "W5 — polish-*.png per vertical under docs/demo/media/native-verticals/png/"
-    status: pending
+    status: done
   - id: wsp-w5-game-1280x720
     content: "W5 — polish-game-1280x720.png captured at full HD game profile"
-    status: pending
+    status: done
   - id: wsp-w5-screenshot-manifest
     content: "W5 — latest-screenshots.json lists all polish paths + iteration PNGs"
-    status: pending
+    status: done
   - id: wsp-w5-no-html-proof
     content: "W5 — completion gate rejects HTML-only proof; native PNG size/heuristic pass"
-    status: pending
+    status: done
 isProject: false
 ---
 
