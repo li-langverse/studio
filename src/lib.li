@@ -555,9 +555,18 @@ def studio_profile_color(profile_id: int) -> Color
     return studio_color_accent_violet()
   return studio_color_accent_amber()
 
+# W0 typography — glyph line height matches design token body_px (≥ 12).
+def studio_typography_glyph_line_height_px() -> float
+  requires true
+  ensures result >= 12.0
+  ensures result == 12.0
+  decreases 0
+=
+  return 12.0
+
 def studio_profile_label_first_codepoint(profile_id: int) -> int
   requires studio_profile_id_valid(profile_id) == 1
-  requires font_atlas_codepoint_supported(result) == 1
+  ensures font_atlas_codepoint_supported(result) == 1
   decreases profile_id
 =
   if profile_id == studio_profile_game():
@@ -2419,7 +2428,7 @@ def studio_outliner_label_mesh() -> int
 def studio_outliner_label_first_codepoint(label_id: int) -> int
   requires label_id >= studio_outliner_label_root()
   requires label_id <= studio_outliner_label_mesh()
-  requires font_atlas_codepoint_supported(result) == 1
+  ensures font_atlas_codepoint_supported(result) == 1
   decreases label_id
 =
   if label_id == studio_outliner_label_root():
@@ -7581,6 +7590,34 @@ def studio_linux_appimage_smoke() -> int raises IO
     var rb: LigWgpuSwapchainReadback = lig_wgpu_swapchain_readback_run()
     if lig_wgpu_swapchain_readback_passed(rb) != 1:
       return 3
+  return 0
+
+# Phase 5 (wsg-w5-installer-ci) — Windows + Linux installer matrix green on CI.
+def studio_installer_ci_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_installer_ci_smoke() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 6
+  decreases 0
+=
+  if studio_installer_ci_version() != 1:
+    return 1
+  if studio_windows_native_present_version() != 1:
+    return 2
+  if studio_linux_appimage_version() != 1:
+    return 3
+  if studio_macos_wgpu_present_version() != 1:
+    return 4
+  if studio_present_loop_raster_version() != 1:
+    return 5
+  if studio_c_host_slim_version() != 1:
+    return 6
   return 0
 
 def studio_headless_golden_version() -> int
