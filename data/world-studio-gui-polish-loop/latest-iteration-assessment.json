@@ -13,6 +13,8 @@
     "world_studio_gui_polish_gates": "pass",
     "capture_skipped": true
   },
+  "canonical_pr": "https://github.com/li-langverse/studio/pull/19",
+  "note": "Isolated workspace was pre-polish-PR; W0 re-landed locally. Full W0–W5 sprint already on cursor/world-studio-gui-polish (PR #19, CI green).",
   "smokes": ["studio_polish_w0_typography.li (lic/packages/li-studio/li-tests/smoke)"],
   "design_review": {
     "UX-01": { "score": 2, "note": "Profile chip + outliner row glyphs readable at body_px; full shell labels still partial" },
