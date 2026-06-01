@@ -546,6 +546,15 @@ def studio_profile_label_first_codepoint(profile_id: int) -> int
     return 68
   return 83
 
+# W0 typography — glyph row height for profile chip + outliner labels (WP-UX-01).
+def studio_typography_glyph_line_height_px() -> float
+  requires true
+  ensures result >= studio_typography_body_px()
+  ensures result == studio_typography_heading_px()
+  decreases 0
+=
+  return studio_typography_heading_px()
+
 def studio_profile_chip_glyph_rect(chip: Rect) -> Rect
   requires chip.w >= 8.0
   requires chip.h >= studio_typography_glyph_line_height_px()
