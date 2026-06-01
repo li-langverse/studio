@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-01T11:20:00Z",
-  "verified_at": "2026-06-01T11:20:00Z",
+  "timestamp": "2026-06-01T11:22:00Z",
+  "verified_at": "2026-06-01T11:22:00Z",
   "iteration_status": "sprint_complete",
   "todo": "wsp-w5-no-html-proof",
   "wsp_todos_done": [
@@ -44,5 +44,5 @@
   "north_star_fit": "gaming PH-UX — shippable native chrome screenshots gate; HTML mocks never product proof",
   "smokes": "li-tests/smoke/studio_polish_w*.li (W0–W4) in studio manifest",
   "pr": "https://github.com/li-langverse/studio/pull/19",
-  "agent_run_note": "world_studio_builder 2026-06-01: re-verified progress + completion gates on cursor/world-studio-gui-polish; all wsp-w* done; PR #19 CI SUCCESS"
+  "agent_run_note": "world_studio_builder 2026-06-01: agent pass chore/agent-world_studio_builder-12627556 — merged cursor/world-studio-gui-polish; progress + completion gates PASS; PR #19"
 }
