@@ -22,5 +22,5 @@
     "UX-01": {"score": 2, "note": "Glyphs on topbar/outliner; full labels in W1"},
     "UX-10": {"score": 2, "note": "Token contrast ratio stub now 12.0 vs 4.5 AA target"}
   },
-  "pr": null
+  "pr": "https://github.com/li-langverse/studio/pull/45"
 }
