@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-01T12:00:00Z",
-  "todo": "wsp-w1-glyph-pipeline",
+  "timestamp": "2026-06-01T12:30:00Z",
+  "todo": "wsp-w2-hover-states",
   "wsp_todos_done": [
     "wsp-w0-typography-readable",
     "wsp-w0-token-contrast",
@@ -9,18 +9,19 @@
     "wsp-w1-glyph-pipeline",
     "wsp-w1-inspector-labels",
     "wsp-w1-dock-icons",
-    "wsp-w1-viewport-overlays"
+    "wsp-w1-viewport-overlays",
+    "wsp-w2-hover-states"
   ],
-  "wave": "W1",
-  "wps": ["WP-UX-01", "WP-UX-13", "GUI-LIBRARY-PLAN Phase 1"],
+  "wave": "W2",
+  "wps": ["WP-UX-02", "WP-UX-06", "GUI-LIBRARY-PLAN Phase 2"],
   "native_only": true,
   "polish_screenshot_paths": [
     "installer/out/studio-screenshot-polish-baseline.png"
   ],
   "gates": {
     "world_studio_gui_polish_gates": "pass",
-    "lic_check_lib": "pass"
+    "lic_check_smoke": "pending-ci"
   },
-  "baseline_diff_note": "W1: all dock slots use icon atlas draw_image; viewport HUD chips + FPS/10k/native glyphs; inspector pilot field label/value glyphs (drug LITL Compound/Stage vs game Name/Type); viewport menu BG/MD/3D labels.",
-  "north_star_fit": "gaming PH-UX — readable native chrome with real icons and HUD text before W2 interaction wave"
+  "baseline_diff_note": "W2: studio_shell_sync_hover drives dock/outliner/timeline hover fills; hover_surface token on inactive dock slots and outliner rows; playhead cyan + focus ring on clip hover; play button hover fill.",
+  "north_star_fit": "gaming PH-UX — native interaction feedback before focus-ring and shortcut-hint wave"
 }

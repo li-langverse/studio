@@ -728,6 +728,100 @@ def studio_inspector_empty_hint2_glyph_count() -> int
 =
   return 6
 
+# W2 — pointer hover targets (dock slots, outliner rows, timeline controls).
+def studio_hover_dock_none() -> int
+  requires true
+  ensures result == -1
+  decreases 0
+=
+  return -1
+
+def studio_hover_outliner_none() -> int
+  requires true
+  ensures result == -1
+  decreases 0
+=
+  return -1
+
+def studio_color_hover_surface() -> Color
+  requires true
+  ensures result.r >= 0.0
+  decreases 0
+=
+  return color_rgb(0.133, 0.157, 0.212, 1.0)
+
+type StudioShellHoverState = object
+  public dock_slot: int
+  public outliner_row: int
+  public timeline_play_btn: int
+  public timeline_playhead: int
+
+def studio_shell_hover_new() -> StudioShellHoverState
+  requires true
+  ensures result.dock_slot == studio_hover_dock_none()
+  ensures result.outliner_row == studio_hover_outliner_none()
+  ensures result.timeline_play_btn == 0
+  ensures result.timeline_playhead == 0
+  decreases 0
+=
+  var h: StudioShellHoverState
+  h.dock_slot = studio_hover_dock_none()
+  h.outliner_row = studio_hover_outliner_none()
+  h.timeline_play_btn = 0
+  h.timeline_playhead = 0
+  return h
+
+def studio_shell_hover_dock_slot_is(hover: StudioShellHoverState, slot: int) -> int
+  requires slot >= 0
+  requires slot < studio_dock_slot_count()
+  ensures result >= 0
+  ensures result <= 1
+  decreases slot
+=
+  if hover.dock_slot == slot:
+    return 1
+  return 0
+
+def studio_shell_hover_outliner_row_is(hover: StudioShellHoverState, row: int) -> int
+  requires row >= 0
+  requires row <= 2
+  ensures result >= 0
+  ensures result <= 1
+  decreases row
+=
+  if hover.outliner_row == row:
+    return 1
+  return 0
+
+def studio_shell_sync_hover(compose: var StudioShellCompose, input: InputState) -> unit
+  requires true
+  ensures compose.hover.dock_slot >= studio_hover_dock_none()
+  decreases 0
+=
+  var h: StudioShellHoverState = studio_shell_hover_new()
+  var px: float = input.pointer_x
+  var py: float = input.pointer_y
+  var slot: int = 0
+  while slot < compose.dock.slot_count:
+    var sr: Rect = studio_dock_slot_rect_at(compose.dock.rect.x, compose.dock.rect.y, compose.dock.rect.w, compose.dock.rect.h, slot)
+    if rect_contains(sr, px, py) == 1:
+      h.dock_slot = slot
+    slot = slot + 1
+  if compose.outliner.node_count > 0:
+    if rect_contains(compose.outliner.row0_rect, px, py) == 1:
+      h.outliner_row = 0
+  if compose.outliner.node_count > 1:
+    if rect_contains(compose.outliner.row1_rect, px, py) == 1:
+      h.outliner_row = 1
+  if compose.outliner.node_count > 2:
+    if rect_contains(compose.outliner.row2_rect, px, py) == 1:
+      h.outliner_row = 2
+  if rect_contains(compose.timeline.play_btn_rect, px, py) == 1:
+    h.timeline_play_btn = 1
+  if rect_contains(compose.timeline.playhead_rect, px, py) == 1:
+    h.timeline_playhead = 1
+  compose.hover = h
+
 # W1 — glyph pipeline entry (bitmap atlas + paint_cmd_draw_glyphs_run).
 def studio_paint_glyph_pipeline_ok() -> int
   requires true
@@ -962,13 +1056,10 @@ def studio_dock_slot_caption_glyph_count(slot: int) -> int
 def studio_paint_dock_slot_cmds(is_active: int) -> int
   requires is_active >= 0
   requires is_active <= 1
-  ensures result >= 2
-  ensures result <= 3
+  ensures result == 3
   decreases is_active
 =
-  if is_active == 1:
-    return 3
-  return 2
+  return 3
 
 
 def studio_mcp_tool_unknown() -> int
@@ -2584,10 +2675,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 40
+  ensures result == 41
   decreases 0
 =
-  return 40
+  return 41
 
 def studio_shell_widget_tree_version() -> int
   requires true
@@ -2643,8 +2734,10 @@ def studio_shell_attach_widget_tree(compose: var StudioShellCompose) -> unit
   requires compose.layout.viewport_w > 0.0
   ensures compose.widget_tree_active == 1
   ensures shell_widget_tree_all_regions_laid_out(compose.widget_tree_layout) == 1
+  ensures compose.hover.dock_slot == studio_hover_dock_none()
   decreases compose.dock.active_slot
 =
+  compose.hover = studio_shell_hover_new()
   studio_shell_layout_widget_tree(compose)
 
 def studio_shell_sync_widget_tree_from_reactive(compose: var StudioShellCompose) -> unit
@@ -3623,6 +3716,7 @@ type StudioShellCompose = object
   public widget_tree: ShellWidgetTree
   public widget_tree_layout: ShellWidgetTreeLayout
   public widget_tree_active: int
+  public hover: StudioShellHoverState
 
 
 def studio_reactive_shell_new(task_state: int, palette_open: int, mode: int, playhead_pct: float) -> StudioReactiveShell
@@ -6743,10 +6837,10 @@ def studio_compose_shell_agent(w: float, h: float, active_dock_slot: int, has_se
 
 def studio_paint_outliner_row_cmds() -> int
   requires true
-  ensures result == 1 + studio_paint_glyph_run_cmds()
+  ensures result == 2 + studio_paint_glyph_run_cmds()
   decreases 0
 =
-  return 1 + studio_paint_glyph_run_cmds()
+  return 2 + studio_paint_glyph_run_cmds()
 
 def studio_paint_outliner_cmds(node_count: int) -> int
   requires node_count >= 0
@@ -6756,10 +6850,12 @@ def studio_paint_outliner_cmds(node_count: int) -> int
 =
   return 2 + node_count * studio_paint_outliner_row_cmds()
 
-def studio_paint_outliner_row(frame: var PaintFrame, row: Rect, selected: int, label_id: int) -> unit
+def studio_paint_outliner_row(frame: var PaintFrame, row: Rect, selected: int, label_id: int, hovered: int) -> unit
   requires frame.cmd_count >= 0
   requires selected >= 0
   requires selected <= 1
+  requires hovered >= 0
+  requires hovered <= 1
   requires label_id >= studio_outliner_label_root()
   requires label_id <= studio_outliner_label_mesh()
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_outliner_row_cmds()
@@ -6771,12 +6867,19 @@ def studio_paint_outliner_row(frame: var PaintFrame, row: Rect, selected: int, l
     var cnt_sel: int = studio_outliner_label_glyph_count(label_id)
     studio_paint_glyph_text(frame, row, cp_sel, cnt_sel, studio_color_text_primary())
     return
+  var row_fill: Color = studio_color_bg_elevated()
+  if hovered == 1:
+    row_fill = studio_color_hover_surface()
+  paint_frame_push(frame, paint_cmd_fill_round(row, row_fill, studio_radius_sm_px()))
   paint_frame_push(frame, paint_cmd_stroke_round(row, studio_color_border(), 1.0, studio_radius_sm_px()))
   var cp0: int = studio_outliner_label_first_codepoint(label_id)
   var cnt0: int = studio_outliner_label_glyph_count(label_id)
-  studio_paint_glyph_text(frame, row, cp0, cnt0, studio_color_text_muted())
+  var label_color: Color = studio_color_text_muted()
+  if hovered == 1:
+    label_color = studio_color_text_primary()
+  studio_paint_glyph_text(frame, row, cp0, cnt0, label_color)
 
-def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose) -> unit
+def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose, hover: StudioShellHoverState) -> unit
   requires frame.cmd_count >= 0
   requires outliner.node_count >= 0
   requires outliner.node_count <= studio_outliner_max_nodes()
@@ -6788,31 +6891,31 @@ def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose
     var sel0: int = 0
     if outliner.selected_node == outliner.node0.id:
       sel0 = 1
-    studio_paint_outliner_row(frame, outliner.row0_rect, sel0, outliner.node0.label_id)
+    studio_paint_outliner_row(frame, outliner.row0_rect, sel0, outliner.node0.label_id, studio_shell_hover_outliner_row_is(hover, 0))
   if outliner.node_count > 1:
     var sel1: int = 0
     if outliner.selected_node == outliner.node1.id:
       sel1 = 1
-    studio_paint_outliner_row(frame, outliner.row1_rect, sel1, outliner.node1.label_id)
+    studio_paint_outliner_row(frame, outliner.row1_rect, sel1, outliner.node1.label_id, studio_shell_hover_outliner_row_is(hover, 1))
   if outliner.node_count > 2:
     var sel2: int = 0
     if outliner.selected_node == outliner.node2.id:
       sel2 = 1
-    studio_paint_outliner_row(frame, outliner.row2_rect, sel2, outliner.node2.label_id)
+    studio_paint_outliner_row(frame, outliner.row2_rect, sel2, outliner.node2.label_id, studio_shell_hover_outliner_row_is(hover, 2))
 
 def studio_paint_dock_cmds() -> int
   requires true
-  ensures result == 1 + 4 * studio_paint_dock_slot_cmds(0) + studio_paint_dock_slot_cmds(1) + studio_paint_glyph_run_cmds()
+  ensures result == 1 + studio_dock_slot_count() * studio_paint_dock_slot_cmds(0) + studio_paint_glyph_run_cmds()
   decreases 0
 =
-  return 1 + 4 * studio_paint_dock_slot_cmds(0) + studio_paint_dock_slot_cmds(1) + studio_paint_glyph_run_cmds()
+  return 1 + studio_dock_slot_count() * studio_paint_dock_slot_cmds(0) + studio_paint_glyph_run_cmds()
 
 def studio_paint_timeline_cmds() -> int
   requires true
-  ensures result == 4
+  ensures result == 6
   decreases 0
 =
-  return 4
+  return 6
 
 def studio_paint_inspector_empty_cmds() -> int
   requires true
@@ -7028,13 +7131,15 @@ def studio_paint_viewport_menu(frame: var PaintFrame, menu: StudioViewportMenuCo
   paint_frame_push(frame, paint_cmd_stroke_round(menu.biomol_btn, studio_color_accent_violet(), 1.0, studio_radius_sm_px()))
   studio_paint_glyph_text(frame, menu.biomol_btn, studio_viewport_menu_biomol_label_first_codepoint(), studio_viewport_menu_biomol_label_glyph_count(), studio_color_text_primary())
 
-def studio_paint_dock_slot(frame: var PaintFrame, dock: StudioDockCompose, slot: int) -> unit
+def studio_paint_dock_slot(frame: var PaintFrame, dock: StudioDockCompose, slot: int, hovered: int) -> unit
   requires frame.cmd_count >= 0
   requires slot >= 0
   requires slot < studio_dock_slot_count()
   requires dock.active_slot >= 0
   requires dock.active_slot < studio_dock_slot_count()
-  ensures frame.cmd_count >= old(frame.cmd_count) + studio_paint_dock_slot_cmds(0)
+  requires hovered >= 0
+  requires hovered <= 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_dock_slot_cmds(0)
   decreases slot
 =
   var slot_rect: Rect = studio_dock_slot_rect_at(dock.rect.x, dock.rect.y, dock.rect.w, dock.rect.h, slot)
@@ -7045,15 +7150,21 @@ def studio_paint_dock_slot(frame: var PaintFrame, dock: StudioDockCompose, slot:
     paint_frame_push(frame, paint_cmd_fill_round(slot_rect, studio_color_accent_cyan(), studio_radius_sm_px()))
     paint_frame_push(frame, paint_cmd_stroke_round(slot_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
   if is_active == 0:
+    var slot_fill: Color = studio_color_bg_elevated()
+    if hovered == 1:
+      slot_fill = studio_color_hover_surface()
+    paint_frame_push(frame, paint_cmd_fill_round(slot_rect, slot_fill, studio_radius_sm_px()))
     paint_frame_push(frame, paint_cmd_stroke_round(slot_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
   var icon_id: int = icon_atlas_image_for_dock_slot(slot)
   var icon_src: Rect = icon_atlas_src_rect(icon_id)
   var icon_tint: Color = studio_color_text_muted()
   if is_active == 1:
     icon_tint = studio_color_text_primary()
+  if hovered == 1:
+    icon_tint = studio_color_text_primary()
   paint_frame_push(frame, paint_cmd_draw_image(slot_rect, icon_id, icon_src, icon_tint))
 
-def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose) -> unit
+def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose, hover: StudioShellHoverState) -> unit
   requires frame.cmd_count >= 0
   requires dock.active_slot >= 0
   requires dock.active_slot < icon_atlas_slot_count()
@@ -7062,18 +7173,18 @@ def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose) -> unit
   decreases dock.active_slot
 =
   paint_frame_push(frame, paint_cmd_fill_gradient(dock.rect, studio_color_bg_primary(), studio_color_bg_elevated()))
-  studio_paint_dock_slot(frame, dock, 0)
-  studio_paint_dock_slot(frame, dock, 1)
-  studio_paint_dock_slot(frame, dock, 2)
-  studio_paint_dock_slot(frame, dock, 3)
-  studio_paint_dock_slot(frame, dock, 4)
+  studio_paint_dock_slot(frame, dock, 0, studio_shell_hover_dock_slot_is(hover, 0))
+  studio_paint_dock_slot(frame, dock, 1, studio_shell_hover_dock_slot_is(hover, 1))
+  studio_paint_dock_slot(frame, dock, 2, studio_shell_hover_dock_slot_is(hover, 2))
+  studio_paint_dock_slot(frame, dock, 3, studio_shell_hover_dock_slot_is(hover, 3))
+  studio_paint_dock_slot(frame, dock, 4, studio_shell_hover_dock_slot_is(hover, 4))
   var active_rect: Rect = studio_dock_slot_rect_at(dock.rect.x, dock.rect.y, dock.rect.w, dock.rect.h, dock.active_slot)
   var dock_label_rect: Rect = rect_make(dock.rect.x, active_rect.y + active_rect.h + 2.0, dock.rect.w, studio_typography_caption_line_height_px())
   var cap_cp: int = studio_dock_slot_caption_first_codepoint(dock.active_slot)
   var cap_cnt: int = studio_dock_slot_caption_glyph_count(dock.active_slot)
   studio_paint_glyph_text(frame, dock_label_rect, cap_cp, cap_cnt, studio_color_text_muted())
 
-def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose) -> unit
+def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose, hover: StudioShellHoverState) -> unit
   requires frame.cmd_count >= 0
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_timeline_cmds()
   ensures frame.last_kind == paint_op_stroke_round_rect()
@@ -7081,7 +7192,18 @@ def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose
 =
   paint_frame_push(frame, paint_cmd_fill_gradient(timeline.track_rect, studio_color_bg_primary(), studio_color_bg_elevated()))
   paint_frame_push(frame, paint_cmd_stroke_round(timeline.track_rect, studio_color_border(), 1.0, studio_default_panel_radius_px()))
-  paint_frame_push(frame, paint_cmd_fill_round(timeline.playhead_rect, studio_color_accent_amber(), studio_radius_sm_px()))
+  var playhead_color: Color = studio_color_accent_amber()
+  if hover.timeline_playhead == 1:
+    playhead_color = studio_color_accent_cyan()
+  paint_frame_push(frame, paint_cmd_fill_round(timeline.playhead_rect, playhead_color, studio_radius_sm_px()))
+  var playhead_ring: Color = studio_color_border()
+  if hover.timeline_playhead == 1:
+    playhead_ring = studio_color_focus_ring()
+  paint_frame_push(frame, paint_cmd_stroke_round(timeline.playhead_rect, playhead_ring, 1.0, studio_radius_sm_px()))
+  var play_fill: Color = studio_color_bg_elevated()
+  if hover.timeline_play_btn == 1:
+    play_fill = studio_color_hover_surface()
+  paint_frame_push(frame, paint_cmd_fill_round(timeline.play_btn_rect, play_fill, studio_radius_sm_px()))
   paint_frame_push(frame, paint_cmd_stroke_round(timeline.play_btn_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
 
 def studio_paint_agent(frame: var PaintFrame, agent: StudioAgentChromeCompose) -> unit
@@ -7161,9 +7283,9 @@ def studio_paint_compose_panels(frame: var PaintFrame, dock: StudioDockCompose, 
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_compose_panels_count(inspector.has_selection)
   decreases 0
 =
-  studio_paint_dock(frame, dock)
-  studio_paint_outliner(frame, outliner)
-  studio_paint_timeline(frame, timeline)
+  studio_paint_dock(frame, dock, studio_shell_hover_new())
+  studio_paint_outliner(frame, outliner, studio_shell_hover_new())
+  studio_paint_timeline(frame, timeline, studio_shell_hover_new())
   studio_paint_inspector(frame, inspector)
 
 def studio_paint_compose_panels_count(has_selection: int) -> int
@@ -7238,9 +7360,9 @@ def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose
   ensures frame.cmd_count == studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible)
   decreases compose.agent.task_state
 =
-  studio_paint_dock(frame, compose.dock)
-  studio_paint_outliner(frame, compose.outliner)
-  studio_paint_timeline(frame, compose.timeline)
+  studio_paint_dock(frame, compose.dock, compose.hover)
+  studio_paint_outliner(frame, compose.outliner, compose.hover)
+  studio_paint_timeline(frame, compose.timeline, compose.hover)
   studio_paint_inspector(frame, compose.inspector)
   paint_frame_push(frame, paint_cmd_fill_gradient(compose.layout.topbar, studio_color_bg_primary(), studio_color_bg_elevated()))
   var prof0: int = compose.config.active_profile
@@ -7842,6 +7964,7 @@ def studio_vertical_demo_frame(profile_id: int, frame_id: int) -> int raises IO
         if input.key_digit == 0:
           input.key_cmd_k = 1
   var _key_action: int = studio_shell_handle_host_key(compose, input)
+  studio_shell_sync_hover(compose, input)
   var has_sel: int = compose.inspector.has_selection
   var scene_n: int = compose.scene_entity_count
   var task_st: int = compose.agent.task_state
@@ -8019,6 +8142,7 @@ def studio_shell_host_frame(compose: var StudioShellCompose, frame_id: int) -> i
   var _action: int = studio_shell_handle_host_key(compose, input)
   studio_viewport_error_sync_render(compose)
   var _vp_err: int = studio_shell_handle_viewport_error_pointer(compose, input)
+  studio_shell_sync_hover(compose, input)
   var vp: ViewportRegion = gui_viewport_region_from_layout(compose.layout)
   var _presented: LigPresentFrame = studio_shell_host_present_loop_tick(vp.w, vp.h, frame_id)
   if _presented.presented != 1:

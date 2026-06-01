@@ -28,7 +28,7 @@ todos:
     status: done
   - id: wsp-w2-hover-states
     content: "W2 — hover states visible on buttons, list rows, timeline clips"
-    status: pending
+    status: done
   - id: wsp-w2-focus-ring
     content: "W2 — focus ring + keyboard nav feedback on interactive controls"
     status: pending
