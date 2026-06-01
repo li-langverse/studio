@@ -1,12 +1,13 @@
 {
-  "timestamp": "2026-06-01T12:43:13.289501+00:00",
+  "timestamp": "2026-06-01T13:02:51.446816+00:00",
   "native_only": true,
   "paths": [
     "installer/out/studio-screenshot-polish-baseline.png",
     "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
     "docs/demo/media/native-verticals/png/polish-game.png",
     "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
-    "docs/demo/media/native-verticals/png/polish-sim_rl.png"
+    "docs/demo/media/native-verticals/png/polish-sim_rl.png",
+    "installer/out/studio-screenshot-iteration-1.png"
   ],
   "polish_pngs": [
     "docs/demo/media/native-verticals/png/polish-game-1280x720.png",

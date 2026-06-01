@@ -1,48 +1,25 @@
 {
-  "timestamp": "2026-06-01T12:05:00Z",
-  "verified_at": "2026-06-01T12:42:00Z",
-  "iteration_status": "sprint_complete",
-  "todo": "wsp-w5-no-html-proof",
-  "wsp_todos_done": [
-    "wsp-w0-typography-readable",
-    "wsp-w0-token-contrast",
-    "wsp-w0-anti-wireframe-paint",
-    "wsp-w0-baseline-screenshot",
-    "wsp-w1-glyph-pipeline",
-    "wsp-w1-inspector-labels",
-    "wsp-w1-dock-icons",
-    "wsp-w1-viewport-overlays",
-    "wsp-w2-hover-states",
-    "wsp-w2-focus-ring",
-    "wsp-w2-shortcut-hints",
-    "wsp-w3-viewport-grid",
-    "wsp-w3-particles-sim",
-    "wsp-w3-game-profile-viz",
-    "wsp-w4-gradients-shadows",
-    "wsp-w4-spacing-rhythm",
-    "wsp-w4-vertical-polish",
-    "wsp-w5-polish-png-set",
-    "wsp-w5-game-1280x720",
-    "wsp-w5-screenshot-manifest",
-    "wsp-w5-no-html-proof"
-  ],
-  "wave": "W5",
-  "wps": ["WP-UX-01", "WP-UX-02", "WP-UX-06", "WP-UX-13", "WP-PUB-01", "GUI-LIBRARY-PLAN Phase 5"],
+  "timestamp": "2026-06-01T13:02:00Z",
+  "iteration_status": "post_sprint_hardening",
+  "todo": "wsp-w1-glyph-pipeline",
+  "wave": "W1",
+  "wps": ["WP-UX-01", "WP-UX-02", "GUI-LIBRARY-PLAN Design"],
   "native_only": true,
   "polish_screenshot_paths": [
     "docs/demo/media/native-verticals/png/polish-game.png",
     "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
     "docs/demo/media/native-verticals/png/polish-sim_rl.png",
     "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
-    "installer/out/studio-screenshot-polish-baseline.png"
+    "installer/out/studio-screenshot-polish-baseline.png",
+    "installer/out/studio-screenshot-iteration-1.png"
   ],
   "gates": {
     "world_studio_gui_polish_gates": "pass",
     "world_studio_gui_polish_completion_gate": "pass"
   },
-  "baseline_diff_note": "W5: native polish PNG set at 1280x720 via paint_fb shell (game blocks, sim particles, drug sticks); baseline ~3.7KB wireframe vs polish-game ~15KB with 230+ framebuffer colors; completion gate PNG decoder fixed for filter-byte rows.",
-  "north_star_fit": "gaming PH-UX — shippable native chrome screenshots gate; HTML mocks never product proof",
-  "smokes": "li-tests/smoke/studio_polish_w*.li (W0–W4) in studio manifest",
+  "baseline_diff_note": "paint_fb: replaced paint_glyph_bar square placeholders with Adafruit 5x7 bitmap text (World Studio, outliner labels, HUD, inspector, agent strip, profile chip). Regenerated polish PNGs via studio_verticals_present_host.exe; baseline wireframe ~3.7KB vs polish-game ~14.6KB.",
+  "north_star_fit": "gaming PH-UX — native screenshot proof with readable labels; HTML mocks never product truth",
+  "smokes": "li-tests/smoke/studio_polish_w0_typography.li, studio_polish_w1_glyphs.li (studio manifest)",
   "pr": "https://github.com/li-langverse/studio/pull/19",
-  "agent_run_note": "world_studio_builder 2026-06-01: pass world_studio_builder-1780317166754 — re-verified cursor/world-studio-gui-polish; progress + completion gates PASS; PR #19 CI green (8/8); present-host capture skipped in agent workspace; isolated clone was behind remote (reset to d8d9774)"
+  "agent_run_note": "world_studio_builder 2026-06-01: paint_fb bitmap font + refreshed polish PNG captures on cursor/world-studio-gui-polish"
 }

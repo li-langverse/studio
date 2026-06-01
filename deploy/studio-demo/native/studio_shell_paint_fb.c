@@ -1,5 +1,6 @@
 /* Mirrors packages/li-ui layout_studio_shell_adaptive + li-studio studio_paint_shell_chrome. */
 #include "studio_shell_paint_fb.h"
+#include "studio_shell_bitmap_font.h"
 
 #include <string.h>
 
@@ -258,28 +259,85 @@ static void paint_panel_shadow(unsigned char* rgb, int w, int h, ShellRect panel
   fill_round_rect(rgb, w, h, shadow, k_panel_shadow, 6);
 }
 
-static void paint_glyph_bar(unsigned char* rgb, int w, int h, ShellRect bar, const unsigned char* base) {
-  if (bar.w <= 0 || bar.h <= 0) {
+static void paint_bitmap_glyph(unsigned char* rgb, int w, int h, int x, int y, char ch, int scale,
+                               const unsigned char* color) {
+  unsigned char uc = (unsigned char)ch;
+  if (uc < FONT5X7_FIRST || uc >= FONT5X7_FIRST + 95) {
+    uc = (unsigned char)'?';
+  }
+  const uint8_t* glyph = &k_font5x7[(uc - FONT5X7_FIRST) * 5];
+  for (int col = 0; col < 5; col++) {
+    uint8_t line = glyph[col];
+    for (int row = 0; row < 7; row++) {
+      if (line & 1) {
+        for (int sy = 0; sy < scale; sy++) {
+          for (int sx = 0; sx < scale; sx++) {
+            put_px(rgb, w, h, x + col * scale + sx, y + row * scale + sy, color);
+          }
+        }
+      }
+      line >>= 1;
+    }
+  }
+}
+
+static int paint_bitmap_text_width(const char* text, int scale) {
+  if (text == NULL) {
+    return 0;
+  }
+  size_t len = strlen(text);
+  if (len == 0) {
+    return 0;
+  }
+  return (int)(len * (5 * scale + scale));
+}
+
+static void paint_bitmap_text(unsigned char* rgb, int w, int h, int x, int y, const char* text, int scale,
+                              const unsigned char* color) {
+  if (text == NULL || scale < 1) {
     return;
   }
-  for (int xx = bar.x; xx < bar.x + bar.w && xx < w; xx += 7) {
-    unsigned char c[3] = {
-        (unsigned char)(base[0] > 8 ? base[0] - (xx % 5) : base[0]),
-        (unsigned char)(base[1] > 8 ? base[1] - (xx % 7) : base[1]),
-        (unsigned char)(base[2] > 8 ? base[2] - (xx % 3) : base[2]),
-    };
-    ShellRect ch = {xx, bar.y, 5, bar.h};
-    fill_rect(rgb, w, h, ch, c);
+  int cursor = x;
+  for (size_t i = 0; text[i] != '\0'; i++) {
+    paint_bitmap_glyph(rgb, w, h, cursor, y, text[i], scale, color);
+    cursor += 5 * scale + scale;
   }
+}
+
+static void paint_bitmap_text_in_rect(unsigned char* rgb, int fw, int fh, ShellRect box, const char* text,
+                                      int scale, const unsigned char* color) {
+  if (box.w <= 0 || box.h <= 0 || text == NULL) {
+    return;
+  }
+  int text_w = paint_bitmap_text_width(text, scale);
+  int text_h = 7 * scale;
+  int x = box.x + 2;
+  int y = box.y + (box.h - text_h) / 2;
+  if (text_w + 4 < box.w) {
+    x = box.x + (box.w - text_w) / 2;
+  }
+  paint_bitmap_text(rgb, fw, fh, x, y, text, scale, color);
+}
+
+static void paint_dock_icon_glyph(unsigned char* rgb, int w, int h, ShellRect icon, int slot,
+                                  const unsigned char* color) {
+  static const char dock_labels[] = "SAVTL";
+  char ch = dock_labels[slot % 5];
+  int scale = 2;
+  int text_w = 5 * scale + scale;
+  int text_h = 7 * scale;
+  int x = icon.x + (icon.w - text_w) / 2;
+  int y = icon.y + (icon.h - text_h) / 2;
+  paint_bitmap_glyph(rgb, w, h, x, y, ch, scale, color);
 }
 
 static void paint_topbar_accent(unsigned char* rgb, int w, int h, ShellRect topbar, const unsigned char* accent) {
   ShellRect strip = {topbar.x, topbar.y, topbar.w, 3};
   fill_rect(rgb, w, h, strip, accent);
-  ShellRect title = {topbar.x + 16, topbar.y + 14, topbar.w / 4, 12};
-  paint_glyph_bar(rgb, w, h, title, k_text_primary);
-  ShellRect sub = {title.x, title.y + 16, topbar.w / 5, 8};
-  paint_glyph_bar(rgb, w, h, sub, k_text_muted);
+  ShellRect title = {topbar.x + 16, topbar.y + 8, topbar.w / 3, 16};
+  paint_bitmap_text_in_rect(rgb, w, h, title, "World Studio", FONT5X7_SCALE_BODY, k_text_primary);
+  ShellRect sub = {title.x, title.y + 18, topbar.w / 4, 12};
+  paint_bitmap_text_in_rect(rgb, w, h, sub, "Build mode", FONT5X7_SCALE_CAPTION, k_text_muted);
 }
 
 static void paint_viewport_particles(unsigned char* rgb, int w, int h, ShellRect vp, const unsigned char* accent) {
@@ -339,17 +397,18 @@ static void paint_viewport_drug_sticks(unsigned char* rgb, int w, int h, ShellRe
 }
 
 static void paint_viewport_hud(unsigned char* rgb, int w, int h, ShellRect vp, const char* mode_label) {
-  (void)mode_label;
+  const char* mode = (mode_label != NULL && mode_label[0] != '\0') ? mode_label : "Viewport";
   ShellRect hud = {vp.x + vp.w - 168, vp.y + 12, 156, 52};
   fill_round_rect(rgb, w, h, hud, k_bg_elevated, 6);
   stroke_round_rect(rgb, w, h, hud, k_border, 1, 6);
-  ShellRect mode = {hud.x + 10, hud.y + 10, hud.w - 20, 10};
-  ShellRect sel = {hud.x + 10, hud.y + 26, hud.w - 20, 8};
-  paint_glyph_bar(rgb, w, h, mode, k_text_primary);
-  paint_glyph_bar(rgb, w, h, sel, k_accent_mint);
+  ShellRect mode_box = {hud.x + 8, hud.y + 8, hud.w - 16, 14};
+  ShellRect sel_box = {hud.x + 8, hud.y + 26, hud.w - 16, 12};
+  paint_bitmap_text_in_rect(rgb, w, h, mode_box, mode, FONT5X7_SCALE_CAPTION, k_text_primary);
+  paint_bitmap_text_in_rect(rgb, w, h, sel_box, "3 selected", FONT5X7_SCALE_CAPTION, k_accent_mint);
   ShellRect legend = {vp.x + 12, vp.y + vp.h - 36, 120, 24};
   fill_round_rect(rgb, w, h, legend, k_bg_elevated, 4);
-  paint_glyph_bar(rgb, w, h, (ShellRect){legend.x + 8, legend.y + 8, 80, 8}, k_text_dim);
+  paint_bitmap_text_in_rect(rgb, w, h, (ShellRect){legend.x + 6, legend.y + 6, legend.w - 12, legend.h - 12},
+                            "Grid 1m", FONT5X7_SCALE_CAPTION, k_text_dim);
 }
 
 static void paint_viewport_profile(unsigned char* rgb, int w, int h, ShellRect vp, const ShellProfileVisual* profile) {
@@ -375,9 +434,9 @@ static void paint_inspector_selected(unsigned char* rgb, int w, int h, ShellRect
   fill_round_rect(rgb, w, h, header, k_accent_violet, 4);
   ShellRect field = {insp.x + 12, insp.y + INSPECTOR_HEADER_H + 12, insp.w - 24, 20};
   fill_round_rect(rgb, w, h, field, k_bg_elevated, 4);
-  paint_glyph_bar(rgb, w, h, (ShellRect){field.x + 6, field.y + 5, field.w - 12, 10}, k_text_primary);
-  ShellRect val = {field.x, field.y + 28, field.w, 16};
-  paint_glyph_bar(rgb, w, h, val, k_accent_violet);
+  paint_bitmap_text_in_rect(rgb, w, h, field, "Molecule", FONT5X7_SCALE_CAPTION, k_text_primary);
+  ShellRect val = {field.x, field.y + 24, field.w, 18};
+  paint_bitmap_text_in_rect(rgb, w, h, val, "Caffeine", FONT5X7_SCALE_BODY, k_accent_violet);
 }
 
 static void paint_inspector_empty(unsigned char* rgb, int w, int h, ShellRect insp) {
@@ -431,7 +490,7 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
     }
     ShellRect icon = {slot_r.x + 10, slot_r.y + 10, slot_r.w - 20, slot_r.h - 20};
     unsigned char icon_c[3] = {k_text_muted[0], k_text_muted[1], (unsigned char)(k_text_muted[2] + slot * 9)};
-    paint_glyph_bar(rgb, width, height, icon, icon_c);
+    paint_dock_icon_glyph(rgb, width, height, icon, slot, icon_c);
   }
 
   ShellRect strip = outliner_strip(layout.dock);
@@ -446,7 +505,9 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
       stroke_round_rect(rgb, width, height, row_r, k_border, 1, 4);
     }
     ShellRect label = {row_r.x + 6, row_r.y + 4, row_r.w - 12, row_r.h - 8};
-    paint_glyph_bar(rgb, width, height, label, row == 0 ? k_text_primary : k_text_muted);
+    const char* outliner_labels[] = {"World", "Camera", "Mesh"};
+    paint_bitmap_text_in_rect(rgb, width, height, label, outliner_labels[row], FONT5X7_SCALE_CAPTION,
+                              row == 0 ? k_text_primary : k_text_muted);
   }
 
   paint_viewport_profile(rgb, width, height, layout.viewport, profile);
@@ -469,15 +530,16 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
   ShellRect agent_status = {layout.agent_strip.x + 12, layout.agent_strip.y + 8,
                             layout.agent_strip.w / 3, layout.agent_strip.h - 16};
   fill_round_rect(rgb, width, height, agent_status, k_agent_idle, 4);
-  paint_glyph_bar(rgb, width, height, (ShellRect){agent_status.x + 8, agent_status.y + 6, agent_status.w - 16, 10},
-                  k_text_muted);
+  paint_bitmap_text_in_rect(rgb, width, height, agent_status, "Agent idle", FONT5X7_SCALE_CAPTION, k_text_muted);
   ShellRect hint = {layout.agent_strip.x + layout.agent_strip.w - 140, layout.agent_strip.y + 8, 128, 16};
-  paint_glyph_bar(rgb, width, height, hint, k_text_dim);
+  paint_bitmap_text_in_rect(rgb, width, height, hint, "Cmd+K", FONT5X7_SCALE_CAPTION, k_text_dim);
 
   if (profile != NULL) {
     ShellRect chip = profile_chip(layout.topbar, profile->tag_h);
     unsigned char chip_c[] = {profile->chip_r, profile->chip_g, profile->chip_b};
     fill_round_rect(rgb, width, height, chip, chip_c, 4);
     stroke_round_rect(rgb, width, height, chip, k_border, 1, 4);
+    ShellRect chip_label = {chip.x + 4, chip.y + 4, chip.w - 8, chip.h - 8};
+    paint_bitmap_text_in_rect(rgb, width, height, chip_label, profile->slug, FONT5X7_SCALE_CAPTION, k_text_primary);
   }
 }
