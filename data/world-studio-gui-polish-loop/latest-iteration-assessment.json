@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-01T12:30:00Z",
-  "todo": "wsp-w2-hover-states",
+  "timestamp": "2026-06-01T12:45:00Z",
+  "todo": "wsp-w2-focus-ring",
   "wsp_todos_done": [
     "wsp-w0-typography-readable",
     "wsp-w0-token-contrast",
@@ -10,10 +10,11 @@
     "wsp-w1-inspector-labels",
     "wsp-w1-dock-icons",
     "wsp-w1-viewport-overlays",
-    "wsp-w2-hover-states"
+    "wsp-w2-hover-states",
+    "wsp-w2-focus-ring"
   ],
   "wave": "W2",
-  "wps": ["WP-UX-02", "WP-UX-06", "GUI-LIBRARY-PLAN Phase 2"],
+  "wps": ["WP-UX-10", "WP-UX-06", "GUI-LIBRARY-PLAN Phase 2"],
   "native_only": true,
   "polish_screenshot_paths": [
     "installer/out/studio-screenshot-polish-baseline.png"
@@ -22,6 +23,6 @@
     "world_studio_gui_polish_gates": "pass",
     "lic_check_smoke": "pending-ci"
   },
-  "baseline_diff_note": "W2: studio_shell_sync_hover drives dock/outliner/timeline hover fills; hover_surface token on inactive dock slots and outliner rows; playhead cyan + focus ring on clip hover; play button hover fill.",
-  "north_star_fit": "gaming PH-UX — native interaction feedback before focus-ring and shortcut-hint wave"
+  "baseline_diff_note": "W2 focus: studio_paint_focus_ring_for_panel now runs at end of studio_paint_shell_chrome; studio_shell_chrome_count_for_compose includes focus ring cmds; timeline playhead uses focus_ring token on hover.",
+  "north_star_fit": "gaming PH-UX — keyboard/panel focus visible on native shell chrome"
 }

@@ -16,7 +16,7 @@ def main() -> int
   var dock: StudioDockCompose = compose.dock
   var dframe: PaintFrame = paint_frame_new()
   studio_paint_dock(dframe, dock)
-  if dframe.last_kind != paint_op_draw_image():
+  if dframe.last_kind != paint_op_draw_glyphs():
     return 4
   if studio_paint_dock_cmds() != 13:
     return 7

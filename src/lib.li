@@ -7354,10 +7354,19 @@ def studio_shell_chrome_count_palette(has_selection: int, scene_entity_count: in
   var ctx0: int = agent_context_label
   return studio_paint_compose_panels_count(sel0) + 1 + studio_paint_topbar_profile_cmds() + studio_shell_viewport_cmds(scene0, viewport_error_kind, display, menu) + studio_paint_agent_cmds(ts0, ctx0, invoke_visible, tool_trace_visible) + studio_paint_palette_cmds(pal0)
 
+def studio_shell_chrome_count_for_compose(compose: StudioShellCompose) -> int
+  requires compose.panel.active_region >= studio_region_dock()
+  requires compose.panel.active_region <= studio_region_agent_strip()
+  ensures result >= studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible)
+  decreases compose.agent.task_state
+=
+  var base: int = studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible)
+  return base + studio_paint_focus_ring_cmds(compose.panel.active_region)
+
 
 def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose) -> unit
   requires frame.cmd_count >= 0
-  ensures frame.cmd_count == studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible)
+  ensures frame.cmd_count == studio_shell_chrome_count_for_compose(compose)
   decreases compose.agent.task_state
 =
   studio_paint_dock(frame, compose.dock, compose.hover)
@@ -7381,6 +7390,7 @@ def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose
       studio_paint_viewport_menu(frame, compose.viewport_menu)
   studio_paint_agent(frame, compose.agent)
   paint_studio_palette(frame, compose.palette)
+  studio_paint_focus_ring_for_panel(frame, compose)
 
 def studio_paint_palette_overlay(frame: var PaintFrame, palette: StudioCommandPaletteCompose) -> unit
   requires frame.cmd_count >= 0
@@ -7394,7 +7404,7 @@ def studio_paint_palette_overlay(frame: var PaintFrame, palette: StudioCommandPa
 def studio_shell_frame(w: float, h: float) -> PaintFrame
   requires w > 0.0
   requires h > 0.0
-  ensures result.cmd_count == studio_shell_chrome_count(1, 1, studio_agent_task_running())
+  ensures result.cmd_count == studio_shell_chrome_count_for_compose(studio_compose_shell_agent(w, h, 0, 1, 1, studio_agent_task_running()))
   decreases 0
 =
   var compose: StudioShellCompose = studio_compose_shell_agent(w, h, 0, 1, 1, studio_agent_task_running())

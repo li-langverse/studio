@@ -31,7 +31,7 @@ todos:
     status: done
   - id: wsp-w2-focus-ring
     content: "W2 — focus ring + keyboard nav feedback on interactive controls"
-    status: pending
+    status: done
   - id: wsp-w2-shortcut-hints
     content: "W2 — command palette / shortcut hints visible where spec’d"
     status: pending
