@@ -18,7 +18,7 @@ def main() -> int
   studio_paint_dock(dframe, dock)
   if dframe.last_kind != paint_op_draw_glyphs():
     return 4
-  if studio_paint_dock_cmds() != 13:
+  if studio_paint_dock_cmds() != 14:
     return 7
   if dframe.cmd_count != studio_paint_dock_cmds():
     return 10

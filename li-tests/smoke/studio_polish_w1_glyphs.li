@@ -9,7 +9,7 @@ def main() -> int
     return 1
   if studio_paint_glyph_pipeline_ok() != 1:
     return 2
-  if studio_paint_dock_cmds() != 13:
+  if studio_paint_dock_cmds() != 14:
     return 3
   if studio_paint_viewport_hud_cmds() != 12:
     return 4

@@ -46,13 +46,13 @@ todos:
     status: done
   - id: wsp-w4-gradients-shadows
     content: "W4 — gradients + subtle shadows on panels (native PaintCmd, no HTML)"
-    status: pending
+    status: done
   - id: wsp-w4-spacing-rhythm
     content: "W4 — 4/8px spacing rhythm on shell regions; align to design tokens"
-    status: pending
+    status: done
   - id: wsp-w4-vertical-polish
     content: "W4 — per-vertical chrome pass (game, sim_rl, sim_drug_design minimum)"
-    status: pending
+    status: done
   - id: wsp-w5-polish-png-set
     content: "W5 — polish-*.png per vertical under docs/demo/media/native-verticals/png/"
     status: pending

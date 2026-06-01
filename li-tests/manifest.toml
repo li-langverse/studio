@@ -78,6 +78,18 @@ note = "wsp-w3: game profile 1280x720 entity preview blocks (not empty checkerbo
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_polish_w4_shadows_spacing.li"
+outcome = "check_ok"
+note = "wsp-w4: panel shadows + 4/8px spacing rhythm on native shell chrome"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_polish_w4_vertical_chrome.li"
+outcome = "check_ok"
+note = "wsp-w4: per-vertical topbar accent + drug/game/rl viewport polish"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_agent_chrome.li"
 outcome = "check_ok"
 note = "T-PKG-li-studio-agent-chrome"

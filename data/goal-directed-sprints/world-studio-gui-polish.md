@@ -36,7 +36,7 @@ Update each iteration. Mark `| **DONE** |` only when every `wsp-w*` todo in that
 | **W1** | Real labels & icons — glyph pipeline, inspector text, viewport overlays | **DONE** |
 | **W2** | Interaction feel — hover/focus states, keyboard feedback visible | **DONE** |
 | **W3** | Viewport quality — grid, particles, sim viz not placeholder | **DONE** |
-| **W4** | Slick pass — gradients, shadows, spacing rhythm (still native Li) | pending |
+| **W4** | Slick pass — gradients, shadows, spacing rhythm (still native Li) | **DONE** |
 | **W5** | Screenshot gate — mandatory PNGs per vertical + 1280×720 game; no HTML proof | pending |
 
 ## Progress gate
