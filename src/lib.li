@@ -535,16 +535,16 @@ def studio_profile_color(profile_id: int) -> Color
 
 def studio_paint_topbar_profile_cmds() -> int
   requires true
-  ensures result == 2
+  ensures result == 2 + studio_paint_glyph_run_cmds()
   decreases 0
 =
-  return 2
+  return 2 + studio_paint_glyph_run_cmds()
 
 def studio_paint_topbar_profile(frame: var PaintFrame, topbar: Rect, profile_id: int) -> unit
   requires frame.cmd_count >= 0
   requires studio_profile_id_valid(profile_id) == 1
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_topbar_profile_cmds()
-  ensures frame.last_kind == paint_op_stroke_round_rect()
+  ensures frame.last_kind == paint_op_draw_glyphs()
   decreases profile_id
 =
   var pid_chip: int = profile_id
@@ -556,7 +556,177 @@ def studio_paint_topbar_profile(frame: var PaintFrame, topbar: Rect, profile_id:
   var top_h: float = top_copy.h
   var chip_rect: Rect = studio_profile_chip_rect_at(top_x, top_y, top_w, top_h, pid_chip)
   paint_frame_push_accent_chip(frame, chip_rect, studio_profile_color(pid_color))
+  var prof_cp: int = studio_profile_label_first_codepoint(pid_chip)
+  var prof_cnt: int = studio_profile_label_glyph_count(pid_chip)
+  studio_paint_glyph_text(frame, chip_rect, prof_cp, prof_cnt, studio_color_text_primary())
 
+# W0 — readable typography via bitmap atlas (body/caption token sizes).
+def studio_typography_glyph_line_height_px() -> float
+  requires true
+  ensures result == studio_typography_body_px() + 4.0
+  decreases 0
+=
+  return studio_typography_body_px() + 4.0
+
+def studio_typography_caption_line_height_px() -> float
+  requires true
+  ensures result == studio_typography_caption_px() + 3.0
+  decreases 0
+=
+  return studio_typography_caption_px() + 3.0
+
+def studio_paint_glyph_run_cmds() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_paint_glyph_text_rect(anchor: Rect, glyph_count: int) -> Rect
+  requires anchor.w >= 8.0
+  requires anchor.h >= studio_typography_glyph_line_height_px()
+  requires glyph_count >= 1
+  requires glyph_count <= 32
+  ensures result.w >= 8.0
+  ensures result.h == studio_typography_glyph_line_height_px()
+  decreases glyph_count
+=
+  var pad: float = 8.0
+  var lh: float = studio_typography_glyph_line_height_px()
+  var y: float = anchor.y + (anchor.h - lh) / 2.0
+  var w: float = anchor.w - pad - pad
+  if w < 8.0:
+    w = 8.0
+  return rect_make(anchor.x + pad, y, w, lh)
+
+def studio_paint_glyph_text(frame: var PaintFrame, anchor: Rect, first_codepoint: int, glyph_count: int, color: Color) -> unit
+  requires frame.cmd_count >= 0
+  requires glyph_count >= 1
+  requires glyph_count <= 32
+  requires font_atlas_codepoint_supported(first_codepoint) == 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_glyph_run_cmds()
+  ensures frame.last_kind == paint_op_draw_glyphs()
+  decreases glyph_count
+=
+  var dest: Rect = studio_paint_glyph_text_rect(anchor, glyph_count)
+  paint_frame_push(frame, paint_cmd_draw_glyphs_run(dest, font_face_inter(), color, first_codepoint, glyph_count))
+
+def studio_outliner_label_first_codepoint(label_id: int) -> int
+  requires label_id >= studio_outliner_label_root()
+  requires label_id <= studio_outliner_label_mesh()
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases label_id
+=
+  if label_id == studio_outliner_label_root():
+    return 87
+  if label_id == studio_outliner_label_camera():
+    return 67
+  return 77
+
+def studio_outliner_label_glyph_count(label_id: int) -> int
+  requires label_id >= studio_outliner_label_root()
+  requires label_id <= studio_outliner_label_mesh()
+  ensures result >= 4
+  ensures result <= 6
+  decreases label_id
+=
+  if label_id == studio_outliner_label_root():
+    return 5
+  if label_id == studio_outliner_label_camera():
+    return 6
+  return 4
+
+def studio_profile_label_first_codepoint(profile_id: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases profile_id
+=
+  if profile_id == studio_profile_game():
+    return 71
+  if profile_id == studio_profile_sim_rl():
+    return 82
+  if profile_id == studio_profile_sim_drug_design():
+    return 68
+  if profile_id == studio_profile_sim_scientific():
+    return 83
+  return 83
+
+def studio_profile_label_glyph_count(profile_id: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures result >= 2
+  ensures result <= 6
+  decreases profile_id
+=
+  if profile_id == studio_profile_game():
+    return 4
+  if profile_id == studio_profile_sim_rl():
+    return 2
+  if profile_id == studio_profile_sim_drug_design():
+    return 4
+  if profile_id == studio_profile_sim_scientific():
+    return 3
+  return 6
+
+def studio_agent_status_label_first_codepoint(task_state: int) -> int
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases task_state
+=
+  if task_state == studio_agent_task_running():
+    return 82
+  if task_state == studio_agent_task_failed():
+    return 70
+  if task_state == studio_agent_task_done():
+    return 68
+  if task_state == studio_agent_task_blocked():
+    return 66
+  return 73
+
+def studio_agent_status_label_glyph_count(task_state: int) -> int
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  ensures result >= 3
+  ensures result <= 7
+  decreases task_state
+=
+  if task_state == studio_agent_task_running():
+    return 7
+  if task_state == studio_agent_task_failed():
+    return 6
+  if task_state == studio_agent_task_done():
+    return 4
+  if task_state == studio_agent_task_blocked():
+    return 7
+  return 4
+
+def studio_inspector_empty_hint1_first_codepoint() -> int
+  requires true
+  ensures result == 83
+  decreases 0
+=
+  return 83
+
+def studio_inspector_empty_hint1_glyph_count() -> int
+  requires true
+  ensures result == 6
+  decreases 0
+=
+  return 6
+
+def studio_inspector_empty_hint2_first_codepoint() -> int
+  requires true
+  ensures result == 111
+  decreases 0
+=
+  return 111
+
+def studio_inspector_empty_hint2_glyph_count() -> int
+  requires true
+  ensures result == 6
+  decreases 0
+=
+  return 6
 
 
 def studio_mcp_tool_unknown() -> int
@@ -6297,14 +6467,40 @@ def studio_compose_shell_agent(w: float, h: float, active_dock_slot: int, has_se
   return out
 
 
+def studio_paint_outliner_row_cmds() -> int
+  requires true
+  ensures result == 1 + studio_paint_glyph_run_cmds()
+  decreases 0
+=
+  return 1 + studio_paint_glyph_run_cmds()
+
 def studio_paint_outliner_cmds(node_count: int) -> int
   requires node_count >= 0
   requires node_count <= studio_outliner_max_nodes()
-  ensures result == node_count
+  ensures result == 2 + node_count * studio_paint_outliner_row_cmds()
   decreases node_count
 =
-  return node_count
+  return 2 + node_count * studio_paint_outliner_row_cmds()
 
+def studio_paint_outliner_row(frame: var PaintFrame, row: Rect, selected: int, label_id: int) -> unit
+  requires frame.cmd_count >= 0
+  requires selected >= 0
+  requires selected <= 1
+  requires label_id >= studio_outliner_label_root()
+  requires label_id <= studio_outliner_label_mesh()
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_outliner_row_cmds()
+  decreases label_id
+=
+  if selected == 1:
+    paint_frame_push(frame, paint_cmd_fill_round(row, studio_color_accent_mint(), studio_radius_sm_px()))
+    var cp_sel: int = studio_outliner_label_first_codepoint(label_id)
+    var cnt_sel: int = studio_outliner_label_glyph_count(label_id)
+    studio_paint_glyph_text(frame, row, cp_sel, cnt_sel, studio_color_text_primary())
+    return
+  paint_frame_push(frame, paint_cmd_stroke_round(row, studio_color_border(), 1.0, studio_radius_sm_px()))
+  var cp0: int = studio_outliner_label_first_codepoint(label_id)
+  var cnt0: int = studio_outliner_label_glyph_count(label_id)
+  studio_paint_glyph_text(frame, row, cp0, cnt0, studio_color_text_muted())
 
 def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose) -> unit
   requires frame.cmd_count >= 0
@@ -6313,28 +6509,29 @@ def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_outliner_cmds(outliner.node_count)
   decreases outliner.node_count
 =
+  paint_frame_push_elevated_panel(frame, outliner.rect)
   if outliner.node_count > 0:
+    var sel0: int = 0
     if outliner.selected_node == outliner.node0.id:
-      paint_frame_push(frame, paint_cmd_fill_round(outliner.row0_rect, studio_color_accent_mint(), studio_radius_sm_px()))
-    if outliner.selected_node != outliner.node0.id:
-      paint_frame_push(frame, paint_cmd_stroke_round(outliner.row0_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
+      sel0 = 1
+    studio_paint_outliner_row(frame, outliner.row0_rect, sel0, outliner.node0.label_id)
   if outliner.node_count > 1:
+    var sel1: int = 0
     if outliner.selected_node == outliner.node1.id:
-      paint_frame_push(frame, paint_cmd_fill_round(outliner.row1_rect, studio_color_accent_mint(), studio_radius_sm_px()))
-    if outliner.selected_node != outliner.node1.id:
-      paint_frame_push(frame, paint_cmd_stroke_round(outliner.row1_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
+      sel1 = 1
+    studio_paint_outliner_row(frame, outliner.row1_rect, sel1, outliner.node1.label_id)
   if outliner.node_count > 2:
+    var sel2: int = 0
     if outliner.selected_node == outliner.node2.id:
-      paint_frame_push(frame, paint_cmd_fill_round(outliner.row2_rect, studio_color_accent_mint(), studio_radius_sm_px()))
-    if outliner.selected_node != outliner.node2.id:
-      paint_frame_push(frame, paint_cmd_stroke_round(outliner.row2_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
+      sel2 = 1
+    studio_paint_outliner_row(frame, outliner.row2_rect, sel2, outliner.node2.label_id)
 
 def studio_paint_dock_cmds() -> int
   requires true
-  ensures result == 4
+  ensures result == 4 + studio_paint_glyph_run_cmds()
   decreases 0
 =
-  return 4
+  return 4 + studio_paint_glyph_run_cmds()
 
 def studio_paint_timeline_cmds() -> int
   requires true
@@ -6345,10 +6542,10 @@ def studio_paint_timeline_cmds() -> int
 
 def studio_paint_inspector_empty_cmds() -> int
   requires true
-  ensures result == inspector_pilot_paint_cmds(0)
+  ensures result == 2 + 1 + studio_paint_glyph_run_cmds() + studio_paint_glyph_run_cmds()
   decreases 0
 =
-  return inspector_pilot_paint_cmds(0)
+  return 2 + 1 + studio_paint_glyph_run_cmds() + studio_paint_glyph_run_cmds()
 
 def studio_paint_inspector_selected_cmds() -> int
   requires true
@@ -6572,7 +6769,7 @@ def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose) -> unit
   requires dock.active_slot >= 0
   requires dock.active_slot < icon_atlas_slot_count()
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_dock_cmds()
-  ensures frame.last_kind == paint_op_draw_image()
+  ensures frame.last_kind == paint_op_draw_glyphs()
   ensures frame.last_rect.w == dock.active_slot_rect.w
   decreases dock.active_slot
 =
@@ -6582,6 +6779,8 @@ def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose) -> unit
   var icon_id: int = icon_atlas_image_for_dock_slot(dock.active_slot)
   var icon_src: Rect = icon_atlas_src_rect(icon_id)
   paint_frame_push(frame, paint_cmd_draw_image(dock.active_slot_rect, icon_id, icon_src, studio_color_text_primary()))
+  var dock_label_rect: Rect = rect_make(dock.rect.x, dock.active_slot_rect.y + dock.active_slot_rect.h + 2.0, dock.rect.w, studio_typography_caption_line_height_px())
+  studio_paint_glyph_text(frame, dock_label_rect, 83, 5, studio_color_text_muted())
 
 def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose) -> unit
   requires frame.cmd_count >= 0
@@ -6650,9 +6849,13 @@ def studio_paint_inspector(frame: var PaintFrame, inspector: StudioInspectorComp
     return
   if inspector.has_selection == 0:
     paint_frame_push_elevated_panel(frame, inspector.rect)
-    paint_frame_push(frame, paint_cmd_fill_round(inspector.hint_line1_rect, studio_color_bg_elevated(), studio_radius_sm_px()))
-    paint_frame_push(frame, paint_cmd_fill_round(inspector.hint_line2_rect, studio_color_bg_elevated(), studio_radius_sm_px()))
     paint_frame_push(frame, paint_cmd_stroke_round(inspector.hint_box_rect, studio_color_border(), 1.0, studio_default_panel_radius_px()))
+    var h1_cp: int = studio_inspector_empty_hint1_first_codepoint()
+    var h1_cnt: int = studio_inspector_empty_hint1_glyph_count()
+    studio_paint_glyph_text(frame, inspector.hint_line1_rect, h1_cp, h1_cnt, studio_color_text_primary())
+    var h2_cp: int = studio_inspector_empty_hint2_first_codepoint()
+    var h2_cnt: int = studio_inspector_empty_hint2_glyph_count()
+    studio_paint_glyph_text(frame, inspector.hint_line2_rect, h2_cp, h2_cnt, studio_color_text_muted())
   if inspector.has_selection == 1:
     paint_frame_push(frame, paint_cmd_fill_gradient(inspector.rect, studio_color_bg_primary(), studio_color_bg_elevated()))
     paint_frame_push(frame, paint_cmd_stroke_round(inspector.rect, studio_color_accent_violet(), 1.0, studio_default_panel_radius_px()))

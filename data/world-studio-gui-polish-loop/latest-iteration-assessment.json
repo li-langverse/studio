@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-06-01T10:30:00Z",
+  "todo": "wsp-w0-typography-readable",
+  "wsp_todos_done": [
+    "wsp-w0-typography-readable",
+    "wsp-w0-token-contrast",
+    "wsp-w0-anti-wireframe-paint",
+    "wsp-w0-baseline-screenshot"
+  ],
+  "wave": "W0",
+  "wps": ["WP-UX-01", "GUI-LIBRARY-PLAN Phase 0"],
+  "native_only": true,
+  "polish_screenshot_paths": [
+    "installer/out/studio-screenshot-polish-baseline.png"
+  ],
+  "gates": {
+    "world_studio_gui_polish_gates": "pass",
+    "lic_check_lib": "pass"
+  },
+  "baseline_diff_note": "W0 adds draw_glyphs on outliner (World/Camera/Mesh), profile chip, inspector hints (Select/object), dock Scene caption; elevated outliner panel; removed wireframe hint placeholder fills.",
+  "north_star_fit": "gaming PH-UX — native product chrome readability before W1 iconography wave"
+}
