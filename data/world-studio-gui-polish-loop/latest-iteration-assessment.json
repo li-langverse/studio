@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-06-01T14:00:00Z",
+  "todo": "wsp-w0-typography-readable",
+  "wave": "W0",
+  "wps": ["WP-UX-01", "WP-UX-02", "GUI-LIBRARY-PLAN Phase 0"],
+  "native_only": true,
+  "polish_phase": "W0-complete",
+  "gates": {
+    "world_studio_gui_polish_gates": "pass",
+    "present_host_capture": "skipped-not-built"
+  },
+  "smokes": {
+    "lic_check": "studio_polish_w0_typography.li — run in lic WSL (glyph line-height + draw_glyphs topbar/outliner)",
+    "studio_ui_ux_verify_tokens": "pass"
+  },
+  "screenshot_diff": {
+    "baseline": "installer/out/studio-screenshot-polish-baseline.png",
+    "iteration_0": "installer/out/studio-screenshot-iteration-0.png",
+    "bytes_baseline": 3744,
+    "bytes_iteration_0": 3744,
+    "note": "Iteration-0 seeded from baseline until present host rebuild captures post-W0 paint (glyph labels, topbar gradient, outliner draw_glyphs). Structural regions unchanged; paint IR adds glyph + gradient cmds."
+  },
+  "polish_screenshot_paths": [
+    "installer/out/studio-screenshot-polish-baseline.png",
+    "installer/out/studio-screenshot-iteration-0.png"
+  ],
+  "changes_summary": "Synced studio/src/lib.li with lic li-studio W0 paint: profile/outliner draw_glyphs, token-backed colors, shell topbar gradient, elevated inspector panels. Fixed polish gates goal path for in-repo data/ layout.",
+  "north_star_fit": {
+    "domain": "game-dev / World Studio native chrome",
+    "ph_ids": ["PH-UX-01", "PH-UX-02", "provable"]
+  },
+  "ux_scores_w0": {
+    "UX-01": { "score": 2, "note": "Glyph labels on profile chip + outliner rows; body_px>=12" },
+    "UX-02": { "score": 2, "note": "Token colors on gradients/round rects; not wireframe gray blocks" }
+  },
+  "pr": null
+}
