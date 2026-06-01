@@ -536,6 +536,11 @@ def studio_profile_color(profile_id: int) -> Color
 def studio_profile_label_first_codepoint(profile_id: int) -> int
   requires studio_profile_id_valid(profile_id) == 1
   requires font_atlas_codepoint_supported(result) == 1
+  ensures font_atlas_codepoint_supported(result) == 1
+  ensures (profile_id == studio_profile_game()) ==> (result == 71)
+  ensures (profile_id == studio_profile_sim_rl()) ==> (result == 82)
+  ensures (profile_id == studio_profile_sim_drug_design()) ==> (result == 68)
+  ensures (profile_id != studio_profile_game()) && (profile_id != studio_profile_sim_rl()) && (profile_id != studio_profile_sim_drug_design()) ==> (result == 83)
   decreases profile_id
 =
   if profile_id == studio_profile_game():
@@ -2407,6 +2412,10 @@ def studio_outliner_label_first_codepoint(label_id: int) -> int
   requires label_id >= studio_outliner_label_root()
   requires label_id <= studio_outliner_label_mesh()
   requires font_atlas_codepoint_supported(result) == 1
+  ensures font_atlas_codepoint_supported(result) == 1
+  ensures (label_id == studio_outliner_label_root()) ==> (result == 83)
+  ensures (label_id == studio_outliner_label_camera()) ==> (result == 67)
+  ensures (label_id == studio_outliner_label_mesh()) ==> (result == 77)
   decreases label_id
 =
   if label_id == studio_outliner_label_root():
