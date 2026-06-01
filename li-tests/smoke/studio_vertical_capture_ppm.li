@@ -1,0 +1,20 @@
+import studio
+
+def main() -> int raises IO, Alloc
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  var path0: str = "/tmp/studio_vertical_capture_smoke_0.ppm"
+  var path1: str = "/tmp/studio_vertical_capture_smoke_1.ppm"
+  if li_std_studio_version() < 38:
+    return 10
+  if studio_headless_golden_version() != 1:
+    return 11
+  if studio_vertical_capture_ppm(studio_profile_game(), 0, path0, 320, 180) != 1:
+    return 1
+  if studio_vertical_capture_ppm(studio_profile_sim_scientific(), 1, path1, 320, 180) != 1:
+    return 2
+  if studio_headless_golden_match(studio_profile_game(), 0, 320, 180) != 1:
+    return 3
+  return 0

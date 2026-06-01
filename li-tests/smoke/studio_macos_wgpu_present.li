@@ -1,0 +1,20 @@
+import studio
+
+# wsg-w5-macos-wgpu — macOS aarch64-apple-darwin wgpu/Metal surface (PH-HW WP3).
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 36:
+    return 1
+  if studio_macos_wgpu_present_version() != 1:
+    return 2
+  if studio_c_host_slim_version() != 1:
+    return 3
+  if studio_present_loop_raster_version() != 1:
+    return 4
+  var smoke_rc: int = studio_macos_wgpu_surface_smoke()
+  if smoke_rc > 8:
+    return 5
+  return 0

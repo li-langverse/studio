@@ -1,0 +1,3 @@
+file '/home/s4il0r/Documents/Cursor/li-langverse/lic/data/studio-ui-ux-plan-loop/artifacts/iter-test-dry/png/01-studio-workspace.png'
+duration 2
+file '/home/s4il0r/Documents/Cursor/li-langverse/lic/data/studio-ui-ux-plan-loop/artifacts/iter-test-dry/png/01-studio-workspace.png'

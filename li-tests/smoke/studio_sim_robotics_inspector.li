@@ -1,0 +1,27 @@
+import sim
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 26:
+    return 1
+  var cfg: StudioProjectConfig = studio_project_config_new(studio_profile_sim_robotics())
+  var sess: SimSessionStub = sim_session_stub_default()
+  if studio_sim_step_hook(cfg, sess, 0.01) != sim_status_ok():
+    return 2
+  if sess.tick != 1:
+    return 3
+  if sess.env_last_obs0 <= 0.0:
+    return 4
+  if studio_sim_robotics_inspector_live_ok(sess) != 1:
+    return 5
+  var layout: StudioShellLayout = layout_studio_shell_adaptive(1280.0, 720.0)
+  var insp: StudioInspectorCompose = studio_compose_inspector_robotics_live(layout, sess)
+  if insp.field_count < 2:
+    return 6
+  if insp.field0.value_rect.w <= 24.0:
+    return 7
+  return 0

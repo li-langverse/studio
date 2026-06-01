@@ -1,0 +1,50 @@
+{
+  "schema": "li_studio_capture_deps_v1",
+  "generated_at": "2026-05-31T18:51:57Z",
+  "deps": {
+    "sdl2": {
+      "present": false,
+      "probe": "pkg-config --exists sdl2"
+    },
+    "xvfb": {
+      "present": false,
+      "probe": "xvfb-run|Xvfb"
+    },
+    "display": {
+      "present": true,
+      "value": "needs-to-be-defined"
+    },
+    "chrome": {
+      "present": false,
+      "binary": null
+    },
+    "ffmpeg": {
+      "present": true
+    },
+    "gh": {
+      "present": true,
+      "token_set": true
+    },
+    "vulkan": {
+      "present": false,
+      "probe": "pkg-config --exists vulkan"
+    },
+    "nvidia_smi": {
+      "present": true
+    },
+    "lig_wgpu_swapchain": {
+      "env_set": false
+    }
+  },
+  "ready_for_native_capture": false,
+  "ready_for_wgpu_swapchain": false,
+  "ready_for_html_capture": false,
+  "gaps": [
+    "libsdl2-dev (pkg-config sdl2)",
+    "chromium/google-chrome for HTML mock PNG capture"
+  ],
+  "notes": [
+    "native_pixels requires SDL+Xvfb; HTML mocks remain labeled marketing-only (UX-14)",
+    "release upload needs gh + GH_TOKEN when png_count > 0"
+  ]
+}

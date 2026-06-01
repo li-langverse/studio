@@ -1,0 +1,19 @@
+/* UX-13/14/15 shared mock chrome */
+:root { --shell-left-px: calc(var(--spacing-dock-width-px) + var(--spacing-outliner-width-px)); }
+.dock-item { display:flex; flex-direction:column; align-items:center; gap:3px; width:100%; }
+.dock-label { font-size:var(--typography-dock-label-px,9px); color:var(--color-text-muted); text-align:center; }
+.dock-item:has(button.active) .dock-label { color:var(--color-accent-cyan); }
+.outliner { position:absolute; left:var(--spacing-dock-width-px); top:0; bottom:0; width:var(--spacing-outliner-width-px); background:var(--color-bg-elevated); border-right:1px solid var(--color-border); padding:12px 10px; font-size:12px; z-index:5; }
+.outliner h2 { margin:0 0 10px; font-size:11px; text-transform:uppercase; color:var(--color-text-muted); }
+.outliner-tree { list-style:none; margin:0; padding:0; }
+.outliner-node { padding:6px 8px; border-radius:4px; }
+.outliner-node--child { padding-left:22px; font-size:11px; }
+.outliner-node.is-selected { background:rgba(61,214,255,.12); border:1px solid var(--color-accent-cyan); color:var(--color-accent-cyan); }
+.outliner-empty { margin-top:8px; padding:10px; border:1px dashed var(--color-border); color:var(--color-text-muted); font-size:11px; }
+.viewport-error-strip { position:absolute; left:0; right:0; bottom:0; display:flex; align-items:center; gap:12px; padding:10px 16px; background:rgba(218,54,51,.18); color:var(--color-agent-error); border-top:1px solid var(--color-agent-error); z-index:10; }
+.viewport-error-primary { font-weight:600; }
+.viewport-error-strip button { margin-left:auto; padding:4px 12px; border-radius:4px; border:1px solid var(--color-accent-cyan); background:transparent; color:var(--color-accent-cyan); cursor:pointer; }
+.inspector-error-details { margin-top:12px; border:1px solid var(--color-border); border-radius:6px; overflow:hidden; }
+.inspector-error-details summary { padding:10px 12px; cursor:pointer; font-weight:600; color:var(--color-agent-error); background:rgba(218,54,51,.08); }
+.inspector-error-body { padding:10px 12px; font-size:12px; color:var(--color-text-muted); border-top:1px solid var(--color-border); }
+.agent-block[data-mode=error] .agent-error-strip { display:none !important; }

@@ -1,0 +1,39 @@
+import studio
+import ui
+
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 15:
+    return 1
+  if li_std_gui_version() < 4:
+    return 2
+  var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 0, 0)
+  if shell.palette.is_open != studio_palette_closed_flag():
+    return 3
+  var mock_open: InputState = studio_shell_input_probe_mock_cmd_k_digit(3)
+  if mock_open.key_cmd_k != 1:
+    return 4
+  if studio_shell_handle_host_key(shell, mock_open) != studio_key_action_palette_toggle():
+    return 5
+  if shell.palette.is_open != studio_palette_open_flag():
+    return 6
+  var mock_close: InputState = studio_shell_input_probe_mock_escape()
+  if studio_shell_handle_host_key(shell, mock_close) != studio_key_action_palette_close():
+    return 7
+  if shell.palette.is_open != studio_palette_closed_flag():
+    return 8
+  var focus: InputState = input_default()
+  focus.key_digit = 3
+  if studio_shell_handle_host_key(shell, focus) != studio_key_action_region_focus():
+    return 9
+  if shell.panel.active_region != studio_region_inspector():
+    return 10
+  var host_shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 0, 0)
+  var host_input: InputState = studio_shell_input_from_host()
+  if host_input.key_digit < 0:
+    return 11
+  var _host: int = studio_shell_handle_host_key(host_shell, host_input)
+  return 0

@@ -1,0 +1,24 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 3:
+    return 1
+  if li_std_ui_studio_composables_version() < 3:
+    return 2
+  var shell: StudioShellCompose = studio_compose_shell_palette(1920.0, 1080.0, 0, 1, studio_palette_open_flag(), 11)
+  if studio_compose_ok(shell) != 1:
+    return 3
+  if studio_palette_shell_ok(shell) != 1:
+    return 4
+  if shell.palette.result_count != 1:
+    return 5
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_palette_overlay(frame, shell.palette)
+  if frame.cmd_count != studio_paint_palette_cmds(studio_palette_open_flag()):
+    return 6
+  return 0

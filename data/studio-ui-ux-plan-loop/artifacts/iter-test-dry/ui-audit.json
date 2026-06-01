@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-05-24T13:14:00.378226+00:00",
+  "platform": "Linux",
+  "summary": {
+    "total": 1,
+    "failing": 0,
+    "passing": 1,
+    "skipped": 0
+  },
+  "targets": [
+    {
+      "target_id": "world-studio-demo",
+      "repo": "lic",
+      "surface": "gui",
+      "surface_class": "gui_app",
+      "status": "pass",
+      "artifacts": [
+        "/home/s4il0r/Documents/Cursor/li-langverse/li-cursor-agents/ux-harness/artifacts/world-studio-demo/home.png"
+      ],
+      "axe_violations": [],
+      "pixel_diff": {
+        "max_ratio": 0.0,
+        "threshold": 0.04
+      },
+      "contrast_failures": [],
+      "baseline_status": "ok",
+      "tokens_deviation": [],
+      "broken_links": 0
+    }
+  ]
+}

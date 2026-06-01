@@ -1,0 +1,14 @@
+import studio
+
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 8:
+    return 1
+  if studio_shell_demo_frame_budget() < 3:
+    return 2
+  if studio_shell_demo_present_loop() != 0:
+    return 3
+  return 0

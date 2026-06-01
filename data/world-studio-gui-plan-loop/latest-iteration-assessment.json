@@ -1,0 +1,44 @@
+{
+  "pass": true,
+  "todo_id": "plan-complete",
+  "agent_run": "world_studio_builder-1780276264536",
+  "iteration": "verification-gui-plan-complete-2026-06-01-r10",
+  "verified_at": "2026-06-01T12:00:00Z",
+  "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "WP-GD-05", "WP-PUB-01", "PH-UX"],
+  "smokes_run": [
+    "scripts/world-studio-gui-plan-gates.sh",
+    "scripts/world-studio-gui-plan-completion-gate.sh",
+    "scripts/verify-installer-ci.py",
+    "scripts/verify-perf-budgets.py"
+  ],
+  "native_only": true,
+  "styled_chrome_minimum": true,
+  "phase0_styled_chrome": true,
+  "phases_w0_w5": "done",
+  "gates": {
+    "world_studio_gui_plan_gates": "pass",
+    "world_studio_gui_plan_completion_gate": "pass"
+  },
+  "ci_status": {
+    "studio_pr_18": "pass",
+    "jobs": [
+      "check",
+      "linux-installer-matrix",
+      "windows-installer-matrix",
+      "macos-wgpu-surface-smoke",
+      "native-sdl-capture",
+      "native-wgpu-bench",
+      "wgpu-swapchain-gpu-runner",
+      "wgpu-swapchain-readback"
+    ]
+  },
+  "local_notes": [
+    "All 32 wsg-w* todos status: done in plan YAML",
+    "Completion gate exit 0 (r10, world_studio_builder-1780276264536)",
+    "Windows native .exe build skipped locally (MSYS2 MinGW + SDL2 absent); CI matrix covers Windows + Linux",
+    "lic check studio smokes soft-fail on Windows without WSL lic; CI uses lic checkout"
+  ],
+  "notes": "GUI library plan W0–W5 complete. Re-verified gates + completion gate (r10). No pending wsg-w* implementation.",
+  "pr_url": "https://github.com/li-langverse/studio/pull/18",
+  "lic_pr_url": "https://github.com/li-langverse/lic/pull/682"
+}

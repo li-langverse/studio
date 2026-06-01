@@ -1,0 +1,34 @@
+{
+  "pass": true,
+  "todo_id": "wsm-w6-vertical-dod",
+  "completion_sprint": true,
+  "verification_pass": true,
+  "verified_at": "2026-05-31T07:45:00Z",
+  "agent_run": "world_studio_builder-1780212956525",
+  "wps_touched": ["§11 vertical DoD", "WP-SIM-06", "WP-UX-02", "WP-UX-04", "WP-UX-06", "WP-UX-09", "WP-GD-05", "WP-AG-03", "WP-AG-06", "WP-PUB-03"],
+  "smokes_run": [
+    "scripts/world-studio-plan-lic-smokes-wsl.sh",
+    "scripts/world-studio-plan-gates.sh",
+    "scripts/world-studio-plan-completion-gate.sh",
+    "li-tests/smoke/studio_toml_engine_export.li"
+  ],
+  "native_only": true,
+  "gates": {
+    "world_studio_plan_gates": "pass",
+    "world_studio_plan_completion_gate": "pass",
+    "lic_check_wsl_smokes": "pass",
+    "viewport_bench": "pass",
+    "c_host_retirement": "pass_path_verified",
+    "patch_eval": "pass_path_verified",
+    "vertical_dod": "pass_path_verified",
+    "mcp_li_engine_stdio": "pass"
+  },
+  "design_review": {
+    "capture_issue": "https://github.com/li-langverse/studio/issues/182#issuecomment-4585995593",
+    "native_capture": "bench + issue comment (SDL2/pkg-config absent on Windows host)",
+    "panel_switch_ms_meets_target": false,
+    "viewport_fps_meets_target": true
+  },
+  "notes": "Sprint complete (36/36 wsm-w* done). Re-verified on cursor/world-studio-master-plan-loop: completion gate exit 0 (~99s WSL lic smokes), plan gates exit 0, MCP li-engine stdio ok. Windows host: patch-eval/vertical-DoD/c-host gates path-verified only (lic not on PATH). panel_switch_ms honest_simulate worst 150ms exceeds 100ms PH-UX budget. PR #411 open for human merge to main.",
+  "pr_url": "https://github.com/li-langverse/studio/pull/411"
+}

@@ -1,0 +1,46 @@
+# Smoke — reactive shell store migration (wsg-w2-migrate-sync): agent, palette, mode, timeline.
+import studio
+
+def main() raises IO -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if studio_reactive_shell_version() != gui_reactive_version():
+    return 1
+  var compose: StudioShellCompose = studio_compose_shell_palette(1280.0, 720.0, 0, 1, studio_palette_closed_flag())
+  if store_int_get(compose.reactive.agent_task) != studio_agent_task_idle():
+    return 2
+  if store_int_get(compose.reactive.palette_open) != studio_palette_closed_flag():
+    return 3
+  if store_int_get(compose.reactive.shell_mode) != compose.mode:
+    return 4
+  var run: StudioAgentRun = studio_agent_run_start(studio_agent_context_world())
+  studio_agent_sync_chrome_from_run(compose, run)
+  if store_int_get(compose.reactive.agent_task) != studio_agent_task_running():
+    return 5
+  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_agent()) != 0:
+    return 6
+  if compose.agent.task_state != studio_agent_task_running():
+    return 7
+  var input: InputState = input_default()
+  input.key_cmd_k = 1
+  var _pal_action: int = studio_handle_studio_key(compose, input)
+  if store_int_get(compose.reactive.palette_open) != studio_palette_open_flag():
+    return 8
+  if compose.palette.is_open != studio_palette_open_flag():
+    return 9
+  var mode_before: int = compose.mode
+  var _mode_rc: int = studio_shell_handle_mode_trigger(compose, studio_mode_trigger_agent())
+  if store_int_get(compose.reactive.shell_mode) != compose.mode:
+    return 10
+  if compose.mode == mode_before:
+    return 11
+  var sim: SimSessionStub = sim_session_stub_default()
+  sim.tick = 4
+  studio_reactive_timeline_sync_playhead(compose, sim.tick, studio_timeline_duration_ticks_default())
+  if store_float_get(compose.reactive.timeline_tick) <= 0.0:
+    return 12
+  if compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_timeline()) != 0:
+    return 13
+  return 0

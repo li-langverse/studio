@@ -1,0 +1,17 @@
+import studio
+import lig.present
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 19:
+    return 1
+  if lig_native_pixel_source_honest_product(lig_native_pixel_source_paint_blit()) != 1:
+    return 2
+  if lig_native_pixel_source_honest_product(lig_native_pixel_source_wgpu_readback()) != 1:
+    return 3
+  if lig_native_pixel_source_is_wgpu_path(lig_native_pixel_source_host_cpu()) != 0:
+    return 4
+  return 0

@@ -1,0 +1,17 @@
+# PH-UX UX-08 — GPU fail strip + retry affordance (studio-ux-17).
+[meta]
+hook_version = 1
+package = "li-studio"
+native_pixels = false
+retry_budget_ms = 100
+bench_simulate_fn = "studio_gpu_fail_retry_latency_ms"
+
+[recovery]
+strip_visible = true
+retry_visible = true
+retry_latency_ms = 15.0
+within_budget = true
+
+[bench]
+worst_retry_ms = 15.0
+median_retry_ms = 15.0

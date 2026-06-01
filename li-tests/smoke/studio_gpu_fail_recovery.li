@@ -1,0 +1,22 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 4:
+    return 1
+  if li_std_ui_studio_composables_version() < 4:
+    return 2
+  var shell: StudioShellCompose = studio_compose_shell_gpu_fail(1920.0, 1080.0, 0, 1, studio_gpu_state_fail())
+  if studio_gpu_fail_shell_ok(shell) != 1:
+    return 3
+  if shell.gpu_fail.strip_rect.h != studio_gpu_fail_strip_height_px():
+    return 4
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_gpu_fail_overlay(frame, shell.gpu_fail)
+  if frame.cmd_count != studio_paint_gpu_fail_cmds(studio_gpu_state_fail()):
+    return 5
+  return 0

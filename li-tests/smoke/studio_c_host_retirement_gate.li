@@ -1,0 +1,46 @@
+import studio
+import lig.present
+
+# WP-UX-14b — Li product path (studio_vertical_demo_frame + wgpu honesty) without C present hosts.
+def studio_vertical_demo_profile_ok(profile_id: int, frame_id: int, base_exit: int) -> int raises IO
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures result >= 0
+  decreases profile_id
+=
+  if studio_vertical_demo_frame(profile_id, frame_id) != 0:
+    return base_exit
+  return 0
+
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 19:
+    return 1
+  if lig_native_pixel_source_honest_product(lig_native_pixel_source_wgpu_readback()) != 1:
+    return 2
+  if lig_native_pixel_source_honest_product(lig_native_pixel_source_wgpu_draw_list()) != 1:
+    return 3
+  var game: int = studio_profile_game()
+  if studio_vertical_demo_profile_ok(game, 0, 10) != 0:
+    return 10
+  var rl: int = studio_profile_sim_rl()
+  if studio_vertical_demo_profile_ok(rl, 1, 20) != 0:
+    return 20
+  var auto: int = studio_profile_sim_automotive()
+  if studio_vertical_demo_profile_ok(auto, 2, 30) != 0:
+    return 30
+  var rob: int = studio_profile_sim_robotics()
+  if studio_vertical_demo_profile_ok(rob, 3, 40) != 0:
+    return 40
+  var add: int = studio_profile_sim_additive()
+  if studio_vertical_demo_profile_ok(add, 4, 50) != 0:
+    return 50
+  var sci: int = studio_profile_sim_scientific()
+  if studio_vertical_demo_profile_ok(sci, 5, 60) != 0:
+    return 60
+  var drug: int = studio_profile_sim_drug_design()
+  if studio_vertical_demo_profile_ok(drug, 6, 70) != 0:
+    return 70
+  return 0

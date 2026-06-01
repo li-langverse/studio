@@ -1,0 +1,5 @@
+{
+  "status": "fail",
+  "skip_reason": "SDL capture failed (missing sdl2/xvfb?)",
+  "native_pixels": false
+}

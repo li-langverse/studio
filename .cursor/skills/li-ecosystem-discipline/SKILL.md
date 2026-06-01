@@ -15,7 +15,7 @@ Use when work spans **`lic`**, **`lip`**, **`lit`**, **`lis`**, or official **`l
 1. [engineering-standards.md](../../../docs/ecosystem/engineering-standards.md) (this repo)
 2. [vision-and-roadmap.md](../../../docs/ecosystem/vision-and-roadmap.md)
 3. [agent-coordination.md](../../../docs/ecosystem/agent-coordination.md) — update `.li-agent-coord.json`
-4. [lic master plan](https://github.com/li-langverse/lic/blob/main/docs/superpowers/plans/2026-05-14-li-master-plan.md) — current **PH-**
+4. [lic master plan](https://github.com/li-langverse/studio/blob/main/docs/superpowers/plans/2026-05-14-li-master-plan.md) — current **PH-**
 5. [Benchmarks dashboard](https://li-langverse.github.io/benchmarks/) — after perf work
 6. [release-notes.md](../../../docs/ecosystem/release-notes.md) — before PR
 

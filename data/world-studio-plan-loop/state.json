@@ -1,0 +1,49 @@
+{
+  "completed_ids": [
+    "wsm-w0-docs-hub",
+    "wsm-w0-gd1-shell",
+    "wsm-w0-sim-bridge",
+    "wsm-w0-agent-registry",
+    "wsm-w0-profile-chips",
+    "wsm-w1-profile-smokes",
+    "wsm-w1-sim3-envpool",
+    "wsm-w1-sim-sensors",
+    "wsm-w1-studio-toml-engine",
+    "wsm-w1-timeline-playback",
+    "wsm-w1-command-palette",
+    "wsm-w1-keyboard-bridge",
+    "wsm-w1-agent-chrome-fsm",
+    "wsm-w2-wgpu-viewport",
+    "wsm-w2-viewport-hud",
+    "wsm-w2-viewport-error",
+    "wsm-w2-native-pixels",
+    "wsm-w2-c-host-retire",
+    "wsm-w3-mcp-dispatch",
+    "wsm-w3-mcp-server",
+    "wsm-w3-apply-patch-loop",
+    "wsm-w3-interaction-modes",
+    "wsm-w4-world-checkpoint",
+    "wsm-w4-world-io",
+    "wsm-w4-gltf-ingest",
+    "wsm-w5-sci-kernels",
+    "wsm-w5-sim-viz",
+    "wsm-w5-robo-ik",
+    "wsm-w5-am-export",
+    "wsm-w5-drug-adaptive",
+    "wsm-w6-publish-figures",
+    "wsm-w6-publish-data",
+    "wsm-w6-repro-bundle",
+    "wsm-w6-player-ship",
+    "wsm-w6-agent-eval",
+    "wsm-w6-vertical-dod"
+  ],
+  "iterations": 28,
+  "history": [
+    {
+      "todo_id": "wsm-w6-vertical-dod",
+      "completed_at": "2026-05-30T13:10:00Z",
+      "wps": ["WP-AG-06", "§11 vertical DoD"],
+      "notes": "Completion pass: resolved merge conflicts, lic check green on studio smokes via WSL"
+    }
+  ]
+}

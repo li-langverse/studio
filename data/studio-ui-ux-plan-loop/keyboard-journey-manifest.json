@@ -1,0 +1,12 @@
+{
+  "schema": "li_studio_keyboard_journey_v1",
+  "updated": "2026-05-30",
+  "tab_order": ["dock", "viewport", "inspector", "timeline"],
+  "shortcuts": [
+    { "id": "palette_open", "keys": "Cmd+K", "action": "toggle_command_palette", "sota_ref": "linear-app" }
+  ],
+  "bench_hook": "packages/li-gui/bench/keyboard_journey.toml",
+  "harness_journey_id": "keyboard_first_workflow",
+  "harness_steps": ["tab_dock", "tab_viewport", "tab_inspector", "open_palette_shortcut"],
+  "budgets_ms": { "tab_focus": 16, "palette_shortcut": 16 }
+}

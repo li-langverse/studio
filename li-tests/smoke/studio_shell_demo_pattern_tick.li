@@ -1,0 +1,18 @@
+import studio
+
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if studio_shell_demo_pattern_index(0) != 0:
+    return 1
+  if studio_shell_demo_pattern_index(1) != 1:
+    return 2
+  if studio_shell_demo_pattern_index(2) != 2:
+    return 3
+  if studio_shell_demo_pattern_index(3) != 0:
+    return 4
+  if studio_shell_demo_pattern_index(5) != 2:
+    return 5
+  return 0

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+export GOAL_PLAN_ID="studio-ui-ux"
+export GOAL_PLAN_RUN_SCRIPT="scripts/studio-ui-ux-run-until-done.sh"
+export GOAL_PLAN_DATA_DIR="$(cd "$(dirname "$0")/.." && pwd)/../lic-studio-ui/data/studio-ui-ux-plan-loop"
+export GOAL_PLAN_BRANCH="${STUDIO_UI_UX_PR_BRANCH:-cursor/studio-ui-ux-plan-loop}"
+export GOAL_PLAN_WORKTREE="${STUDIO_UI_UX_WORKTREE:-$(cd "$(dirname "$0")/.." && pwd)/../lic-studio-ui}"
+export GOAL_PLAN_IDLE_SEC="${STUDIO_UI_UX_IDLE_SEC:-1800}"
+export LI_CONTROL_PLANE_STORE="${LI_CONTROL_PLANE_STORE:-disk}"
+export LI_STACK_SKIP_SUPABASE="${LI_STACK_SKIP_SUPABASE:-1}"
+export LI_EXPORT_DISK_CACHE="${LI_EXPORT_DISK_CACHE:-1}"
+exec "$(cd "$(dirname "$0")" && pwd)/lib/goal-plan-systemd-wrapper.sh"

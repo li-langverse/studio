@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Li World Studio — sim_scientific (live MD demo)</title>
+  <link rel="stylesheet" href="studio-tokens.css" />
+  <link rel="stylesheet" href="studio-mock-chrome.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; }
+    body {
+      background: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      font-family: var(--typography-ui);
+    }
+    .demo-banner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: #0d2818; color: #2ee6a8; font-size: 11px;
+      text-align: center; padding: 5px 8px;
+      border-bottom: 1px solid var(--color-accent-mint);
+    }
+    .shell { position: absolute; inset: 26px 0 0 0; }
+    .dock {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: var(--spacing-dock-width-px);
+      background: var(--color-bg-elevated);
+      border-right: 1px solid var(--color-border);
+      display: flex; flex-direction: column; align-items: center;
+      padding: 12px 0; gap: 8px;
+    }
+    .dock button {
+      width: 36px; height: 36px; border: 1px solid var(--color-border);
+      border-radius: 6px; background: transparent; color: var(--color-text-muted);
+      cursor: pointer;
+    }
+    .dock button.active {
+      border-color: var(--color-accent-cyan);
+      color: var(--color-accent-cyan);
+    }
+    .topbar {
+      position: absolute; left: var(--shell-left-px); right: 0; top: 0;
+      height: var(--spacing-topbar-height-px);
+      background: var(--color-bg-elevated);
+      border-bottom: 1px solid var(--color-border);
+      display: flex; align-items: center; gap: 16px; padding: 0 16px;
+    }
+    .profile-chip {
+      font-size: 12px; padding: 4px 10px; border-radius: 999px;
+      border: 1px solid var(--color-accent-violet); color: var(--color-accent-violet);
+    }
+    .sim-controls {
+      margin-left: auto; display: flex; gap: 8px; align-items: center;
+    }
+    .sim-controls button {
+      padding: 4px 12px; border-radius: 4px; border: 1px solid var(--color-border);
+      background: transparent; color: var(--color-text-primary); cursor: pointer;
+      font-size: 12px;
+    }
+    .sim-controls button.primary {
+      border-color: var(--color-accent-cyan); color: var(--color-accent-cyan);
+    }
+    .viewport {
+      position: absolute;
+      left: var(--shell-left-px); top: var(--spacing-topbar-height-px);
+      right: var(--spacing-inspector-width-px); bottom: 180px;
+      background: radial-gradient(circle at 50% 42%, #1a2332, var(--color-bg-primary));
+      border-right: 1px solid var(--color-border);
+      overflow: hidden;
+    }
+    #sim-canvas {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      display: block;
+    }
+    .viewport-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(var(--color-viewport-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--color-viewport-grid) 1px, transparent 1px);
+      background-size: 48px 48px; opacity: 0.25;
+    }
+    .hud {
+      position: absolute; left: 16px; bottom: 16px; z-index: 2;
+      font-family: var(--typography-mono); font-size: 11px;
+      color: var(--color-accent-mint);
+      background: rgba(13, 17, 23, 0.88); padding: 10px 14px;
+      border: 1px solid var(--color-border); border-radius: 4px;
+      min-width: 220px;
+    }
+    .hud strong { color: var(--color-text-primary); }
+    .hud .dim { color: var(--color-text-muted); font-size: 10px; margin-top: 4px; }
+    .timeline {
+      position: absolute;
+      left: var(--shell-left-px); right: var(--spacing-inspector-width-px); bottom: 0;
+      height: 180px; background: var(--color-bg-elevated);
+      border-top: 1px solid var(--color-border); padding: 12px 16px;
+    }
+    .timeline-track {
+      height: 48px; margin-top: 8px; border-radius: 4px;
+      background: linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+      background-size: 40px 100%; position: relative;
+    }
+    .playhead {
+      position: absolute; top: 0; bottom: 0; width: 2px;
+      background: var(--color-accent-amber);
+      transition: left 0.05s linear;
+    }
+    .inspector {
+      position: absolute; right: 0; top: var(--spacing-topbar-height-px);
+      width: var(--spacing-inspector-width-px); bottom: 0;
+      background: var(--color-bg-elevated);
+      border-left: 1px solid var(--color-border); padding: 16px;
+      font-size: 13px;
+    }
+    .inspector h2 { margin: 0 0 8px; font-size: 14px; }
+    .kv { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; margin-top: 12px; }
+    .kv dt { color: var(--color-text-muted); }
+    .agent-strip {
+      position: absolute;
+      left: var(--shell-left-px); right: var(--spacing-inspector-width-px);
+      bottom: 180px; height: 36px;
+      display: flex; align-items: center; gap: 12px; padding: 0 16px;
+      background: rgba(22, 27, 34, 0.95);
+      border-top: 1px solid var(--color-border);
+      font-size: 12px;
+    }
+    .agent-status {
+      padding: 4px 10px; border-radius: 4px;
+      background: rgba(35, 134, 54, 0.2); color: var(--color-agent-running);
+      border: 1px solid var(--color-agent-running);
+    }
+    .agent-status::before {
+      content: ""; display: inline-block; width: 8px; height: 8px;
+      border-radius: 50%; background: var(--color-agent-running);
+      margin-right: 6px; animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse { 50% { opacity: 0.35; } }
+  </style>
+</head>
+<body>
+  <div class="demo-banner" role="note">
+    LIVE DEMO — sim_scientific profile · Lennard-Jones MD (256 particles, velocity Verlet) · same physics as native <code>md_molecular_demo.c</code>
+  </div>
+  <div class="shell">
+    <nav class="dock" aria-label="Tools">
+      <button type="button" class="active" title="Select">◉</button>
+      <button type="button" title="Move">✥</button>
+    </nav>
+    <aside class="outliner" aria-label="Scene hierarchy">
+      <h2>Outliner</h2>
+      <ul class="outliner-tree">
+        <li class="outliner-node">LJ Fluid</li>
+        <li class="outliner-node outliner-node--child is-selected">Particle system</li>
+        <li class="outliner-node outliner-node--child">Integrator (NVE)</li>
+        <li class="outliner-node outliner-node--child">Periodic box</li>
+      </ul>
+    </aside>
+    <header class="topbar">
+      <strong>Li World Studio</strong>
+      <span class="profile-chip">Scientific</span>
+      <div class="sim-controls">
+        <button type="button" id="btn-play" class="primary">⏸ Pause</button>
+        <button type="button" id="btn-reset">↺ Reset</button>
+        <button type="button" id="btn-heat">↑ Heat</button>
+        <button type="button" id="btn-cool">↓ Cool</button>
+      </div>
+    </header>
+    <main class="viewport" aria-label="3D viewport">
+      <canvas id="sim-canvas"></canvas>
+      <div class="viewport-grid" aria-hidden="true"></div>
+      <div class="hud" aria-live="polite">
+        <div>Step: <strong id="hud-step">0</strong></div>
+        <div>KE: <strong id="hud-ke">—</strong> · T: <strong id="hud-t">—</strong></div>
+        <div>Particles: <strong>256</strong> (display tier)</div>
+        <div class="dim">studio_sim_scientific_step_hook → sim_scientific_tick_at</div>
+      </div>
+    </main>
+    <aside class="agent-strip" aria-label="Agent copilot">
+      <span class="agent-status" id="agent-label">Running — energy drift check</span>
+    </aside>
+    <section class="timeline" aria-label="Timeline">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong>Timeline</strong>
+        <span id="timeline-label" style="font-size:12px;color:var(--color-text-muted);">Frame 0 / 480 · 24 fps</span>
+      </div>
+      <div class="timeline-track"><div class="playhead" id="playhead" style="left:0%"></div></div>
+    </section>
+    <aside class="inspector" aria-label="Inspector">
+      <h2>Inspector</h2>
+      <p>System: <strong>LJ fluid</strong></p>
+      <dl class="kv">
+        <dt>Integrator</dt><dd>NVE (velocity Verlet)</dd>
+        <dt>Particles</dt><dd>256</dd>
+        <dt>Box</dt><dd>16.0 σ (PBC)</dd>
+        <dt>Cutoff</dt><dd>2.5 σ</dd>
+        <dt>dt</dt><dd>0.004</dd>
+        <dt>Status</dt><dd id="insp-status">Simulating</dd>
+      </dl>
+    </aside>
+  </div>
+  <script>
+(function () {
+  "use strict";
+
+  const N = 256, DT = 0.004, RC = 2.5, BOX = 16.0, TARGET_TEMP = 1.0;
+  const STEPS_PER_FRAME = 8, MAX_FRAMES = 480;
+
+  const px = new Float64Array(N), py = new Float64Array(N);
+  const vx = new Float64Array(N), vy = new Float64Array(N);
+  const fx = new Float64Array(N), fy = new Float64Array(N);
+
+  let playing = true;
+  let step = 0;
+  let frame = 0;
+  let rngState = 7n;
+  function rng() {
+    rngState = rngState * 6364136223846793005n + 1n;
+    const bits = (rngState >> 11n) & ((1n << 53n) - 1n);
+    return Number(bits) / Number(1n << 53n);
+  }
+  function rngNormal() {
+    let u1 = rng(); if (u1 < 1e-12) u1 = 1e-12;
+    return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * rng());
+  }
+
+  function pbc(d) {
+    if (d > BOX * 0.5) d -= BOX;
+    if (d < -BOX * 0.5) d += BOX;
+    return d;
+  }
+
+  function initState() {
+    rngState = 7n;
+    const spacing = BOX / Math.ceil(Math.sqrt(N));
+    let idx = 0;
+    for (let iy = 0; iy < Math.ceil(Math.sqrt(N)) && idx < N; iy++) {
+      for (let ix = 0; ix < Math.ceil(Math.sqrt(N)) && idx < N; ix++) {
+        px[idx] = (ix + 0.5) * spacing;
+        py[idx] = (iy + 0.5) * spacing;
+        vx[idx] = rngNormal() * 0.3;
+        vy[idx] = rngNormal() * 0.3;
+        idx++;
+      }
+    }
+    removeComDrift();
+    rescaleTemp(TARGET_TEMP);
+    step = 0;
+    frame = 0;
+  }
+
+  function removeComDrift() {
+    let cx = 0, cy = 0;
+    for (let i = 0; i < N; i++) { cx += vx[i]; cy += vy[i]; }
+    cx /= N; cy /= N;
+    for (let i = 0; i < N; i++) { vx[i] -= cx; vy[i] -= cy; }
+  }
+
+  function kinetic() {
+    let ke = 0;
+    for (let i = 0; i < N; i++) ke += vx[i] * vx[i] + vy[i] * vy[i];
+    return 0.5 * ke;
+  }
+
+  function temperature() {
+    return kinetic() / N;
+  }
+
+  function rescaleTemp(target) {
+    const t = temperature();
+    if (t < 1e-12) return;
+    const s = Math.sqrt(target / t);
+    for (let i = 0; i < N; i++) { vx[i] *= s; vy[i] *= s; }
+  }
+
+  function computeForces() {
+    for (let i = 0; i < N; i++) { fx[i] = 0; fy[i] = 0; }
+    const rc2 = RC * RC;
+    for (let i = 0; i < N; i++) {
+      for (let j = i + 1; j < N; j++) {
+        let dx = pbc(px[j] - px[i]);
+        let dy = pbc(py[j] - py[i]);
+        const r2 = dx * dx + dy * dy;
+        if (r2 >= rc2 || r2 < 0.81) continue;
+        const invR2 = 1 / r2;
+        const invR6 = invR2 * invR2 * invR2;
+        const invR12 = invR6 * invR6;
+        const f = 24 * invR2 * (2 * invR12 - invR6);
+        fx[i] -= f * dx; fy[i] -= f * dy;
+        fx[j] += f * dx; fy[j] += f * dy;
+      }
+    }
+  }
+
+  function integrate() {
+    computeForces();
+    for (let i = 0; i < N; i++) {
+      vx[i] += 0.5 * DT * fx[i];
+      vy[i] += 0.5 * DT * fy[i];
+      px[i] = ((px[i] + DT * vx[i]) % BOX + BOX) % BOX;
+      py[i] = ((py[i] + DT * vy[i]) % BOX + BOX) % BOX;
+    }
+    computeForces();
+    for (let i = 0; i < N; i++) {
+      vx[i] += 0.5 * DT * fx[i];
+      vy[i] += 0.5 * DT * fy[i];
+    }
+    step++;
+  }
+
+  const canvas = document.getElementById("sim-canvas");
+  const ctx = canvas.getContext("2d");
+  let fadeCanvas, fadeCtx;
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = Math.floor(rect.width * devicePixelRatio);
+    canvas.height = Math.floor(rect.height * devicePixelRatio);
+    canvas.style.width = rect.width + "px";
+    canvas.style.height = rect.height + "px";
+    if (!fadeCanvas) {
+      fadeCanvas = document.createElement("canvas");
+      fadeCtx = fadeCanvas.getContext("2d");
+    }
+    fadeCanvas.width = canvas.width;
+    fadeCanvas.height = canvas.height;
+  }
+
+  function draw() {
+    const w = canvas.width, h = canvas.height;
+    const pad = 40 * devicePixelRatio;
+    const side = Math.min(w, h) - 2 * pad;
+    const left = (w - side) / 2;
+    const top = (h - side) / 2;
+    const scale = side / BOX;
+
+    fadeCtx.globalAlpha = 0.04;
+    fadeCtx.fillStyle = "#0d1117";
+    fadeCtx.fillRect(0, 0, w, h);
+    fadeCtx.globalAlpha = 1;
+
+    ctx.drawImage(fadeCanvas, 0, 0);
+
+    ctx.strokeStyle = "rgba(61, 214, 255, 0.15)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(left, top, side, side);
+
+    for (let i = 0; i < N; i++) {
+      const speed = Math.sqrt(vx[i] * vx[i] + vy[i] * vy[i]);
+      const t = Math.min(1, speed / 3);
+      const r = Math.floor(40 + t * 215);
+      const g = Math.floor(100 + (1 - t) * 130);
+      const b = Math.floor(200 + t * 55);
+      const x = left + px[i] * scale;
+      const y = top + py[i] * scale;
+      if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+      const rad = 5 * devicePixelRatio;
+
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, rad * 3);
+      grad.addColorStop(0, `rgba(${r},${g},${b},0.9)`);
+      grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, rad * 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      ctx.beginPath();
+      ctx.arc(x, y, rad, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function updateHud() {
+    const ke = kinetic();
+    const temp = temperature();
+    document.getElementById("hud-step").textContent = step;
+    document.getElementById("hud-ke").textContent = ke.toFixed(2);
+    document.getElementById("hud-t").textContent = temp.toFixed(3);
+    document.getElementById("timeline-label").textContent =
+      `Frame ${frame} / ${MAX_FRAMES} · 24 fps`;
+    document.getElementById("playhead").style.left =
+      (100 * frame / MAX_FRAMES) + "%";
+    document.getElementById("insp-status").textContent = playing ? "Simulating" : "Paused";
+    document.getElementById("agent-label").textContent =
+      playing ? "Running — energy drift check" : "Idle — simulation paused";
+  }
+
+  function tick() {
+    try {
+      if (playing) {
+        for (let s = 0; s < STEPS_PER_FRAME; s++) integrate();
+        frame = Math.min(MAX_FRAMES, frame + 1);
+        if (frame >= MAX_FRAMES) frame = 0;
+      }
+      draw();
+      updateHud();
+    } catch (err) {
+      document.getElementById("insp-status").textContent = "Error: " + err.message;
+      console.error(err);
+    }
+  }
+
+  document.getElementById("btn-play").addEventListener("click", () => {
+    playing = !playing;
+    document.getElementById("btn-play").textContent = playing ? "⏸ Pause" : "▶ Play";
+  });
+  document.getElementById("btn-reset").addEventListener("click", () => {
+    initState();
+    fadeCtx.fillStyle = "#0d1117";
+    fadeCtx.fillRect(0, 0, fadeCanvas.width, fadeCanvas.height);
+  });
+  document.getElementById("btn-heat").addEventListener("click", () => {
+    for (let i = 0; i < N; i++) { vx[i] *= 1.08; vy[i] *= 1.08; }
+  });
+  document.getElementById("btn-cool").addEventListener("click", () => {
+    for (let i = 0; i < N; i++) { vx[i] *= 0.92; vy[i] *= 0.92; }
+  });
+
+  window.addEventListener("resize", resize);
+  initState();
+  resize();
+  fadeCtx.fillStyle = "#0d1117";
+  fadeCtx.fillRect(0, 0, fadeCanvas.width, fadeCanvas.height);
+  tick();
+  setInterval(tick, 1000 / 24);
+})();
+  </script>
+</body>
+</html>

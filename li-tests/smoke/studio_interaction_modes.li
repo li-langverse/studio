@@ -1,0 +1,82 @@
+import sim
+import studio
+import ui
+
+def main() raises IO -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 22:
+    return 1
+  if studio_mode_count() != 7:
+    return 2
+  var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 1)
+  if shell.mode != studio_mode_author():
+    return 3
+  if shell.panel.active_region != studio_region_inspector():
+    return 4
+  if studio_shell_handle_mode_trigger(shell, studio_mode_trigger_play()) != 1:
+    return 5
+  if shell.mode != studio_mode_simulate():
+    return 6
+  if studio_timeline_playing() != 1:
+    return 7
+  if shell.panel.active_region != studio_region_timeline():
+    return 8
+  if studio_shell_handle_mode_trigger(shell, studio_mode_trigger_stop()) != 1:
+    return 9
+  if shell.mode != studio_mode_author():
+    return 10
+  if studio_timeline_playing() != 0:
+    return 11
+  if studio_shell_handle_mode_trigger(shell, studio_mode_trigger_agent()) != 1:
+    return 12
+  if shell.mode != studio_mode_agent():
+    return 13
+  if shell.panel.active_region != studio_region_agent_strip():
+    return 14
+  if studio_shell_handle_mode_trigger(shell, studio_mode_trigger_agent_done()) != 1:
+    return 15
+  if shell.mode != studio_mode_author():
+    return 16
+  if studio_shell_handle_mode_trigger(shell, studio_mode_trigger_publish()) != 1:
+    return 17
+  if shell.mode != studio_mode_publish():
+    return 18
+  if studio_mode_mcp_tool_allowed(studio_mode_bench(), studio_mcp_lic_check()) != 1:
+    return 19
+  if studio_mode_mcp_tool_allowed(studio_mode_bench(), studio_mcp_world_scaffold()) != 0:
+    return 20
+  if studio_mode_mcp_tool_allowed(studio_mode_agent(), studio_mcp_publish_bundle()) != 1:
+    return 21
+  var req_bench: StudioAgentToolRequest = studio_mcp_tool_dispatch_mode_arg(studio_mode_bench(), studio_mcp_world_scaffold(), studio_profile_game())
+  if req_bench.status == studio_mcp_tool_status_ok():
+    return 22
+  var drug: StudioShellCompose = studio_compose_shell_profile(1280.0, 720.0, 0, 1, studio_profile_sim_drug_design())
+  if drug.mode != studio_mode_adaptive():
+    return 23
+  var sci: StudioShellCompose = studio_compose_shell_profile(1280.0, 720.0, 0, 1, studio_profile_sim_scientific())
+  if sci.mode != studio_mode_analyze():
+    return 24
+  if studio_mode_sim_step_allowed(studio_mode_author(), 1) != 0:
+    return 25
+  if studio_mode_sim_step_allowed(studio_mode_simulate(), 1) != 1:
+    return 26
+  if studio_mode_sim_step_allowed(studio_mode_bench(), 0) != 1:
+    return 27
+  var sim_shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 1)
+  var cfg: StudioProjectConfig = studio_project_config_new(studio_profile_game())
+  var sess: SimSessionStub = sim_session_stub_default()
+  studio_apply_config_to_sim(cfg, sess)
+  var duration: int = studio_timeline_duration_ticks_default()
+  studio_timeline_reset_for_session(sess, duration)
+  if studio_shell_handle_mode_trigger(sim_shell, studio_mode_trigger_play()) != 1:
+    return 28
+  if studio_shell_timeline_tick_sim_step(sim_shell, cfg, sess, 0.016, duration) != 1:
+    return 29
+  if studio_shell_handle_mode_trigger(sim_shell, studio_mode_trigger_stop()) != 1:
+    return 30
+  if studio_shell_timeline_tick_sim_step(sim_shell, cfg, sess, 0.016, duration) != 0:
+    return 31
+  return 0

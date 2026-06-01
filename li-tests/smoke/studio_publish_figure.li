@@ -1,0 +1,40 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 29:
+    return 1
+  var svg: PublishFigureResult = studio_publish_figure(studio_publish_format_svg(), studio_publish_template_nature_single(), 42.0, 1)
+  if svg.ok != 1:
+    return 2
+  if svg.magic_tag != studio_publish_magic_svg():
+    return 3
+  if svg.width_px != 336:
+    return 4
+  if svg.dpi != 300:
+    return 5
+  var pdf: PublishFigureResult = studio_publish_figure(studio_publish_format_pdf(), studio_publish_template_nature_double(), 17.0, 1)
+  if pdf.ok != 1:
+    return 6
+  if pdf.magic_tag != studio_publish_magic_pdf():
+    return 7
+  if pdf.width_px != 672:
+    return 8
+  var no_proof: PublishFigureResult = studio_publish_figure(studio_publish_format_svg(), studio_publish_template_nature_single(), 1.0, 0)
+  if no_proof.ok != 0:
+    return 9
+  var png: PublishFigureResult = studio_publish_figure(studio_publish_format_png(), studio_publish_template_letter(), 9.0, 1)
+  if png.ok != 1:
+    return 10
+  if png.dpi < 300:
+    return 11
+  if png.magic_tag != studio_publish_magic_png():
+    return 12
+  if studio_publish_three_click_flow(studio_publish_format_svg(), studio_publish_template_nature_single(), 100.0, 1) != 0:
+    return 13
+  if studio_publish_three_click_flow(studio_publish_format_pdf(), studio_publish_template_viewport(), 50.0, 0) == 0:
+    return 14
+  return 0

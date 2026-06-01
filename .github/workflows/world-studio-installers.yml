@@ -1,0 +1,120 @@
+name: World Studio installers
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "installer/**"
+      - "scripts/build-li-world-studio-installer.ps1"
+      - "scripts/build-studio-linux-appimage.sh"
+      - "scripts/verify-installer-ci.py"
+      - "scripts/verify-linux-appimage.py"
+      - "scripts/_li-world-studio-packaging-common.sh"
+      - "scripts/world-studio-runnable-*.sh"
+      - "src/**"
+      - "li.toml"
+      - ".github/workflows/world-studio-installers.yml"
+  push:
+    branches: [main, cursor/studio-repo-consolidation, cursor/world-studio-gui-library-plan]
+    paths:
+      - "installer/**"
+      - "scripts/build-li-world-studio-installer.ps1"
+      - "scripts/verify-installer-ci.py"
+      - ".github/workflows/world-studio-installers.yml"
+
+concurrency:
+  group: world-studio-installers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-installer-matrix:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout lic sibling
+        run: |
+          chmod +x scripts/checkout-ecosystem-siblings.sh
+          ./scripts/checkout-ecosystem-siblings.sh
+          test -f ../lic/scripts/build.sh
+
+      - name: Installer CI verify (wsg-w5-installer-ci)
+        env:
+          STUDIO_LINUX_APPIMAGE_SKIP_BUILD: "1"
+          STUDIO_INSTALLER_CI_SKIP_BUILD: "1"
+        run: |
+          chmod +x scripts/_studio-env.sh scripts/world-studio-runnable-gate.sh
+          python3 scripts/verify-installer-ci.py
+
+      - name: Runnable gate (demo + smokes; skip iscc on Linux)
+        env:
+          LIC_ROOT: ${{ github.workspace }}/../lic
+          STUDIO_ROOT: ${{ github.workspace }}
+        run: |
+          ./scripts/world-studio-runnable-gate.sh || echo "WARN: gate skipped without lic build"
+
+  macos-wgpu-surface-smoke:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SDL2
+        run: brew install sdl2
+
+      - name: Verify macOS wgpu surface wiring (wsg-w5-macos-wgpu)
+        env:
+          STUDIO_MACOS_WGPU_SKIP_BUILD: "0"
+        run: |
+          chmod +x scripts/build-studio-shell-present-host-macos.sh scripts/start-li-world-studio-macos.sh
+          python3 scripts/verify-macos-wgpu-present.py
+
+      - name: Upload macOS probe metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-macos-wgpu-surface-meta
+          path: deploy/studio-demo/native/
+          if-no-files-found: ignore
+
+  windows-installer-matrix:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout lic sibling
+        shell: pwsh
+        run: |
+          git clone --depth 1 https://github.com/li-langverse/lic.git ../lic
+
+      - name: Installer CI verify (wsg-w5-installer-ci)
+        shell: pwsh
+        env:
+          STUDIO_LINUX_APPIMAGE_SKIP_BUILD: "1"
+          STUDIO_INSTALLER_CI_SKIP_BUILD: "1"
+        run: python scripts/verify-installer-ci.py
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Build installer (when lic + demo available)
+        shell: pwsh
+        env:
+          LIC_ROOT: ${{ github.workspace }}\..\lic
+        run: |
+          if (Test-Path ../lic/scripts/wsl-setup-build.sh) {
+            Write-Host "lic present; full build requires WSL on runner — compile ISS only when demo exists"
+          }
+          if (Get-Command iscc -ErrorAction SilentlyContinue) {
+            if (Test-Path build/li-studio-demo.exe) {
+              ./scripts/build-li-world-studio-installer.ps1 -SkipDemoBuild -SkipPresentHost
+            } else {
+              Write-Host "WARN: demo binary missing — skip iscc on CI until lic build wired"
+            }
+          }
+
+      - name: Upload installer artifact
+        if: hashFiles('installer/out/LiWorldStudio-Setup.exe') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: LiWorldStudio-Setup
+          path: installer/out/LiWorldStudio-Setup.exe

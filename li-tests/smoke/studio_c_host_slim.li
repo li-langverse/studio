@@ -1,0 +1,15 @@
+import studio
+
+# wsg-w4-c-host-slim — present host is I/O-only; product pixels from Li rasterizer.
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 35:
+    return 1
+  if studio_c_host_slim_version() != 1:
+    return 2
+  if studio_present_loop_raster_version() != 1:
+    return 3
+  return 0

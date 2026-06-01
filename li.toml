@@ -6,16 +6,29 @@ license = "Apache-2.0 OR MIT"
 description = "Li World Studio — compose dock, timeline, and inspector from li-ui/li-gui composables"
 
 [dependencies]
-li-gui = { path = "../li-gui" }
-li-ui = { path = "../li-ui" }
-li-sim = { path = "../li-sim" }
+li-gui = { path = "../lic/packages/li-gui" }
+li-ui = { path = "../lic/packages/li-ui" }
+li-sim = { path = "../lic/packages/li-sim" }
+li-sim-scientific = { path = "../lic/packages/li-sim-scientific" }
+li-sim-automotive = { path = "../lic/packages/li-sim-automotive" }
+li-sim-robotics = { path = "../lic/packages/li-sim-robotics" }
+li-sim-sensors = { path = "../lic/packages/li-sim-sensors" }
+li-sim-additive = { path = "../lic/packages/li-sim-additive" }
+li-sim-drug-design = { path = "../lic/packages/li-sim-drug-design" }
+li-sim-viz = { path = "../lic/packages/li-sim-viz" }
+li-scene = { path = "../lic/packages/li-scene" }
+li-physics-runtime = { path = "../lic/packages/li-physics-runtime" }
+li-world = { path = "../lic/packages/li-world" }
+li-assets = { path = "../lic/packages/li-assets" }
+li-render = { path = "../lic/packages/li-render" }
+lig = { path = "../lic/packages/lig" }
 
 [[bin]]
 name = "li-studio-demo"
 path = "src/main.li"
 
 [package.metadata.li]
-github_repo = "li-studio"
+github_repo = "studio"
 import_name = "studio"
 min_lic = "0.1.0"
 maintainer = "li-langverse"
@@ -26,6 +39,6 @@ compose_panels = ["dock", "timeline", "inspector"]
 panel_switch_budget_ms = 100
 
 [package.repository]
-url = "https://github.com/li-langverse/li-studio"
+url = "https://github.com/li-langverse/studio"
 documentation = "https://li-langverse.github.io/li-language/ecosystem/li-studio/"
-changelog = "https://github.com/li-langverse/li-studio/blob/main/CHANGELOG.md"
+changelog = "https://github.com/li-langverse/studio/blob/main/CHANGELOG.md"

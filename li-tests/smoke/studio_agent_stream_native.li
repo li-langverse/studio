@@ -1,0 +1,32 @@
+# Smoke — native shell agent chrome stream bench (UX-06, studio-ux-23).
+import ui
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  var bench: StudioAgentBenchNative = studio_shell_agent_bench_native(1920.0, 1080.0)
+  if bench.native_pixels != 1:
+    return 1
+  if bench.tick_meets_budget != 1:
+    return 2
+  if bench.cancel_meets_budget != 1:
+    return 3
+  if bench.steps_completed != studio_agent_stream_step_total():
+    return 4
+  if bench.progress_visible != 1:
+    return 5
+  if bench.cancel_works != 1:
+    return 6
+  var running: StudioShellCompose = studio_compose_shell_agent(1280.0, 720.0, 0, 1, studio_agent_task_running())
+  if studio_agent_chrome_ok(running.agent) != 1:
+    return 7
+  if running.agent.cancel_visible != 1:
+    return 8
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_agent(frame, running.agent)
+  if frame.cmd_count != studio_paint_agent_cmds(studio_agent_task_running()):
+    return 9
+  return 0

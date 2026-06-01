@@ -1,0 +1,18 @@
+# PH-HW viewport — vertical demo present hook (paint blit + host present).
+[meta]
+package = "li-studio"
+hook_version = 3
+native_pixels_cpu = false
+native_pixels_paint_blit = true
+native_pixels_wgpu = true
+wgpu_full_readback = true
+bench_simulate_fn = "studio_vertical_demo_frame"
+
+[present]
+env_profile = "STUDIO_DEMO_PROFILE"
+env_host_present = "LIG_HOST_PRESENT"
+env_wgpu_readback = "LIG_WGPU_READBACK"
+profile_count = 7
+default_profile = "game"
+native_pixel_source_paint_blit = 2
+notes = "LIG_HOST_PRESENT=1 + optional LIG_WGPU_READBACK=1: draw-list submit then blit/readback; honest sources 2|3|4"

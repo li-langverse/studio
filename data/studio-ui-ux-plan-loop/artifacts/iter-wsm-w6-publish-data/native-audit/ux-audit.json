@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-05-30T12:11:03.027871+00:00",
+  "platform": "Windows",
+  "summary": {
+    "total": 1,
+    "failing": 0,
+    "passing": 0,
+    "skipped": 1
+  },
+  "targets": [
+    {
+      "target_id": "world-studio-native",
+      "repo": "lic",
+      "surface": "gui",
+      "surface_class": "gui_app",
+      "status": "skip",
+      "skip_reason": "native capture exit 4: native-sdl-build: install SDL2 (libsdl2-dev or brew install sdl2)\n",
+      "native_pixels": false,
+      "journeys": [
+        {
+          "id": "studio_viewport_pixels",
+          "steps": [
+            "xvfb",
+            "sdl_draw",
+            "png_capture"
+          ],
+          "completed": false,
+          "step_count": 3
+        }
+      ],
+      "friction_points": [
+        {
+          "issue": "native viewport capture unavailable; use HTML mocks"
+        }
+      ],
+      "sota_refs": [
+        "godot-editor",
+        "cursor-agent",
+        "linear-app"
+      ],
+      "rubric_scores": {
+        "nav_clarity": 0.6,
+        "task_efficiency": 0.55,
+        "empty_states": 0.75,
+        "error_handling": 0.7,
+        "cognitive_load": 0.72
+      },
+      "rubric_threshold": 0.6,
+      "missing_states": [
+        "native_viewport"
+      ],
+      "artifacts": [],
+      "mode": "native_gui"
+    }
+  ]
+}

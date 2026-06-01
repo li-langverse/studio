@@ -1,0 +1,30 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 28:
+    return 1
+  var tick0: int = 0
+  var tick2: int = 2
+  var layout0: StudioShellLayout = studio_adaptive_layout_for_drug_tick(1280.0, 720.0, tick0)
+  var layout2: StudioShellLayout = studio_adaptive_layout_for_drug_tick(1280.0, 720.0, tick2)
+  if layout0.inspector.w != studio_inspector_width_for_drug_litl_stage(drug_litl_stage_from_tick(tick0)):
+    return 2
+  if layout2.inspector.w != studio_inspector_width_for_drug_litl_stage(drug_litl_stage_from_tick(tick2)):
+    return 3
+  if layout2.inspector.w <= layout0.inspector.w:
+    return 4
+  var mcp: StudioAgentToolRequest = studio_mcp_dispatch_adaptive_drug(1280.0, 720.0, tick2)
+  if mcp.status != studio_mcp_tool_status_ok():
+    return 5
+  if mcp.result_code != drug_litl_stage_dft():
+    return 6
+  var compose: StudioShellCompose = studio_compose_shell_drug_litl(1280.0, 720.0, tick2, 1)
+  if compose.config.active_profile != studio_profile_sim_drug_design():
+    return 7
+  if compose.inspector.field_rows != studio_drug_litl_inspector_field_rows(drug_litl_stage_dft()):
+    return 8
+  return 0

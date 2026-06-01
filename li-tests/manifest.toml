@@ -7,83 +7,360 @@ note = "T-PKG-li-studio-smoke"
 [[tests]]
 suite = "smoke"
 file = "smoke/studio_timeline_playback.li"
-outcome = "compile_open_ok"
-note = "T-PKG-li-studio-timeline-playback UX-02"
+outcome = "check_ok"
+note = "T-PKG-li-studio-timeline-playback UX-02 WP-GD-08 sim tick sync"
 
 [[tests]]
 suite = "smoke"
 file = "smoke/studio_inspector_fields.li"
-outcome = "compile_open_ok"
+outcome = "check_ok"
 note = "T-PKG-li-studio-inspector-fields UX-03"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_inspector_widget_pilot.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-inspector-widget-pilot W1"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_shell_widget_tree.li"
+outcome = "check_ok"
+note = "W4: all shell regions on Widget tree + reactive stores"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_compose_panels.li"
-outcome = "compile_open_ok"
+outcome = "check_ok"
 note = "T-PKG-li-studio-compose-panels"
 
 [[tests]]
 suite = "smoke"
 file = "smoke/studio_outliner.li"
-outcome = "compile_open_ok"
+outcome = "check_ok"
 note = "T-PKG-li-studio-outliner PH-GD-1"
 
 [[tests]]
 suite = "smoke"
 file = "smoke/studio_agent_chrome.li"
-outcome = "compile_open_ok"
+outcome = "check_ok"
 note = "T-PKG-li-studio-agent-chrome"
 
 [[tests]]
 suite = "smoke"
 file = "smoke/studio_empty_states.li"
-outcome = "compile_open_ok"
+outcome = "check_ok"
 note = "T-PKG-li-studio-empty-states"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_viewport_hud.li"
+outcome = "check_ok"
+note = "WP-UX-13: live FPS + particle tier viewport HUD"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_native_pixels_wgpu_readback.li"
+outcome = "check_ok"
+note = "WP-UX-14: native_pixels honest via wgpu readback stub (LIG_WGPU_READBACK=1)"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_viewport_error.li"
-outcome = "compile_open_ok"
+outcome = "check_ok"
 note = "T-PKG-li-studio-viewport-error UX-08"
 
 [[tests]]
 suite = "smoke"
 file = "smoke/studio_command_palette.li"
-outcome = "compile_open_ok"
+outcome = "check_ok"
 note = "T-PKG-li-studio-command-palette-ux04"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_keyboard_bridge.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-keyboard-bridge UX-09 WP-UX-09 SDL/mock InputState end-to-end"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_profile_roundtrip.li"
-outcome = "compile_open_ok"
+outcome = "check_ok"
 note = "T-PKG-li-studio-profile-roundtrip PH-UX-05 PH-SIM"
 
 [[tests]]
 suite = "smoke"
-file = "smoke/studio_vertical_profile_roundtrip.li"
-outcome = "compile_open_ok"
-note = "T-PKG-li-studio-vertical-profile-roundtrip UX-14 vertical demos"
+file = "smoke/studio_sim_step_by_profile.li"
+outcome = "check_ok"
+note = "PH-SIM vertical gap #4: studio_sim_step_hook all 7 runtime profiles + RL env pool"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_sim_rl_step_hook.li"
+outcome = "check_ok"
+note = "PH-SIM SIM-3: studio_sim_rl_step_hook env pool on live session"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_sim_sensor_step_hook.li"
+outcome = "check_ok"
+note = "PH-SIM SIM-5: studio_sim_sensor_step_hook raycast bus auto/robo"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_toml_engine_export.li"
+outcome = "check_ok"
+note = "WP-SIM-06: studio.toml [engine] determinism_tier + [engine.export] parse"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_am_export_three_click.li"
+outcome = "check_ok"
+note = "WP-AM-03 / WP-UX-16: sim.export.print 3MF/G-code + ≤3-click export wizard"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_publish_figure.li"
+outcome = "check_ok"
+note = "WP-PUB-01: studio.publish.figure SVG/PDF/PNG vector export + ≤3-click publish flow"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_publish_table.li"
+outcome = "check_ok"
+note = "WP-PUB-02: studio.publish.table HDF5/CSV scientific export + ≤3-click publish flow"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_publish_bundle.li"
+outcome = "check_ok"
+note = "WP-PUB-03: publish_bundle MCP reproducibility manifest zip after lic build proof"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_sim_scientific_step_hook.li"
+outcome = "check_ok"
+note = "PH-SIM scientific step: tick_at + scene_bench tier sync to viewport display"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_sim_scientific_viz_viewport.li"
+outcome = "check_ok"
+note = "WP-SCI-04: sim.viz pipeline panels → viewport fields"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_sim_robotics_inspector.li"
+outcome = "check_ok"
+note = "WP-ROBO-03 / WP-UX-03: 6-DOF IK session + live inspector joint fields"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_game_step_hook.li"
+outcome = "check_ok"
+note = "PH-GD-2: studio_game_step_hook + studio_game_world_checkpoint_roundtrip"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_world_checkpoint_after_tick.li"
+outcome = "check_ok"
+note = "WP-GD-02: WorldSnapshot after sim tick + shell timeline cache"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_vertical_dod.li"
+outcome = "check_ok"
+note = "wsm-w6: composable vertical DoD for all 7 runtime profiles"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_world_io_roundtrip.li"
+outcome = "check_ok"
+note = "WP-GD-03: world.li text save/load roundtrip + asset_ref_count stub"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_gltf_ingest.li"
+outcome = "check_ok"
+note = "WP-GD-04: glTF ingest via li-assets into scene entity count"
 
 [[tests]]
 suite = "smoke"
 file = "smoke/studio_shell_loading.li"
-outcome = "compile_open_ok"
+outcome = "check_ok"
 note = "T-PKG-li-studio-shell-loading-ux10-ux11"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_native_styled_chrome.li"
+outcome = "check_ok"
+note = "wsg-w0-native-styled-chrome: dock/timeline/shell PaintCmd round-rect + gradient + icon atlas"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_shell_demo.li"
-outcome = "compile_open_ok"
+outcome = "check_ok"
 note = "T-PKG-li-studio-shell-demo PH-GD-1"
 
 [[tests]]
 suite = "smoke"
-file = "smoke/studio_host_present.li"
-outcome = "compile_open_ok"
-note = "T-PKG-li-studio-host-present PH-HW-HW-1"
+file = "smoke/studio_shell_demo_present_loop.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-shell-demo-present-loop PH-HW WP3"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_present_loop_raster.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-present-loop-raster wsg-w4-present-loop"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_c_host_slim.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-c-host-slim wsg-w4-c-host-slim"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_windows_native_present.li"
+outcome = "check_ok"
+note = "wsg-w5-windows-native: Windows SDL present host, no WSL requirement"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_macos_wgpu_present.li"
+outcome = "check_ok"
+note = "wsg-w5-macos-wgpu: macOS aarch64 wgpu/Metal surface (PH-HW WP3)"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_linux_appimage_present.li"
+outcome = "check_ok"
+note = "wsg-w5-linux-appimage: AppDir/AppImage with bundled SDL2 + wgpu env"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_installer_ci.li"
+outcome = "check_ok"
+note = "wsg-w5-installer-ci: Windows Inno + Linux AppImage CI matrix wiring"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_perf_budgets.li"
+outcome = "check_ok"
+note = "wsg-w5-perf-budgets: PH-UX viewport/UI perf budgets documented + smoke constants"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_shell_demo_pattern_tick.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-shell-demo-pattern-tick STUDIO_DEMO_LOOP_TICK base"
+
 [[tests]]
 suite = "smoke"
 file = "smoke/studio_mcp_tools.li"
-outcome = "compile_open_ok"
+outcome = "check_ok"
 note = "T-PKG-li-studio-mcp-tools PH-AGENT"
 
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_mcp_extended.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-mcp-extended PH-AGENT gap-6-7"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_mcp_dispatch_run.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-mcp-dispatch-run WP-AG-02 all 11 tools real args"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_mcp_stdio_server.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-mcp-stdio-server WP-AG-03 lis mcp li-engine wiring"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_native_pixels_honesty.li"
+outcome = "compile_open_ok"
+note = "T-PKG-li-studio-native-pixels-honesty WP-UX-14"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_c_host_retirement_gate.li"
+outcome = "compile_open_ok"
+note = "T-PKG-li-studio-c-host-retirement WP-UX-14b"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_viewport_hud.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-viewport-hud UX-13 WP-UX-13 live FPS + particle tier HUD"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_viewport_display.li"
+outcome = "check_ok"
+note = "PH-UX viewport display MCP + paint_blit biomol/particle placeholders"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_adaptive_litl_panel_sets.li"
+outcome = "check_ok"
+note = "WP-DRUG-03: studio.adaptive LITL stage panel sets per stage"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_drug_litl_adaptive.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-drug-litl-adaptive WP-DRUG-03"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_drug_demo_frame.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-drug-demo-litl vertical demo frame profile 7"
+
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_vertical_demo_env.li"
+outcome = "check_ok"
+note = "STUDIO_DEMO_PROFILE vertical demo frames + optional LIG_HOST_PRESENT"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_vertical_profile_roundtrip.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-vertical-profile-roundtrip PH-UX-05"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_host_present.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-host-present PH-HW WP3"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_agent_invoke.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-agent-invoke PH-AGENT"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_agent_chrome_fsm.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-agent-chrome-fsm UX-06 WP-AG-02 cancel/retry/tool trace FSM"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_interaction_modes.li"
+outcome = "check_ok"
+note = "WP-UX-15: Studio interaction mode FSM on StudioShellCompose"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_agentic_run.li"
+outcome = "check_ok"
+note = "T-PKG-li-studio-agentic-run PH-AGENT-2 Studio agent state model"

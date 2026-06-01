@@ -1,0 +1,68 @@
+{
+  "generated_at": "2026-05-30T15:50:06.108414+00:00",
+  "platform": "Windows",
+  "summary": {
+    "total": 1,
+    "failing": 0,
+    "passing": 1,
+    "skipped": 0
+  },
+  "targets": [
+    {
+      "target_id": "world-studio-demo",
+      "repo": "lic",
+      "surface": "gui",
+      "surface_class": "gui_app",
+      "status": "pass",
+      "journeys": [
+        {
+          "id": "studio_workspace",
+          "steps": [
+            "viewport",
+            "timeline",
+            "inspector"
+          ],
+          "completed": true,
+          "step_count": 3
+        },
+        {
+          "id": "command_palette",
+          "steps": [
+            "open_palette",
+            "filter",
+            "run_command"
+          ],
+          "completed": true,
+          "step_count": 3
+        },
+        {
+          "id": "vertical_profile",
+          "steps": [
+            "switch_profile",
+            "read_metrics"
+          ],
+          "completed": true,
+          "step_count": 2
+        }
+      ],
+      "friction_points": [],
+      "sota_refs": [
+        "mkdocs-material",
+        "shadcn-ui",
+        "textual"
+      ],
+      "rubric_scores": {
+        "nav_clarity": 0.85,
+        "task_efficiency": 0.8,
+        "empty_states": 0.9,
+        "error_handling": 0.75,
+        "cognitive_load": 0.7
+      },
+      "rubric_threshold": 0.6,
+      "missing_states": [],
+      "artifacts": [
+        "C:\\Users\\Julian\\Documents\\Programming\\li\\li-cursor-agents/ux-harness/artifacts/world-studio-demo/journey-log.json"
+      ]
+    }
+  ]
+}

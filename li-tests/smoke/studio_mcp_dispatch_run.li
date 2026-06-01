@@ -1,0 +1,64 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 20:
+    return 1
+  if studio_mcp_tool_count() != 11:
+    return 2
+  var scaffold: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_world_scaffold(), studio_profile_sim_scientific())
+  if scaffold.status != studio_mcp_tool_status_ok():
+    return 3
+  if scaffold.result_code != studio_profile_sim_scientific():
+    return 4
+  var profile_req: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_sim_set_profile(), studio_profile_sim_additive())
+  if profile_req.status != studio_mcp_tool_status_ok():
+    return 5
+  if profile_req.result_code != studio_profile_sim_additive():
+    return 6
+  var check_ok: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_lic_check(), studio_mcp_arg_lic_check_pass())
+  if check_ok.status != studio_mcp_tool_status_ok():
+    return 7
+  var build_ok: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_lic_build(), studio_mcp_arg_lic_build_pass())
+  if build_ok.status != studio_mcp_tool_status_ok():
+    return 8
+  var build_fail: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_lic_build(), studio_mcp_arg_lic_build_fail())
+  if build_fail.status != studio_mcp_tool_status_failed():
+    return 9
+  if build_fail.result_code != studio_mcp_tool_result_err_proof():
+    return 10
+  var publish: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_publish_bundle(), studio_export_format_mask_3mf() + studio_export_format_mask_gcode())
+  if publish.status != studio_mcp_tool_status_ok():
+    return 11
+  var am: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_am_export_print(), am_export_format_gcode())
+  if am.status != studio_mcp_tool_status_ok():
+    return 12
+  if am.result_code != am_export_format_gcode():
+    return 13
+  var chem: StudioAgentToolRequest = studio_mcp_tool_dispatch(studio_mcp_chem_dft_run())
+  if chem.status != studio_mcp_tool_status_ok():
+    return 14
+  var adaptive: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_studio_adaptive_layout(), drug_litl_stage_lab())
+  if adaptive.status != studio_mcp_tool_status_ok():
+    return 15
+  if adaptive.result_code != drug_litl_stage_lab():
+    return 16
+  var bg: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_set_viewport_background(), studio_viewport_bg_grid())
+  if bg.status != studio_mcp_tool_status_ok():
+    return 17
+  if studio_viewport_display_read_bg() != studio_viewport_bg_grid():
+    return 18
+  var tier: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_set_particle_display(), scene_md_tier_10k())
+  if tier.status != studio_mcp_tool_status_ok():
+    return 19
+  if studio_viewport_display_read_particle_tier() != scene_md_tier_10k():
+    return 20
+  var style: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_set_biomol_style(), studio_biomol_style_surface())
+  if style.status != studio_mcp_tool_status_ok():
+    return 21
+  if studio_viewport_display_read_biomol_style() != studio_biomol_style_surface():
+    return 22
+  return 0
