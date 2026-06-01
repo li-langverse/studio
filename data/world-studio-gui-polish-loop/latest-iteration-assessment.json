@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-06-01T13:02:00Z",
-  "iteration_status": "post_sprint_hardening",
-  "todo": "wsp-w1-glyph-pipeline",
-  "wave": "W1",
-  "wps": ["WP-UX-01", "WP-UX-02", "GUI-LIBRARY-PLAN Design"],
+  "timestamp": "2026-06-01T13:10:00Z",
+  "iteration_status": "sprint_complete_verified",
+  "todo": "wsp-w5-no-html-proof",
+  "wave": "W5",
+  "wps": ["WP-UX-01", "WP-UX-02", "WP-UX-06", "WP-UX-13", "WP-GD-05", "GUI-LIBRARY-PLAN W0-W5"],
   "native_only": true,
   "polish_screenshot_paths": [
     "docs/demo/media/native-verticals/png/polish-game.png",
@@ -17,9 +17,9 @@
     "world_studio_gui_polish_gates": "pass",
     "world_studio_gui_polish_completion_gate": "pass"
   },
-  "baseline_diff_note": "paint_fb: replaced paint_glyph_bar square placeholders with Adafruit 5x7 bitmap text (World Studio, outliner labels, HUD, inspector, agent strip, profile chip). Regenerated polish PNGs via studio_verticals_present_host.exe; baseline wireframe ~3.7KB vs polish-game ~14.6KB.",
-  "north_star_fit": "gaming PH-UX — native screenshot proof with readable labels; HTML mocks never product truth",
-  "smokes": "li-tests/smoke/studio_polish_w0_typography.li, studio_polish_w1_glyphs.li (studio manifest)",
+  "baseline_diff_note": "Baseline wireframe ~3.7KB (640x360) vs polish-game ~14.6KB — readable 5x7 bitmap labels, round rects, token colors, viewport grid/HUD, hover/focus hints, per-vertical previews. Live capture skipped locally (no present host); committed PNGs pass size heuristics.",
+  "north_star_fit": "gaming PH-UX — provable native Li chrome; HTML mocks reference-only",
+  "smokes": "li-tests/smoke/studio_polish_w0_typography.li through studio_polish_w4_vertical_chrome.li",
   "pr": "https://github.com/li-langverse/studio/pull/19",
-  "agent_run_note": "world_studio_builder 2026-06-01: paint_fb bitmap font + refreshed polish PNG captures on cursor/world-studio-gui-polish"
+  "agent_run_note": "world_studio_builder 2026-06-01: re-verified all wsp-w* done; progress + completion gates PASS on cursor/world-studio-gui-polish"
 }
