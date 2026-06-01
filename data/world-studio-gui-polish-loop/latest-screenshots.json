@@ -1,18 +1,17 @@
 {
-  "timestamp": "2026-06-01T10:16:49.472733+00:00",
+  "timestamp": "2026-06-01T10:25:12.892085+00:00",
   "native_only": true,
   "paths": [
-    "/mnt/c/Users/Julian/Documents/Programming/li/li-cursor-agents/data/workspaces/li-langverse/studio/world_studio_builder-1780308508078/repo/installer/out/studio-screenshot-polish-baseline.png",
-    "/mnt/c/Users/Julian/Documents/Programming/li/li-cursor-agents/data/workspaces/li-langverse/studio/world_studio_builder-1780308508078/repo/docs/demo/media/native-verticals/png/polish-game-1280x720.png",
-    "/mnt/c/Users/Julian/Documents/Programming/li/li-cursor-agents/data/workspaces/li-langverse/studio/world_studio_builder-1780308508078/repo/docs/demo/media/native-verticals/png/polish-game.png",
-    "/mnt/c/Users/Julian/Documents/Programming/li/li-cursor-agents/data/workspaces/li-langverse/studio/world_studio_builder-1780308508078/repo/docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
-    "/mnt/c/Users/Julian/Documents/Programming/li/li-cursor-agents/data/workspaces/li-langverse/studio/world_studio_builder-1780308508078/repo/docs/demo/media/native-verticals/png/polish-sim_rl.png",
-    "/mnt/c/Users/Julian/Documents/Programming/li/li-cursor-agents/data/workspaces/li-langverse/studio/world_studio_builder-1780308508078/repo/installer/out/studio-screenshot-iteration-0.png"
+    "installer/out/studio-screenshot-polish-baseline.png",
+    "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/polish-game.png",
+    "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
+    "docs/demo/media/native-verticals/png/polish-sim_rl.png"
   ],
   "polish_pngs": [
-    "/mnt/c/Users/Julian/Documents/Programming/li/li-cursor-agents/data/workspaces/li-langverse/studio/world_studio_builder-1780308508078/repo/docs/demo/media/native-verticals/png/polish-game-1280x720.png",
-    "/mnt/c/Users/Julian/Documents/Programming/li/li-cursor-agents/data/workspaces/li-langverse/studio/world_studio_builder-1780308508078/repo/docs/demo/media/native-verticals/png/polish-game.png",
-    "/mnt/c/Users/Julian/Documents/Programming/li/li-cursor-agents/data/workspaces/li-langverse/studio/world_studio_builder-1780308508078/repo/docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
-    "/mnt/c/Users/Julian/Documents/Programming/li/li-cursor-agents/data/workspaces/li-langverse/studio/world_studio_builder-1780308508078/repo/docs/demo/media/native-verticals/png/polish-sim_rl.png"
+    "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/polish-game.png",
+    "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
+    "docs/demo/media/native-verticals/png/polish-sim_rl.png"
   ]
 }

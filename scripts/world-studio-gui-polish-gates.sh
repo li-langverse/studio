@@ -124,31 +124,40 @@ if [[ "${WORLD_STUDIO_POLISH_SKIP_CAPTURE:-0}" != "1" ]]; then
 fi
 
 echo "==> screenshot manifest"
-python3 - "$MANIFEST" "$POLISH_DIR" "$INSTALLER_OUT" "$MIN_POLISH_BYTES" <<'PY'
+python3 - "$MANIFEST" "$ROOT" "$POLISH_DIR" "$INSTALLER_OUT" "$MIN_POLISH_BYTES" <<'PY'
 import json, os, sys
 from pathlib import Path
 
-manifest, polish_dir, installer_out, min_bytes = sys.argv[1:5]
+manifest, repo_root, polish_dir, installer_out, min_bytes = sys.argv[1:6]
 min_bytes = int(min_bytes)
+root = Path(repo_root).resolve()
 polish = Path(polish_dir)
 installer = Path(installer_out)
+
+def rel(p: Path) -> str:
+    try:
+        return p.resolve().relative_to(root).as_posix()
+    except ValueError:
+        return str(p.resolve())
+
 paths: list[str] = []
 for p in sorted(polish.glob("polish-*.png")):
-    paths.append(str(p.resolve()))
+    paths.append(rel(p))
 for p in sorted(installer.glob("studio-screenshot-iteration-*.png")):
-    paths.append(str(p.resolve()))
+    paths.append(rel(p))
 baseline = installer / "studio-screenshot-polish-baseline.png"
 if baseline.is_file():
-    paths.insert(0, str(baseline.resolve()))
+    paths.insert(0, rel(baseline))
+polish_pngs = sorted(rel(p) for p in polish.glob("polish-*.png"))
 payload = {
     "timestamp": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
     "native_only": True,
     "paths": paths,
-    "polish_pngs": [str(p) for p in polish.glob("polish-*.png")],
+    "polish_pngs": polish_pngs,
 }
 Path(manifest).parent.mkdir(parents=True, exist_ok=True)
 Path(manifest).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-small = [p for p in payload["polish_pngs"] if Path(p).stat().st_size < min_bytes]
+small = [p for p in polish_pngs if (root / p).stat().st_size < min_bytes]
 if small:
     print("WARN: polish PNGs below min bytes:", ", ".join(small), file=sys.stderr)
 print("OK: wrote", manifest)

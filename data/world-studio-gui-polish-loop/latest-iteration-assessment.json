@@ -1,5 +1,7 @@
 {
   "timestamp": "2026-06-01T12:20:00Z",
+  "verified_at": "2026-06-01T10:24:00Z",
+  "iteration_status": "sprint_complete",
   "todo": "wsp-w5-no-html-proof",
   "wsp_todos_done": [
     "wsp-w0-typography-readable",
