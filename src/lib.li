@@ -540,7 +540,11 @@ def studio_profile_label_first_codepoint(profile_id: int) -> int
   ensures (profile_id == studio_profile_game()) ==> (result == 71)
   ensures (profile_id == studio_profile_sim_rl()) ==> (result == 82)
   ensures (profile_id == studio_profile_sim_drug_design()) ==> (result == 68)
-  ensures (profile_id != studio_profile_game()) && (profile_id != studio_profile_sim_rl()) && (profile_id != studio_profile_sim_drug_design()) ==> (result == 83)
+  ensures (profile_id == studio_profile_unknown()) ==> (result == 83)
+  ensures (profile_id == studio_profile_sim_automotive()) ==> (result == 83)
+  ensures (profile_id == studio_profile_sim_robotics()) ==> (result == 83)
+  ensures (profile_id == studio_profile_sim_additive()) ==> (result == 83)
+  ensures (profile_id == studio_profile_sim_scientific()) ==> (result == 83)
   decreases profile_id
 =
   if profile_id == studio_profile_game():
