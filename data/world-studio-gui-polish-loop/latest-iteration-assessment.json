@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-01T15:00:00Z",
-  "todo": "wsp-w3-viewport-grid",
+  "timestamp": "2026-06-01T17:45:00Z",
+  "todo": "wsp-w3-particles-sim",
   "wsp_todos_done": [
     "wsp-w0-typography-readable",
     "wsp-w0-token-contrast",
@@ -13,18 +13,20 @@
     "wsp-w2-hover-states",
     "wsp-w2-focus-ring",
     "wsp-w2-shortcut-hints",
-    "wsp-w3-viewport-grid"
+    "wsp-w3-viewport-grid",
+    "wsp-w3-particles-sim",
+    "wsp-w3-game-profile-viz"
   ],
   "wave": "W3",
-  "wps": ["WP-UX-13", "WP-GD-05", "GUI-LIBRARY-PLAN Phase 3"],
+  "wps": ["WP-UX-13", "WP-GD-05", "WP-SIM-03", "GUI-LIBRARY-PLAN Phase 3"],
   "native_only": true,
   "polish_screenshot_paths": [
     "installer/out/studio-screenshot-polish-baseline.png"
   ],
   "gates": {
     "world_studio_gui_polish_gates": "pass",
-    "lic_check_smoke": "studio_polish_w3_viewport_grid.li"
+    "lic_check_smoke": "studio_polish_w3_particles_sim.li, studio_polish_w3_game_viewport.li"
   },
-  "baseline_diff_note": "W3 viewport grid: paint_cmd_viewport_grid + cyan/violet axis lines + origin marker; grid legend HUD chip (64px label); scene cmds 1→5; li_std_studio_version 43.",
-  "north_star_fit": "gaming PH-UX — native viewport floor grid readable vs debug placeholder"
+  "baseline_diff_note": "W3 complete: sim_rl reward-curve dots + tier-1k particles; drug sticks+biomol particles; game profile scene with 3 entity preview blocks on grid (not empty checkerboard). studio_viewport_display_prepare_for_profile seeds per vertical; li_std_studio_version 44.",
+  "north_star_fit": "gaming PH-UX — native viewport shows profile-appropriate sim/game preview on Li paint path"
 }

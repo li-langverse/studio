@@ -40,10 +40,10 @@ todos:
     status: done
   - id: wsp-w3-particles-sim
     content: "W3 — particles / sim viz stub replaced with profile-appropriate preview"
-    status: pending
+    status: done
   - id: wsp-w3-game-profile-viz
     content: "W3 — game profile 1280×720 viewport content not empty checkerboard only"
-    status: pending
+    status: done
   - id: wsp-w4-gradients-shadows
     content: "W4 — gradients + subtle shadows on panels (native PaintCmd, no HTML)"
     status: pending

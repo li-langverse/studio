@@ -2373,12 +2373,39 @@ def studio_viewport_display_reset_for_profile(profile_id: int) raises IO -> unit
 =
   var _ok: int = li_rt_studio_viewport_display_reset_defaults(profile_id)
 
+def studio_viewport_display_prepare_for_profile(profile_id: int) raises IO -> unit
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures studio_viewport_display_read_bg() >= studio_viewport_bg_solid()
+  decreases profile_id
+=
+  studio_viewport_display_reset_for_profile(profile_id)
+  if profile_id == studio_profile_game():
+    var _bg_game: int = li_rt_studio_viewport_display_set_bg(studio_viewport_bg_grid())
+    var _pt_game: int = li_rt_studio_viewport_display_set_particle_tier(studio_particle_display_off())
+    return
+  if profile_id == studio_profile_sim_rl():
+    var _bg_rl: int = li_rt_studio_viewport_display_set_bg(studio_viewport_bg_grid())
+    var _pt_rl: int = li_rt_studio_viewport_display_set_particle_tier(scene_md_tier_1k())
+    return
+  if profile_id == studio_profile_sim_drug_design():
+    var _bg_drug: int = li_rt_studio_viewport_display_set_bg(studio_viewport_bg_grid())
+    var _bm_drug: int = li_rt_studio_viewport_display_set_biomol_style(studio_biomol_style_sticks())
+    var _pt_drug: int = li_rt_studio_viewport_display_set_particle_tier(scene_md_tier_1k())
+    return
+  if profile_id == studio_profile_sim_scientific():
+    var _bg_sci: int = li_rt_studio_viewport_display_set_bg(studio_viewport_bg_grid())
+    return
+
 def studio_viewport_display_profile_wants_scene(profile_id: int) -> int
   requires studio_profile_id_valid(profile_id) == 1
   ensures result >= 0
   ensures result <= 1
   decreases profile_id
 =
+  if profile_id == studio_profile_game():
+    return 1
+  if profile_id == studio_profile_sim_rl():
+    return 1
   if profile_id == studio_profile_sim_scientific():
     return 1
   if profile_id == studio_profile_sim_drug_design():
@@ -2591,6 +2618,26 @@ def studio_compose_viewport_display(vp: Rect, profile_id: int) raises IO -> Stud
   out.particle_hud_rect = studio_viewport_hud_particle_rect(vp)
   out.native_badge_rect = studio_viewport_hud_native_badge_rect(vp)
   out.grid_legend_rect = studio_viewport_hud_grid_legend_rect(vp)
+  if profile_id == studio_profile_sim_rl():
+    out.background = studio_viewport_bg_grid()
+    out.particle_tier_id = scene_md_tier_1k()
+    out.tier_particles = 1000
+    out.particle_dots_visible = 1
+  if profile_id == studio_profile_sim_drug_design():
+    out.background = studio_viewport_bg_grid()
+    if out.biomol_style == studio_biomol_style_cartoon():
+      out.biomol_style = studio_biomol_style_sticks()
+    if out.particle_tier_id < scene_md_tier_1k():
+      out.particle_tier_id = scene_md_tier_1k()
+    if out.particle_tier_id >= scene_md_tier_1k():
+      var drug_tier: SceneMdParticleTier = scene_md_particle_tier_by_id(out.particle_tier_id)
+      out.tier_particles = drug_tier.particles
+      out.particle_dots_visible = 1
+  if profile_id == studio_profile_game():
+    out.background = studio_viewport_bg_grid()
+    out.particle_tier_id = studio_particle_display_off()
+    out.particle_dots_visible = 0
+    out.tier_particles = 0
   if profile_id == studio_profile_sim_scientific():
     if out.particle_tier_id >= scene_md_tier_1k():
       var viz_tick: int = studio_viz_tick_for_particle_tier(out.particle_tier_id)
@@ -2837,7 +2884,7 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
   var out: StudioShellCompose = studio_compose_shell_profile(w, h, 0, has_selection, studio_profile_sim_drug_design())
   out.layout = layout
   studio_shell_apply_adaptive_panel_set(out, stage)
-  studio_viewport_display_reset_for_profile(studio_profile_sim_drug_design())
+  studio_viewport_display_prepare_for_profile(studio_profile_sim_drug_design())
   out.scene_entity_count = 1
   out.viewport_empty.empty_visible = 0
   studio_attach_viewport_shell(out)
@@ -2845,10 +2892,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 43
+  ensures result == 44
   decreases 0
 =
-  return 43
+  return 44
 
 def studio_shell_widget_tree_version() -> int
   requires true
@@ -7158,6 +7205,143 @@ def studio_paint_viewport_empty_cmds() -> int
 =
   return 3
 
+def studio_viewport_game_entity_preview_count() -> int
+  requires true
+  ensures result == 3
+  decreases 0
+=
+  return 3
+
+def studio_viewport_game_entity_rect_at(vp: Rect, index: int) -> Rect
+  requires vp.w >= 120.0
+  requires vp.h >= 80.0
+  requires index >= 0
+  requires index < studio_viewport_game_entity_preview_count()
+  ensures result.w >= 24.0
+  decreases index
+=
+  var cx: float = vp.x + vp.w * 0.5 - 48.0
+  var cy: float = vp.y + vp.h * 0.5 - 20.0
+  var x: float = cx
+  if index == 1:
+    x = cx + 36.0
+  if index == 2:
+    x = cx + 72.0
+  return rect_make(x, cy, 28.0, 40.0)
+
+def studio_viewport_game_entity_color(index: int) -> Color
+  requires index >= 0
+  requires index < studio_viewport_game_entity_preview_count()
+  ensures result.a == 1.0
+  decreases index
+=
+  if index == 1:
+    return studio_color_accent_violet()
+  if index == 2:
+    return studio_color_accent_mint()
+  return studio_color_accent_cyan()
+
+def studio_paint_viewport_game_preview_cmds() -> int
+  requires true
+  ensures result == studio_viewport_game_entity_preview_count() * 2
+  decreases 0
+=
+  return studio_viewport_game_entity_preview_count() * 2
+
+def studio_paint_viewport_game_preview(frame: var PaintFrame, vp: Rect) -> unit
+  requires frame.cmd_count >= 0
+  requires vp.w >= 120.0
+  requires vp.h >= 80.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_game_preview_cmds()
+  decreases 0
+=
+  var idx: int = 0
+  while idx < studio_viewport_game_entity_preview_count():
+    var ent: Rect = studio_viewport_game_entity_rect_at(vp, idx)
+    var ent_color: Color = studio_viewport_game_entity_color(idx)
+    paint_frame_push(frame, paint_cmd_fill_round(ent, ent_color, studio_radius_md_px()))
+    paint_frame_push(frame, paint_cmd_stroke_round(ent, studio_color_text_primary(), 1.0, studio_radius_md_px()))
+    idx = idx + 1
+
+def studio_viewport_rl_reward_dot_count() -> int
+  requires true
+  ensures result == 6
+  decreases 0
+=
+  return 6
+
+def studio_viewport_rl_reward_dot_rect_at(vp: Rect, index: int) -> Rect
+  requires vp.w >= 80.0
+  requires vp.h >= 48.0
+  requires index >= 0
+  requires index < studio_viewport_rl_reward_dot_count()
+  ensures result.w == 5.0
+  ensures result.h == 5.0
+  decreases index
+=
+  var base_x: float = vp.x + vp.w * 0.22
+  var base_y: float = vp.y + vp.h * 0.62
+  var x: float = base_x
+  var y: float = base_y
+  if index == 1:
+    x = base_x + 18.0
+  if index == 2:
+    x = base_x + 36.0
+    y = base_y - 6.0
+  if index == 3:
+    x = base_x + 54.0
+  if index == 4:
+    x = base_x + 72.0
+    y = base_y - 6.0
+  if index == 5:
+    x = base_x + 90.0
+    y = base_y - 12.0
+  return rect_make(x, y, 5.0, 5.0)
+
+def studio_paint_viewport_rl_preview_cmds() -> int
+  requires true
+  ensures result == studio_viewport_rl_reward_dot_count()
+  decreases 0
+=
+  return studio_viewport_rl_reward_dot_count()
+
+def studio_paint_viewport_rl_preview(frame: var PaintFrame, vp: Rect) -> unit
+  requires frame.cmd_count >= 0
+  requires vp.w >= 80.0
+  requires vp.h >= 48.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_rl_preview_cmds()
+  decreases 0
+=
+  var idx: int = 0
+  while idx < studio_viewport_rl_reward_dot_count():
+    var dot: Rect = studio_viewport_rl_reward_dot_rect_at(vp, idx)
+    paint_frame_push(frame, paint_cmd_fill_round(dot, studio_color_accent_amber(), 2.0))
+    idx = idx + 1
+
+def studio_paint_viewport_profile_preview_cmds(profile_id: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures result >= 0
+  decreases profile_id
+=
+  if profile_id == studio_profile_game():
+    return studio_paint_viewport_game_preview_cmds()
+  if profile_id == studio_profile_sim_rl():
+    return studio_paint_viewport_rl_preview_cmds()
+  return 0
+
+def studio_paint_viewport_profile_preview(frame: var PaintFrame, vp: Rect, profile_id: int) -> unit
+  requires frame.cmd_count >= 0
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_profile_preview_cmds(profile_id)
+  decreases profile_id
+=
+  if profile_id == studio_profile_game():
+    studio_paint_viewport_game_preview(frame, vp)
+    return
+  if profile_id == studio_profile_sim_rl():
+    studio_paint_viewport_rl_preview(frame, vp)
+    return
+
 def studio_paint_viewport_grid_cmds() -> int
   requires true
   ensures result == 5
@@ -7487,10 +7671,11 @@ def studio_paint_compose_panels_count(has_selection: int) -> int
 =
   return studio_paint_dock_cmds() + studio_paint_outliner_cmds(studio_outliner_demo_node_count()) + studio_paint_timeline_cmds() + studio_paint_inspector_cmds(has_selection)
 
-def studio_shell_viewport_cmds(scene_entity_count: int, viewport_error_kind: int, display: StudioViewportDisplayCompose, menu: StudioViewportMenuCompose) -> int
+def studio_shell_viewport_cmds(scene_entity_count: int, viewport_error_kind: int, display: StudioViewportDisplayCompose, menu: StudioViewportMenuCompose, profile_id: int) -> int
   requires scene_entity_count >= 0
   requires viewport_error_kind >= studio_viewport_error_none()
   requires viewport_error_kind <= studio_err_missing_asset()
+  requires studio_profile_id_valid(profile_id) == 1
   ensures result >= 1
   decreases viewport_error_kind
 =
@@ -7498,7 +7683,7 @@ def studio_shell_viewport_cmds(scene_entity_count: int, viewport_error_kind: int
     return studio_paint_viewport_error_cmds()
   if scene_entity_count == 0:
     return studio_paint_viewport_empty_cmds()
-  return studio_paint_viewport_scene_cmds() + studio_paint_viewport_display_cmds(display) + studio_paint_viewport_menu_cmds(menu)
+  return studio_paint_viewport_scene_cmds() + studio_paint_viewport_display_cmds(display) + studio_paint_viewport_menu_cmds(menu) + studio_paint_viewport_profile_preview_cmds(profile_id)
 
 def studio_shell_chrome_count(has_selection: int, scene_entity_count: int, task_state: int) -> int
   requires has_selection >= 0
@@ -7517,9 +7702,9 @@ def studio_shell_chrome_count(has_selection: int, scene_entity_count: int, task_
   var menu0: StudioViewportMenuCompose = studio_viewport_menu_compose_new()
   var invoke0: int = studio_agent_invoke_input_visible(ts0)
   var trace0: int = studio_agent_tool_trace_visible_for(ts0, studio_mcp_tool_unknown())
-  return studio_shell_chrome_count_palette(sel_palette, scene0, ts0, studio_palette_closed_flag(), studio_agent_context_for_shell(sel_ctx, ts0), studio_viewport_error_none(), disp0, menu0, invoke0, trace0)
+  return studio_shell_chrome_count_palette(sel_palette, scene0, ts0, studio_palette_closed_flag(), studio_agent_context_for_shell(sel_ctx, ts0), studio_viewport_error_none(), disp0, menu0, invoke0, trace0, studio_profile_game())
 
-def studio_shell_chrome_count_palette(has_selection: int, scene_entity_count: int, task_state: int, palette_open: int, agent_context_label: int, viewport_error_kind: int, display: StudioViewportDisplayCompose, menu: StudioViewportMenuCompose, invoke_visible: int, tool_trace_visible: int) -> int
+def studio_shell_chrome_count_palette(has_selection: int, scene_entity_count: int, task_state: int, palette_open: int, agent_context_label: int, viewport_error_kind: int, display: StudioViewportDisplayCompose, menu: StudioViewportMenuCompose, invoke_visible: int, tool_trace_visible: int, profile_id: int) -> int
   requires has_selection >= 0
   requires has_selection <= 1
   requires scene_entity_count >= 0
@@ -7535,6 +7720,7 @@ def studio_shell_chrome_count_palette(has_selection: int, scene_entity_count: in
   requires invoke_visible <= 1
   requires tool_trace_visible >= 0
   requires tool_trace_visible <= 1
+  requires studio_profile_id_valid(profile_id) == 1
   ensures result >= studio_paint_compose_panels_count(has_selection)
   decreases task_state
 =
@@ -7543,15 +7729,15 @@ def studio_shell_chrome_count_palette(has_selection: int, scene_entity_count: in
   var ts0: int = task_state
   var pal0: int = palette_open
   var ctx0: int = agent_context_label
-  return studio_paint_compose_panels_count(sel0) + 1 + studio_paint_topbar_profile_cmds() + studio_paint_palette_shortcut_hints_cmds(pal0) + studio_shell_viewport_cmds(scene0, viewport_error_kind, display, menu) + studio_paint_agent_cmds(ts0, ctx0, invoke_visible, tool_trace_visible) + studio_paint_palette_cmds(pal0)
+  return studio_paint_compose_panels_count(sel0) + 1 + studio_paint_topbar_profile_cmds() + studio_paint_palette_shortcut_hints_cmds(pal0) + studio_shell_viewport_cmds(scene0, viewport_error_kind, display, menu, profile_id) + studio_paint_agent_cmds(ts0, ctx0, invoke_visible, tool_trace_visible) + studio_paint_palette_cmds(pal0)
 
 def studio_shell_chrome_count_for_compose(compose: StudioShellCompose) -> int
   requires compose.panel.active_region >= studio_region_dock()
   requires compose.panel.active_region <= studio_region_agent_strip()
-  ensures result >= studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible)
+  ensures result >= studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible, compose.config.active_profile)
   decreases compose.agent.task_state
 =
-  var base: int = studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible)
+  var base: int = studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible, compose.config.active_profile)
   return base + studio_paint_focus_ring_cmds(compose.panel.active_region)
 
 
@@ -7576,6 +7762,7 @@ def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose
     if compose.scene_entity_count > 0:
       studio_paint_viewport_grid(frame, compose.layout.viewport)
       studio_paint_viewport_display(frame, compose.layout.viewport, compose.viewport_display)
+      studio_paint_viewport_profile_preview(frame, compose.layout.viewport, prof0)
       studio_paint_viewport_menu(frame, compose.viewport_menu)
   studio_paint_agent(frame, compose.agent)
   paint_studio_palette(frame, compose.palette)
@@ -7907,7 +8094,7 @@ def studio_vertical_demo_compose(profile_id: int, frame_id: int, key_compose: in
   var out: StudioShellCompose = studio_compose_shell_palette(1280.0, 720.0, 0, 1, palette_open)
   studio_shell_demo_apply_profile(out, profile_id)
   if studio_viewport_display_profile_wants_scene(profile_id) == 1:
-    studio_viewport_display_reset_for_profile(profile_id)
+    studio_viewport_display_prepare_for_profile(profile_id)
     out.scene_entity_count = 1
     out.viewport_empty.empty_visible = 0
     studio_attach_viewport_shell(out)
