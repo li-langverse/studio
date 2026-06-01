@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-01T10:32:00Z",
-  "verified_at": "2026-06-01T10:32:00Z",
+  "timestamp": "2026-06-01T10:40:00Z",
+  "verified_at": "2026-06-01T10:40:00Z",
   "iteration_status": "sprint_complete",
   "todo": "wsp-w5-no-html-proof",
   "wsp_todos_done": [
@@ -34,13 +34,14 @@
     "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
     "docs/demo/media/native-verticals/png/polish-sim_rl.png",
     "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
-    "installer/out/studio-screenshot-polish-baseline.png",
-    "installer/out/studio-screenshot-iteration-0.png"
+    "installer/out/studio-screenshot-polish-baseline.png"
   ],
   "gates": {
     "world_studio_gui_polish_gates": "pass",
     "world_studio_gui_polish_completion_gate": "pass"
   },
   "baseline_diff_note": "W5: native polish PNG set at 1280x720 via paint_blit shell (game blocks, sim particles, drug sticks); baseline ~3.7KB wireframe vs polish-game ~15KB with 230+ framebuffer colors; completion gate PNG decoder fixed for filter-byte rows.",
-  "north_star_fit": "gaming PH-UX — shippable native chrome screenshots gate; HTML mocks never product proof"
+  "north_star_fit": "gaming PH-UX — shippable native chrome screenshots gate; HTML mocks never product proof",
+  "smokes": "li-tests/smoke/studio_polish_w*.li (W0–W4) in studio manifest",
+  "pr": "https://github.com/li-langverse/studio/pull/19"
 }
