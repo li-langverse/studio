@@ -32,7 +32,7 @@ Update each iteration. Mark `| **DONE** |` only when every `wsp-w*` todo in that
 
 | Phase | Scope | Status |
 |-------|-------|--------|
-| **W0** | Visual baseline — typography readable, token contrast, anti-wireframe pass on paint_fb / li-ui | pending |
+| **W0** | Visual baseline — typography readable, token contrast, anti-wireframe pass on paint_fb / li-ui | **in progress** (wsp-w0-typography-readable done) |
 | **W1** | Real labels & icons — glyph pipeline, inspector text, viewport overlays | pending |
 | **W2** | Interaction feel — hover/focus states, keyboard feedback visible | pending |
 | **W3** | Viewport quality — grid, particles, sim viz not placeholder | pending |

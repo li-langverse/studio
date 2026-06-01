@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-06-01T18:30:00Z",
+  "todo": "wsp-w0-typography-readable",
+  "wps": ["WP-UX-01", "WP-GD-04"],
+  "native_only": true,
+  "polish_phase": "W0",
+  "polish_screenshot_paths": [],
+  "summary": "Wired Inter atlas draw_glyph on profile chip and outliner rows at studio_typography_body_px line height; topbar/outliner PaintCmd ends with paint_op_draw_glyphs.",
+  "smokes": ["li-tests/smoke/studio_polish_w0_typography.li", "li-tests/smoke/studio_outliner.li"],
+  "gates": "world-studio-gui-polish-gates.sh",
+  "baseline_diff": "installer/out/studio-screenshot-polish-baseline.png vs iteration-0 pending native host capture"
+}

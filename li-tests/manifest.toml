@@ -198,6 +198,12 @@ note = "wsg-w0-native-styled-chrome: dock/timeline/shell PaintCmd round-rect + g
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_polish_w0_typography.li"
+outcome = "check_ok"
+note = "wsp-w0-typography-readable: body/caption tokens + profile/outliner draw_glyph"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_shell_demo.li"
 outcome = "check_ok"
 note = "T-PKG-li-studio-shell-demo PH-GD-1"
