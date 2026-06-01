@@ -35,7 +35,7 @@ then
   exit 1
 fi
 
-"$ROOT/scripts/world-studio-gui-polish-gates.sh"
+bash "$ROOT/scripts/world-studio-gui-polish-gates.sh"
 
 required=(
   "polish-game-1280x720.png"
