@@ -1086,6 +1086,62 @@ def studio_viewport_hud_native_label_glyph_count() -> int
 =
   return 6
 
+def studio_viewport_grid_major_spacing_px() -> float
+  requires true
+  ensures result == 64.0
+  decreases 0
+=
+  return 64.0
+
+def studio_viewport_grid_axis_x_rect(vp: Rect) -> Rect
+  requires vp.h >= 4.0
+  ensures result.h == 1.0
+  decreases 0
+=
+  var cy: float = vp.y + vp.h * 0.5
+  return rect_make(vp.x, cy - 1.0, vp.w, 1.0)
+
+def studio_viewport_grid_axis_y_rect(vp: Rect) -> Rect
+  requires vp.w >= 4.0
+  ensures result.w == 1.0
+  decreases 0
+=
+  var cx: float = vp.x + vp.w * 0.5
+  return rect_make(cx - 1.0, vp.y, 1.0, vp.h)
+
+def studio_viewport_grid_origin_rect(vp: Rect) -> Rect
+  requires vp.w >= 12.0
+  requires vp.h >= 12.0
+  ensures result.w == 8.0
+  ensures result.h == 8.0
+  decreases 0
+=
+  var cx: float = vp.x + vp.w * 0.5
+  var cy: float = vp.y + vp.h * 0.5
+  return rect_make(cx - 4.0, cy - 4.0, 8.0, 8.0)
+
+def studio_viewport_hud_grid_legend_rect(vp: Rect) -> Rect
+  requires vp.h >= 28.0
+  ensures result.w == 56.0
+  ensures result.h == 14.0
+  decreases 0
+=
+  return rect_make(vp.x + 8.0, vp.y + vp.h - 22.0, 56.0, 14.0)
+
+def studio_viewport_hud_grid_label_first_codepoint() -> int
+  requires true
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases 0
+=
+  return 49
+
+def studio_viewport_hud_grid_label_glyph_count() -> int
+  requires true
+  ensures result == 3
+  decreases 0
+=
+  return 3
+
 def studio_viewport_menu_bg_label_first_codepoint() -> int
   requires true
   ensures result == 66
@@ -2459,6 +2515,7 @@ type StudioViewportDisplayCompose = object
   public fps_hud_rect: Rect
   public particle_hud_rect: Rect
   public native_badge_rect: Rect
+  public grid_legend_rect: Rect
 
 type StudioViewportMenuCompose = object
   public menu_visible: int
@@ -2487,6 +2544,7 @@ def studio_viewport_display_compose_new() -> StudioViewportDisplayCompose
   d.fps_hud_rect = rect_make(0.0, 0.0, 0.0, 0.0)
   d.particle_hud_rect = rect_make(0.0, 0.0, 0.0, 0.0)
   d.native_badge_rect = rect_make(0.0, 0.0, 0.0, 0.0)
+  d.grid_legend_rect = rect_make(0.0, 0.0, 0.0, 0.0)
   return d
 
 def studio_viewport_menu_compose_new() -> StudioViewportMenuCompose
@@ -2532,6 +2590,7 @@ def studio_compose_viewport_display(vp: Rect, profile_id: int) raises IO -> Stud
   out.fps_hud_rect = studio_viewport_hud_fps_rect(vp)
   out.particle_hud_rect = studio_viewport_hud_particle_rect(vp)
   out.native_badge_rect = studio_viewport_hud_native_badge_rect(vp)
+  out.grid_legend_rect = studio_viewport_hud_grid_legend_rect(vp)
   if profile_id == studio_profile_sim_scientific():
     if out.particle_tier_id >= scene_md_tier_1k():
       var viz_tick: int = studio_viz_tick_for_particle_tier(out.particle_tier_id)
@@ -2620,10 +2679,10 @@ def studio_paint_viewport_hud_chip_cmds() -> int
 
 def studio_paint_viewport_hud_cmds() -> int
   requires true
-  ensures result == 3 * studio_paint_viewport_hud_chip_cmds() + 3 * studio_paint_glyph_run_cmds()
+  ensures result == 4 * studio_paint_viewport_hud_chip_cmds() + 4 * studio_paint_glyph_run_cmds()
   decreases 0
 =
-  return 3 * studio_paint_viewport_hud_chip_cmds() + 3 * studio_paint_glyph_run_cmds()
+  return 4 * studio_paint_viewport_hud_chip_cmds() + 4 * studio_paint_glyph_run_cmds()
 
 def studio_paint_viewport_hud_chip(frame: var PaintFrame, chip: Rect, color: Color) -> unit
   requires frame.cmd_count >= 0
@@ -2649,6 +2708,9 @@ def studio_paint_viewport_hud(frame: var PaintFrame, display: StudioViewportDisp
   var native_color: Color = studio_viewport_hud_color_native_badge(display.hud_native_pixels)
   studio_paint_viewport_hud_chip(frame, display.native_badge_rect, native_color)
   studio_paint_glyph_text(frame, display.native_badge_rect, studio_viewport_hud_native_label_first_codepoint(), studio_viewport_hud_native_label_glyph_count(), studio_color_text_muted())
+  var grid_color: Color = studio_color_viewport_grid()
+  studio_paint_viewport_hud_chip(frame, display.grid_legend_rect, grid_color)
+  studio_paint_glyph_text(frame, display.grid_legend_rect, studio_viewport_hud_grid_label_first_codepoint(), studio_viewport_hud_grid_label_glyph_count(), studio_color_text_muted())
 
 def studio_compose_viewport_menu(vp: Rect, profile_id: int) -> StudioViewportMenuCompose
   requires vp.w >= 0.0
@@ -2783,10 +2845,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 42
+  ensures result == 43
   decreases 0
 =
-  return 42
+  return 43
 
 def studio_shell_widget_tree_version() -> int
   requires true
@@ -7096,13 +7158,34 @@ def studio_paint_viewport_empty_cmds() -> int
 =
   return 3
 
-def studio_paint_viewport_scene_cmds() -> int
+def studio_paint_viewport_grid_cmds() -> int
   requires true
-  ensures result == 1
+  ensures result == 5
   decreases 0
 =
-  return 1
+  return 5
 
+def studio_paint_viewport_grid(frame: var PaintFrame, vp: Rect) -> unit
+  requires frame.cmd_count >= 0
+  requires vp.w >= 12.0
+  requires vp.h >= 12.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_grid_cmds()
+  ensures frame.last_kind == paint_op_stroke_round_rect()
+  decreases 0
+=
+  paint_frame_push(frame, paint_cmd_viewport_grid(vp))
+  paint_frame_push(frame, paint_cmd_fill(studio_viewport_grid_axis_x_rect(vp), studio_color_accent_cyan()))
+  paint_frame_push(frame, paint_cmd_fill(studio_viewport_grid_axis_y_rect(vp), studio_color_accent_violet()))
+  var origin: Rect = studio_viewport_grid_origin_rect(vp)
+  paint_frame_push(frame, paint_cmd_fill_round(origin, studio_color_text_primary(), 2.0))
+  paint_frame_push(frame, paint_cmd_stroke_round(origin, studio_color_accent_cyan(), 1.0, 2.0))
+
+def studio_paint_viewport_scene_cmds() -> int
+  requires true
+  ensures result == studio_paint_viewport_grid_cmds()
+  decreases 0
+=
+  return studio_paint_viewport_grid_cmds()
 
 def studio_paint_viewport_display_bg_cmds(background: int) -> int
   requires background >= studio_viewport_bg_solid()
@@ -7491,10 +7574,7 @@ def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose
     if compose.scene_entity_count == 0:
       studio_paint_viewport_empty(frame, compose.viewport_empty)
     if compose.scene_entity_count > 0:
-      frame.cmd_count = frame.cmd_count + studio_paint_viewport_scene_cmds()
-      frame.last_kind = paint_op_viewport_grid()
-      frame.last_rect = compose.layout.viewport
-      frame.last_color = studio_color_accent_cyan()
+      studio_paint_viewport_grid(frame, compose.layout.viewport)
       studio_paint_viewport_display(frame, compose.layout.viewport, compose.viewport_display)
       studio_paint_viewport_menu(frame, compose.viewport_menu)
   studio_paint_agent(frame, compose.agent)

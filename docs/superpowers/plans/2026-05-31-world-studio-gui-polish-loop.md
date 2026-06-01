@@ -37,7 +37,7 @@ todos:
     status: done
   - id: wsp-w3-viewport-grid
     content: "W3 — viewport grid + axes polish (not debug placeholder lines)"
-    status: pending
+    status: done
   - id: wsp-w3-particles-sim
     content: "W3 — particles / sim viz stub replaced with profile-appropriate preview"
     status: pending

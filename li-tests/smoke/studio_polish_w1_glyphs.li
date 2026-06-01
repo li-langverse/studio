@@ -11,7 +11,7 @@ def main() -> int
     return 2
   if studio_paint_dock_cmds() != 13:
     return 3
-  if studio_paint_viewport_hud_cmds() != 9:
+  if studio_paint_viewport_hud_cmds() != 12:
     return 4
   if studio_paint_inspector_field_glyph_cmds() != 4:
     return 5
