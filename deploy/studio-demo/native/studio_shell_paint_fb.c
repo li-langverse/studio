@@ -234,11 +234,12 @@ static void paint_viewport_grid(unsigned char* rgb, int w, int h, ShellRect vp) 
   int pad = 24;
   ShellRect frame = {vp.x + pad, vp.y + pad, vp.w - pad * 2, vp.h - pad * 2};
   if (frame.w > 0 && frame.h > 0) {
-    stroke_rect(rgb, w, h, frame, k_border, 1);
+    fill_round_rect(rgb, w, h, frame, k_bg_elevated, 6);
+    stroke_round_rect(rgb, w, h, frame, k_border, 1, 6);
     ShellRect title = {frame.x + 40, frame.y + frame.h / 3, frame.w / 2, 12};
-    fill_rect(rgb, w, h, title, k_border);
+    fill_round_rect(rgb, w, h, title, k_bg_primary, 4);
     ShellRect cta = {frame.x + frame.w / 4, frame.y + frame.h / 2, frame.w / 2, 28};
-    stroke_rect(rgb, w, h, cta, k_border, 1);
+    stroke_round_rect(rgb, w, h, cta, k_accent_cyan, 1, 4);
   }
 }
 

@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-06-02T00:00:00Z",
+  "native_only": true,
+  "polish_phase": "W0",
+  "todo": "wsp-w0-typography-readable,wsp-w0-token-contrast,wsp-w0-anti-wireframe-paint,wsp-w0-baseline-screenshot",
+  "wps": ["WP-UX-01", "WP-UX-10", "WP-GD-03"],
+  "iteration": 1,
+  "baseline_screenshot": "installer/out/studio-screenshot-polish-baseline.png",
+  "iteration_screenshot": "installer/out/studio-screenshot-iteration-0.png",
+  "baseline_diff_notes": "W0 replaces wireframe border-gray viewport empty + flat agent/loading rects with token-driven round-rect panels; topbar profile chip and outliner rows emit draw_glyphs (12px body, text_primary on bg_elevated). C paint_fb mirror viewport empty aligned. Baseline PNG retained for before/after; iteration capture pending present-host build.",
+  "polish_screenshot_paths": [],
+  "gates": {
+    "world_studio_gui_polish_gates": "pass",
+    "capture_skipped": true
+  },
+  "smokes": ["studio_polish_w0_typography.li (lic/packages/li-studio/li-tests/smoke)"],
+  "design_review": {
+    "UX-01": { "score": 2, "note": "Profile chip + outliner row glyphs readable at body_px; full shell labels still partial" },
+    "UX-10": { "score": 2, "note": "Token contrast on chrome; contrast_ratio_ok stub documents 12:1" }
+  }
+}
