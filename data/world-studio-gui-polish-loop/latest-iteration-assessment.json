@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-06-01T16:45:00Z",
+  "todo": "wsp-w0-typography-readable",
+  "wave": "W0",
+  "wps": ["WP-UX-01", "WP-GD-05"],
+  "native_only": true,
+  "polish_phase": "W0-complete",
+  "changes": [
+    "Glyph labels on topbar profile chip and outliner rows (S/C/M codepoints via font_atlas)",
+    "Elevated outliner panel + token gradient/stroke on empty viewport",
+    "studio_polish_w0_typography smoke; outliner cmd count 8 with draw_glyphs last"
+  ],
+  "smokes": [
+    "li-tests/smoke/studio_polish_w0_typography.li",
+    "li-tests/smoke/studio_outliner.li"
+  ],
+  "gates": "world-studio-gui-polish-gates.sh",
+  "screenshot_diff": {
+    "baseline": "installer/out/studio-screenshot-polish-baseline.png",
+    "iteration": "installer/out/studio-screenshot-iteration-0.png",
+    "note": "Iteration capture requires present host build; baseline documents wireframe+ structure before W0 glyph/elevation pass."
+  },
+  "polish_screenshot_paths": []
+}
