@@ -1,14 +1,18 @@
 {
-  "timestamp": "2026-06-01T10:30:00Z",
-  "todo": "wsp-w0-typography-readable",
+  "timestamp": "2026-06-01T12:00:00Z",
+  "todo": "wsp-w1-glyph-pipeline",
   "wsp_todos_done": [
     "wsp-w0-typography-readable",
     "wsp-w0-token-contrast",
     "wsp-w0-anti-wireframe-paint",
-    "wsp-w0-baseline-screenshot"
+    "wsp-w0-baseline-screenshot",
+    "wsp-w1-glyph-pipeline",
+    "wsp-w1-inspector-labels",
+    "wsp-w1-dock-icons",
+    "wsp-w1-viewport-overlays"
   ],
-  "wave": "W0",
-  "wps": ["WP-UX-01", "GUI-LIBRARY-PLAN Phase 0"],
+  "wave": "W1",
+  "wps": ["WP-UX-01", "WP-UX-13", "GUI-LIBRARY-PLAN Phase 1"],
   "native_only": true,
   "polish_screenshot_paths": [
     "installer/out/studio-screenshot-polish-baseline.png"
@@ -17,6 +21,6 @@
     "world_studio_gui_polish_gates": "pass",
     "lic_check_lib": "pass"
   },
-  "baseline_diff_note": "W0 adds draw_glyphs on outliner (World/Camera/Mesh), profile chip, inspector hints (Select/object), dock Scene caption; elevated outliner panel; removed wireframe hint placeholder fills.",
-  "north_star_fit": "gaming PH-UX — native product chrome readability before W1 iconography wave"
+  "baseline_diff_note": "W1: all dock slots use icon atlas draw_image; viewport HUD chips + FPS/10k/native glyphs; inspector pilot field label/value glyphs (drug LITL Compound/Stage vs game Name/Type); viewport menu BG/MD/3D labels.",
+  "north_star_fit": "gaming PH-UX — readable native chrome with real icons and HUD text before W2 interaction wave"
 }

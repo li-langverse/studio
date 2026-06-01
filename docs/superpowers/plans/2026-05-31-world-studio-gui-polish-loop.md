@@ -16,16 +16,16 @@ todos:
     status: done
   - id: wsp-w1-glyph-pipeline
     content: "W1 — glyph pipeline wired; draw_glyphs used for shell labels (not placeholder rects)"
-    status: pending
+    status: done
   - id: wsp-w1-inspector-labels
     content: "W1 — inspector shows real field labels + values (drug_litl pilot minimum)"
-    status: pending
+    status: done
   - id: wsp-w1-dock-icons
     content: "W1 — dock/toolbar icons from atlas by token name (not colored squares)"
-    status: pending
+    status: done
   - id: wsp-w1-viewport-overlays
     content: "W1 — viewport HUD overlays (mode, selection, grid legend) readable"
-    status: pending
+    status: done
   - id: wsp-w2-hover-states
     content: "W2 — hover states visible on buttons, list rows, timeline clips"
     status: pending

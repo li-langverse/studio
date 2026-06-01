@@ -204,6 +204,12 @@ note = "wsp-w0: readable glyph labels on outliner, topbar, inspector, dock"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_polish_w1_glyphs.li"
+outcome = "check_ok"
+note = "wsp-w1: glyph pipeline, dock atlas icons, inspector fields, viewport HUD"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_shell_demo.li"
 outcome = "check_ok"
 note = "T-PKG-li-studio-shell-demo PH-GD-1"
