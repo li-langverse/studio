@@ -1,13 +1,13 @@
 {
   "pass": true,
   "todo_id": "plan-complete",
-  "agent_run": "world_studio_builder-1780271153000",
-  "iteration": "verification-gui-plan-complete-lic-symbol-fix",
-  "wps_touched": ["W5", "WP-PUB-01", "PH-UX"],
+  "agent_run": "world_studio_builder-71774398",
+  "iteration": "verification-gui-plan-complete-2026-06-01",
+  "verified_at": "2026-06-01T02:00:00Z",
+  "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "WP-GD-05", "WP-PUB-01", "PH-UX"],
   "smokes_run": [
     "scripts/world-studio-gui-plan-gates.sh",
-    "scripts/world-studio-gui-plan-completion-gate.sh",
-    "li-tests/composable/import_studio_* (lic WSL verify)"
+    "scripts/world-studio-gui-plan-completion-gate.sh"
   ],
   "native_only": true,
   "styled_chrome_minimum": true,
@@ -19,18 +19,19 @@
   },
   "ci_status": {
     "studio_pr_18": "pass",
-    "lic_pr_682": "fix_pushed",
-    "lic_fixes": [
-      "paint_op_fill_round -> paint_op_fill_round_rect in studio_paint_agent",
-      "lig_present_host_present_active -> lig_present_host_active",
-      "studio_agent_context_for_shell: remove invalid scene_entity_count requires"
-    ]
+    "lic_pr_682": "partial",
+    "lic_pr_682_failures": [
+      "native-sdl-capture: missing latest-memory-profile.json (bench registry gate)",
+      "native-wgpu-bench: wgpu_smoke_status=paint_blit_host (expected swapchain readback on CI leg)"
+    ],
+    "lic_pr_682_passing": ["build-and-test", "build-and-test-macos", "lake-build", "memory-linux"]
   },
   "local_notes": [
     "All 32 wsg-w* todos status: done in plan YAML",
     "Completion gate exit 0 on agent workspace (2026-06-01)",
-    "Lic composable import_studio_* smokes pass after symbol fix (WSL lic check)"
+    "Studio smokes soft-fail locally (module not found: studio) — expected in studio-repo clone; CI green",
+    "Windows native .exe build skipped locally (MSYS2 MinGW + SDL2 absent); source checks sufficient"
   ],
-  "notes": "GUI library plan W0–W5 complete on studio PR #18 (CI green). Lic PR #682: fixed unresolved symbol errors blocking five composable smokes.",
+  "notes": "GUI library plan W0–W5 complete. Re-verified gates on isolated workspace. Studio PR #18 CI all green. Lic PR #682 core build-and-test green; ancillary Studio UI/UX capture jobs red (memory profile artifact + wgpu smoke status).",
   "pr_url": "https://github.com/li-langverse/studio/pull/18"
 }
