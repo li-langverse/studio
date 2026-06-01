@@ -728,6 +728,114 @@ def studio_inspector_empty_hint2_glyph_count() -> int
 =
   return 6
 
+# W2 — command palette / shortcut hints (UX-04, studio-design-tokens command_palette_hint).
+def studio_palette_topbar_hint_rect(topbar: Rect) -> Rect
+  requires topbar.w >= 200.0
+  requires topbar.h >= studio_typography_glyph_line_height_px()
+  ensures result.w >= 160.0
+  decreases 0
+=
+  var pad: float = 16.0
+  var w: float = topbar.w * 0.42
+  if w > 320.0:
+    w = 320.0
+  if w < 160.0:
+    w = 160.0
+  var lh: float = studio_typography_glyph_line_height_px()
+  var y: float = topbar.y + (topbar.h - lh) / 2.0
+  return rect_make(topbar.x + pad, y, w, lh)
+
+def studio_palette_topbar_hint_first_codepoint() -> int
+  requires true
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases 0
+=
+  return 67
+
+def studio_palette_topbar_hint_glyph_count() -> int
+  requires true
+  ensures result == studio_command_palette_hint_len()
+  decreases 0
+=
+  return studio_command_palette_hint_len()
+
+def studio_palette_result_row_rect(panel: Rect, slot: int) -> Rect
+  requires panel.w >= studio_palette_panel_width_px()
+  requires panel.h >= studio_palette_panel_height_px()
+  requires slot >= 1
+  requires slot <= studio_palette_result_count_stub()
+  ensures result.w >= 80.0
+  decreases slot
+=
+  var pad: float = 16.0
+  var row_h: float = studio_typography_glyph_line_height_px() + 10.0
+  var y: float = panel.y + pad + studio_palette_search_bar_height_px() + pad + (float(slot - 1) * row_h)
+  var w: float = panel.w - (pad * 2.0)
+  return rect_make(panel.x + pad, y, w, row_h)
+
+def studio_palette_slot_digit_codepoint(slot: int) -> int
+  requires slot >= 1
+  requires slot <= studio_palette_result_count_stub()
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases slot
+=
+  return 48 + slot
+
+def studio_palette_action_label_first_codepoint(slot: int) -> int
+  requires slot >= 1
+  requires slot <= studio_palette_result_count_stub()
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases slot
+=
+  if slot == 1:
+    return 73
+  if slot == 2:
+    return 84
+  return 65
+
+def studio_palette_action_label_glyph_count(slot: int) -> int
+  requires slot >= 1
+  requires slot <= studio_palette_result_count_stub()
+  ensures result >= 5
+  ensures result <= 9
+  decreases slot
+=
+  if slot == 1:
+    return 9
+  if slot == 2:
+    return 8
+  return 5
+
+def studio_paint_palette_shortcut_hints_cmds(palette_open: int) -> int
+  requires palette_open >= studio_palette_closed_flag()
+  requires palette_open <= studio_palette_open_flag()
+  ensures result >= studio_paint_glyph_run_cmds()
+  decreases palette_open
+=
+  if palette_open == studio_palette_closed_flag():
+    return studio_paint_glyph_run_cmds()
+  return studio_palette_result_count_stub() * (2 * studio_paint_glyph_run_cmds())
+
+def studio_paint_palette_shortcut_hints(frame: var PaintFrame, topbar: Rect, palette: StudioCommandPaletteCompose) -> unit
+  requires frame.cmd_count >= 0
+  requires palette.is_open >= studio_palette_closed_flag()
+  requires palette.is_open <= studio_palette_open_flag()
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_palette_shortcut_hints_cmds(palette.is_open)
+  decreases palette.is_open
+=
+  if palette.is_open == studio_palette_closed_flag():
+    var hint_rect: Rect = studio_palette_topbar_hint_rect(topbar)
+    studio_paint_glyph_text(frame, hint_rect, studio_palette_topbar_hint_first_codepoint(), studio_palette_topbar_hint_glyph_count(), studio_color_text_muted())
+    return
+  var slot: int = 1
+  while slot <= studio_palette_result_count_stub():
+    var row_rect: Rect = studio_palette_result_row_rect(palette.panel_rect, slot)
+    var digit_rect: Rect = rect_make(row_rect.x, row_rect.y, 28.0, row_rect.h)
+    var label_rect: Rect = rect_make(row_rect.x + 32.0, row_rect.y, row_rect.w - 32.0, row_rect.h)
+    studio_paint_glyph_text(frame, digit_rect, studio_palette_slot_digit_codepoint(slot), 1, studio_color_accent_cyan())
+    studio_paint_glyph_text(frame, label_rect, studio_palette_action_label_first_codepoint(slot), studio_palette_action_label_glyph_count(slot), studio_color_text_primary())
+    slot = slot + 1
+
 # W2 — pointer hover targets (dock slots, outliner rows, timeline controls).
 def studio_hover_dock_none() -> int
   requires true
@@ -2675,10 +2783,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 41
+  ensures result == 42
   decreases 0
 =
-  return 41
+  return 42
 
 def studio_shell_widget_tree_version() -> int
   requires true
@@ -7352,7 +7460,7 @@ def studio_shell_chrome_count_palette(has_selection: int, scene_entity_count: in
   var ts0: int = task_state
   var pal0: int = palette_open
   var ctx0: int = agent_context_label
-  return studio_paint_compose_panels_count(sel0) + 1 + studio_paint_topbar_profile_cmds() + studio_shell_viewport_cmds(scene0, viewport_error_kind, display, menu) + studio_paint_agent_cmds(ts0, ctx0, invoke_visible, tool_trace_visible) + studio_paint_palette_cmds(pal0)
+  return studio_paint_compose_panels_count(sel0) + 1 + studio_paint_topbar_profile_cmds() + studio_paint_palette_shortcut_hints_cmds(pal0) + studio_shell_viewport_cmds(scene0, viewport_error_kind, display, menu) + studio_paint_agent_cmds(ts0, ctx0, invoke_visible, tool_trace_visible) + studio_paint_palette_cmds(pal0)
 
 def studio_shell_chrome_count_for_compose(compose: StudioShellCompose) -> int
   requires compose.panel.active_region >= studio_region_dock()
@@ -7376,6 +7484,7 @@ def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose
   paint_frame_push(frame, paint_cmd_fill_gradient(compose.layout.topbar, studio_color_bg_primary(), studio_color_bg_elevated()))
   var prof0: int = compose.config.active_profile
   studio_paint_topbar_profile(frame, compose.layout.topbar, prof0)
+  studio_paint_palette_shortcut_hints(frame, compose.layout.topbar, compose.palette)
   if compose.viewport_error.visible == 1:
     studio_paint_viewport_error(frame, compose.viewport_error)
   if compose.viewport_error.visible == 0:

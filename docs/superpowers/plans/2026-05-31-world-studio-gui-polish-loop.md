@@ -34,7 +34,7 @@ todos:
     status: done
   - id: wsp-w2-shortcut-hints
     content: "W2 — command palette / shortcut hints visible where spec’d"
-    status: pending
+    status: done
   - id: wsp-w3-viewport-grid
     content: "W3 — viewport grid + axes polish (not debug placeholder lines)"
     status: pending
