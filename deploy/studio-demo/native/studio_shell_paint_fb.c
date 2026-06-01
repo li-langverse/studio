@@ -28,6 +28,9 @@ static const unsigned char k_accent_mint[] = {46, 230, 168};
 static const unsigned char k_accent_amber[] = {255, 179, 71};
 static const unsigned char k_accent_violet[] = {124, 92, 255};
 static const unsigned char k_agent_idle[] = {48, 54, 61};
+static const unsigned char k_text_primary[] = {230, 237, 243};
+static const unsigned char k_text_muted[] = {139, 148, 158};
+static const unsigned char k_viewport_grid[] = {33, 38, 45};
 
 static const ShellProfileVisual k_profiles[] = {
     {1, "game", 21, 61, 214, 255},
@@ -224,19 +227,31 @@ static ShellRect profile_chip(ShellRect topbar, int tag_h) {
   return (ShellRect){x, y, CHIP_W, chip_h};
 }
 
+static void paint_row_glyph(unsigned char* rgb, int w, int h, ShellRect row, unsigned char cp) {
+  ShellRect label = {row.x + 8, row.y + (row.h - 10) / 2, 10, 10};
+  if (label.w <= 0 || label.h <= 0) {
+    return;
+  }
+  fill_round_rect(rgb, w, h, label, k_text_primary, 2);
+  if (cp == 83 || cp == 71) {
+    ShellRect stem = {label.x + 3, label.y + 2, 4, label.h - 4};
+    fill_rect(rgb, w, h, stem, k_bg_primary);
+  }
+}
+
 static void paint_viewport_grid(unsigned char* rgb, int w, int h, ShellRect vp) {
   for (int x = vp.x; x < vp.x + vp.w; x += 64) {
-    stroke_vline(rgb, w, h, x, vp.y, vp.y + vp.h - 1, k_border);
+    stroke_vline(rgb, w, h, x, vp.y, vp.y + vp.h - 1, k_viewport_grid);
   }
   for (int y = vp.y; y < vp.y + vp.h; y += 64) {
-    stroke_hline(rgb, w, h, vp.x, vp.x + vp.w - 1, y, k_border);
+    stroke_hline(rgb, w, h, vp.x, vp.x + vp.w - 1, y, k_viewport_grid);
   }
   int pad = 24;
   ShellRect frame = {vp.x + pad, vp.y + pad, vp.w - pad * 2, vp.h - pad * 2};
   if (frame.w > 0 && frame.h > 0) {
     stroke_rect(rgb, w, h, frame, k_border, 1);
     ShellRect title = {frame.x + 40, frame.y + frame.h / 3, frame.w / 2, 12};
-    fill_rect(rgb, w, h, title, k_border);
+    fill_round_rect(rgb, w, h, title, k_text_muted, 3);
     ShellRect cta = {frame.x + frame.w / 4, frame.y + frame.h / 2, frame.w / 2, 28};
     stroke_rect(rgb, w, h, cta, k_border, 1);
   }
@@ -296,11 +311,13 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
   ShellRect strip = outliner_strip(layout.dock);
   for (int row = 0; row < 3; row++) {
     ShellRect row_r = outliner_row(strip, row);
+    unsigned char cp = (row == 0) ? 83 : (row == 1) ? 67 : 77;
     if (row == 0) {
       fill_round_rect(rgb, width, height, row_r, k_accent_mint, 4);
     } else {
       stroke_round_rect(rgb, width, height, row_r, k_border, 1, 4);
     }
+    paint_row_glyph(rgb, width, height, row_r, cp);
   }
 
   paint_viewport_grid(rgb, width, height, layout.viewport);
@@ -329,5 +346,14 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
     unsigned char chip_c[] = {profile->chip_r, profile->chip_g, profile->chip_b};
     fill_round_rect(rgb, width, height, chip, chip_c, 4);
     stroke_round_rect(rgb, width, height, chip, k_border, 1, 4);
+    if (profile->id == 1) {
+      paint_row_glyph(rgb, width, height, chip, 71);
+    } else if (profile->id == 2) {
+      paint_row_glyph(rgb, width, height, chip, 82);
+    } else if (profile->id == 7) {
+      paint_row_glyph(rgb, width, height, chip, 68);
+    } else {
+      paint_row_glyph(rgb, width, height, chip, 83);
+    }
   }
 }
