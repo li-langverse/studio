@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-01T13:10:00Z",
+  "timestamp": "2026-06-01T13:20:00Z",
   "iteration_status": "sprint_complete_verified",
   "todo": "wsp-w5-no-html-proof",
   "wave": "W5",
@@ -17,9 +17,9 @@
     "world_studio_gui_polish_gates": "pass",
     "world_studio_gui_polish_completion_gate": "pass"
   },
-  "baseline_diff_note": "Baseline wireframe ~3.7KB (640x360) vs polish-game ~14.6KB — readable 5x7 bitmap labels, round rects, token colors, viewport grid/HUD, hover/focus hints, per-vertical previews. Live capture skipped locally (no present host); committed PNGs pass size heuristics.",
+  "baseline_diff_note": "Baseline wireframe ~3.7KB (640x360) vs polish-game ~14.6KB — readable 5x7 bitmap labels in paint_fb, round rects, token colors, viewport grid/HUD, hover/focus hints, per-vertical previews. Live capture skipped locally (no present host); committed PNGs pass size heuristics.",
   "north_star_fit": "gaming PH-UX — provable native Li chrome; HTML mocks reference-only",
   "smokes": "li-tests/smoke/studio_polish_w0_typography.li through studio_polish_w4_vertical_chrome.li",
   "pr": "https://github.com/li-langverse/studio/pull/19",
-  "agent_run_note": "world_studio_builder 2026-06-01: re-verified all wsp-w* done; progress + completion gates PASS on cursor/world-studio-gui-polish"
+  "agent_run_note": "world_studio_builder 19512628: fast-forward merged cursor/world-studio-gui-polish; progress + completion gates PASS; all wsp-w* done"
 }
