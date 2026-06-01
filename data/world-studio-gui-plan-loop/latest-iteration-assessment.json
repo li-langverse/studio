@@ -1,9 +1,9 @@
 {
   "pass": true,
   "todo_id": "plan-complete",
-  "agent_run": "world_studio_builder-74864860",
-  "iteration": "verification-gui-plan-complete-2026-06-01-r7",
-  "verified_at": "2026-06-01T01:05:00Z",
+  "agent_run": "world_studio_builder-75264289",
+  "iteration": "verification-gui-plan-complete-2026-06-01-r8",
+  "verified_at": "2026-06-01T01:10:00Z",
   "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "WP-GD-05", "WP-PUB-01", "PH-UX"],
   "smokes_run": [
     "scripts/world-studio-gui-plan-gates.sh",
@@ -35,12 +35,12 @@
   },
   "local_notes": [
     "All 32 wsg-w* todos status: done in plan YAML",
-    "Completion gate exit 0 on isolated workspace (2026-06-01 r7)",
+    "Completion gate exit 0 on isolated workspace (2026-06-01 r8)",
     "Windows native .exe build skipped locally (MSYS2 MinGW + SDL2 absent); source checks sufficient",
     "lic check studio smokes soft-fail on Windows (import path); CI checks src/lib.li",
     "No pending implementation work — plan loop complete"
   ],
-  "notes": "GUI library plan W0–W5 complete. Re-verified gates + completion gate (r7). Studio PR #18 and Lic PR #682 CI all green.",
+  "notes": "GUI library plan W0–W5 complete. Re-verified gates + completion gate (r8). Studio PR #18 and Lic PR #682 CI all green.",
   "pr_url": "https://github.com/li-langverse/studio/pull/18",
   "lic_pr_url": "https://github.com/li-langverse/lic/pull/682"
 }
