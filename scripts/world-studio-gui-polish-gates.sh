@@ -35,6 +35,45 @@ else
   fail "missing studio-ui-ux-verify-tokens.py"
 fi
 
+
+wsl_path() {
+  local p="$1"
+  p="${p//\\//}"
+  if [[ "$p" =~ ^/([a-zA-Z])/(.*)$ ]]; then
+    echo "/mnt/${BASH_REMATCH[1],,}/${BASH_REMATCH[2]}"
+    return
+  fi
+  if [[ "$p" =~ ^([A-Za-z]):/(.*)$ ]]; then
+    echo "/mnt/${BASH_REMATCH[1],,}/${BASH_REMATCH[2]}"
+    return
+  fi
+  echo "$p"
+}
+
+lic_check_smoke() {
+  local smoke="$1"
+  local rel="packages/li-studio/li-tests/smoke/$smoke"
+  local lic_smoke="$LIC_ROOT/$rel"
+  local path="$ROOT/li-tests/smoke/$smoke"
+  [[ -f "$lic_smoke" || -f "$path" ]] || fail "missing smoke $smoke"
+  if [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]] && command -v wsl >/dev/null 2>&1; then
+    local wsl_lic
+    wsl_lic="$(wsl_path "$LIC_ROOT")"
+    wsl -e bash -lc "cd '$wsl_lic' && '$wsl_lic/build-wsl/compiler/lic/lic' check --no-cache '$rel'" \
+      || fail "lic check $smoke (wsl)"
+  elif LIC_BIN="$(resolve_lic 2>/dev/null)" && [[ -x "$LIC_BIN" ]]; then
+    (cd "$LIC_ROOT" && "$LIC_BIN" check "$rel") || fail "lic check $smoke"
+  else
+    warn "lic not runnable — skip $smoke"
+    return 0
+  fi
+}
+
+echo "==> W0 polish smokes (lic check)"
+lic_check_smoke studio_polish_w0_typography.li
+lic_check_smoke studio_outliner.li
+ok "W0 polish smokes"
+
 find_verticals_host() {
   local native="$ROOT/deploy/studio-demo/native"
   for c in \
