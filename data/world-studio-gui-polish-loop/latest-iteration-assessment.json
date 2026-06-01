@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-02T00:10:00Z",
+  "timestamp": "2026-06-02T00:20:00Z",
   "iteration_status": "sprint_complete_verified",
   "todo": "wsp-w5-no-html-proof",
   "wave": "W5",
@@ -18,7 +18,7 @@
   },
   "baseline_diff_note": "Baseline wireframe ~3.7KB (640x360) vs polish-game ~14.6KB — readable 5x7 bitmap labels, round rects, token colors, viewport grid/HUD, hover/focus hints, per-vertical previews.",
   "north_star_fit": "gaming PH-UX — provable native Li chrome; HTML mocks reference-only",
-  "smokes": "li-tests/smoke/studio_polish_w0_typography.li through studio_polish_w4_vertical_chrome.li (lic packages/li-studio)",
+  "smokes": "li-tests/smoke/studio_polish_w0_typography.li through studio_polish_w4_vertical_chrome.li",
   "pr": "https://github.com/li-langverse/studio/pull/19",
-  "agent_run_note": "world_studio_builder 2026-06-02: re-verified progress + completion gates PASS; all wsp-w0–w5 done; PR #19 CI green (8/8 checks)"
+  "agent_run_note": "world_studio_builder 2026-06-02: progress + completion gates PASS on cursor/world-studio-gui-polish; all wsp-w0–w5 done; PR #19 CI 8/8 green"
 }
