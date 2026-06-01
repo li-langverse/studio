@@ -33,5 +33,5 @@
     "UX-01": { "score": 2, "note": "Glyph labels on profile chip + outliner rows; body_px>=12" },
     "UX-02": { "score": 2, "note": "Token colors on gradients/round rects; not wireframe gray blocks" }
   },
-  "pr": null
+  "pr": "https://github.com/li-langverse/studio/pull/24"
 }
