@@ -1,0 +1,29 @@
+import studio
+import render
+import gui
+
+# wsg-w5-perf-budgets — PH-UX viewport/UI perf budgets documented + aligned constants.
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 39:
+    return 1
+  if studio_perf_budgets_version() != 1:
+    return 2
+  if studio_viewport_fps_budget() != 60.0:
+    return 3
+  if studio_panel_switch_ms_budget() != 100.0:
+    return 4
+  if studio_load_ms_budget() != 2000.0:
+    return 5
+  if studio_memory_warn_peak_mib_budget() != 512.0:
+    return 6
+  if render_viewport_fps_target() != studio_viewport_fps_budget():
+    return 7
+  if gui_panel_switch_budget_ms() != studio_panel_switch_ms_budget():
+    return 8
+  if studio_perf_budgets_smoke() != 0:
+    return 9
+  return 0

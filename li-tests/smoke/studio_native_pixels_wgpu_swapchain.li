@@ -1,0 +1,17 @@
+# WP-UX-14 / wsg-w3-wgpu-viewport-pixels — swapchain readback honesty (blocked on CPU CI).
+
+import studio
+import render
+
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if studio_native_pixel_source_honest(lig_native_pixel_source_wgpu_swapchain()) != 1:
+    return 1
+  if lig_native_pixel_source_honest_product(lig_native_pixel_source_wgpu_swapchain()) != 1:
+    return 2
+  if render_native_pixel_source_honest(lig_native_pixel_source_wgpu_swapchain()) != 1:
+    return 3
+  return studio_native_pixels_wgpu_swapchain_host_smoke()

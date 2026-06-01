@@ -1,0 +1,4 @@
+# Shell scripts must stay LF for Linux CI (bash subprocess + set -euo pipefail).
+*.sh text eol=lf
+scripts/studio-ui-ux-* text eol=lf
+deploy/studio-demo/** text eol=lf

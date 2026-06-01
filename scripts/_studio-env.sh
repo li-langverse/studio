@@ -13,13 +13,45 @@ fi
 if [[ -z "${LIC_ROOT:-}" ]]; then
   if [[ -n "${LIC_ROOT_OVERRIDE:-}" && -d "$LIC_ROOT_OVERRIDE" ]]; then
     LIC_ROOT="$(cd "$LIC_ROOT_OVERRIDE" && pwd)"
+  elif [[ -d "$STUDIO_ROOT/../../../../../../../lic/packages/li-ui" ]]; then
+    # Isolated agent workspace → developer li/lic monorepo sibling (prefer over partial ../lic).
+    LIC_ROOT="$(cd "$STUDIO_ROOT/../../../../../../../lic" && pwd)"
+  elif [[ -d "$STUDIO_ROOT/../lic/packages/li-ui" ]]; then
+    LIC_ROOT="$(cd "$STUDIO_ROOT/../lic" && pwd)"
   elif [[ -d "$STUDIO_ROOT/../lic" ]]; then
     LIC_ROOT="$(cd "$STUDIO_ROOT/../lic" && pwd)"
   else
-    echo "_studio-env: lic sibling not found (set LIC_ROOT)" >&2
+    echo "_studio-env: lic sibling not found (set LIC_ROOT or LIC_ROOT_OVERRIDE)" >&2
     return 1 2>/dev/null || exit 1
   fi
 fi
+
+# li.toml path deps use ../lic/packages/* — ensure sibling link in isolated workspaces.
+_ensure_lic_sibling_link() {
+  local link="$STUDIO_ROOT/../lic"
+  local lic_real link_real
+  lic_real="$(cd "$LIC_ROOT" && pwd)"
+  link_real="$(cd "$link" 2>/dev/null && pwd || true)"
+  if [[ -n "$link_real" && "$lic_real" == "$link_real" ]]; then
+    return 0
+  fi
+  if [[ -e "$link" && ! -L "$link" ]]; then
+    if [[ -n "$link_real" && "$lic_real" != "$link_real" ]]; then
+      if command -v cmd.exe >/dev/null 2>&1; then
+        cmd.exe //c "rmdir /s /q \"$(cygpath -w "$link" 2>/dev/null || echo "$link")\"" 2>/dev/null || true
+      fi
+      rm -rf "$link" 2>/dev/null || true
+    fi
+    if [[ -e "$link" && ! -L "$link" ]]; then
+      echo "_studio-env: warn partial ../lic blocks symlink; using LIC_ROOT=$LIC_ROOT" >&2
+      return 0
+    fi
+  elif [[ -L "$link" ]]; then
+    rm -f "$link"
+  fi
+  ln -sf "$LIC_ROOT" "$link" 2>/dev/null || true
+}
+_ensure_lic_sibling_link
 
 export STUDIO_ROOT LIC_ROOT
 

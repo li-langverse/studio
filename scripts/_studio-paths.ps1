@@ -42,6 +42,79 @@ function Test-ElfBinary([string]$Path) {
     return $b.Length -ge 4 -and $b[0] -eq 0x7F -and $b[1] -eq 0x45 -and $b[2] -eq 0x4C -and $b[3] -eq 0x46
 }
 
+function Test-PeBinary([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path)) { return $false }
+    $b = [System.IO.File]::ReadAllBytes($Path)
+    return $b.Length -ge 2 -and $b[0] -eq 0x4D -and $b[1] -eq 0x5A
+}
+
+function Get-PresentHostPaths([string]$StudioRoot = (Get-StudioRoot)) {
+    $native = Join-Path $StudioRoot "deploy\studio-demo\native"
+    return @{
+        NativeDir = $native
+        WindowsExe = Join-Path $native "studio_shell_present_host.exe"
+        LinuxElf = Join-Path $native "studio_shell_present_host"
+    }
+}
+
+function Test-WindowsNativePresentHost([string]$StudioRoot = (Get-StudioRoot)) {
+    $paths = Get-PresentHostPaths $StudioRoot
+    $win = $paths.WindowsExe
+    return (Test-Path -LiteralPath $win) -and (Test-PeBinary $win)
+}
+
+function Resolve-PresentHostBin {
+    param(
+        [string]$StudioRoot = (Get-StudioRoot),
+        [switch]$PreferWindowsNative
+    )
+    $paths = Get-PresentHostPaths $StudioRoot
+    if ($PreferWindowsNative -and (Test-WindowsNativePresentHost $StudioRoot)) {
+        return (Resolve-Path -LiteralPath $paths.WindowsExe).Path
+    }
+    if (Test-Path -LiteralPath $paths.WindowsExe) {
+        if (Test-PeBinary $paths.WindowsExe) {
+            return (Resolve-Path -LiteralPath $paths.WindowsExe).Path
+        }
+    }
+    if (Test-Path -LiteralPath $paths.LinuxElf) {
+        return (Resolve-Path -LiteralPath $paths.LinuxElf).Path
+    }
+    return $null
+}
+
+function Invoke-PresentHost {
+    param(
+        [Parameter(Mandatory)][string]$HostBin,
+        [string[]]$HostArgs = @(),
+        [hashtable]$Env = @{}
+    )
+    foreach ($k in $Env.Keys) {
+        Set-Item -Path "Env:$k" -Value $Env[$k]
+    }
+    if (Test-PeBinary $HostBin) {
+        & $HostBin @HostArgs
+        return $LASTEXITCODE
+    }
+    if (Test-ElfBinary $HostBin) {
+        if (-not (Get-Command wsl -ErrorAction SilentlyContinue)) {
+            throw "Present host is Linux ELF; install WSL or build Windows native host (build-studio-shell-present-host.ps1)"
+        }
+        $wslBin = Convert-ToWslPath $HostBin
+        $wslArgs = ($HostArgs | ForEach-Object { "'$_'" }) -join " "
+        $envParts = @()
+        foreach ($k in $Env.Keys) {
+            $v = $Env[$k] -replace "'", "'\''"
+            $envParts += "export $k='$v'"
+        }
+        $prefix = if ($envParts.Count -gt 0) { ($envParts -join "; ") + "; " } else { "" }
+        wsl -e bash -lc "${prefix}'$wslBin' $wslArgs"
+        return $LASTEXITCODE
+    }
+    & $HostBin @HostArgs
+    return $LASTEXITCODE
+}
+
 function Invoke-LiStudioDemo {
     param(
         [Parameter(Mandatory)][string]$DemoPath,

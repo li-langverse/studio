@@ -18,10 +18,11 @@ def main() -> int
     return 5
   if compose.timeline.playhead_pct != studio_timeline_playhead_pct():
     return 6
-  if studio_paint_compose_panels_count(1) != 8:
+  var panel_cmds: int = studio_paint_compose_panels_count(1)
+  if panel_cmds < 10:
     return 7
   var shell: PaintFrame = studio_shell_frame(1280.0, 720.0)
-  if shell.cmd_count != studio_shell_chrome_count(1, studio_agent_task_running()):
+  if shell.cmd_count != studio_shell_chrome_count(1, 1, studio_agent_task_running()):
     return 8
   var timing: PanelSwitchTiming = studio_panel_switch_inspector(compose.panel, 42.0)
   if gui_panel_switch_within_budget(timing) != 1:

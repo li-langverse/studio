@@ -1,0 +1,27 @@
+import studio
+import render
+
+# wsg-w4-present-loop — li-studio-demo present path runs Li UI rasterizer before host blit.
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 35:
+    return 1
+  if studio_present_loop_raster_version() != 1:
+    return 2
+  var compose: StudioShellCompose = studio_compose_shell_palette(1280.0, 720.0, 0, 1, 0)
+  studio_shell_demo_apply_profile(compose, studio_profile_game())
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame, compose)
+  if frame.cmd_count < 1:
+    return 3
+  var raster: RenderUiRasterResult = studio_shell_present_raster_pass(compose.layout.viewport_w, compose.layout.viewport_h, frame, studio_profile_game())
+  if render_ui_raster_result_ok(raster) != 1:
+    return 4
+  if raster.backend != render_ui_raster_backend_cpu():
+    return 5
+  if studio_shell_demo_present_loop() != 0:
+    return 6
+  return 0

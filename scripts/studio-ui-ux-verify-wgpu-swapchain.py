@@ -11,6 +11,18 @@ ROOT = Path(__file__).resolve().parents[1]
 LATEST = ROOT / "data/studio-ui-ux-plan-loop/latest-bench.json"
 
 
+def lic_root() -> Path | None:
+    env = os.environ.get("LIC_ROOT", "")
+    if env:
+        p = Path(env)
+        if (p / "packages/li-ui").is_dir():
+            return p
+    for candidate in (ROOT.parent / "lic", ROOT / "lic"):
+        if (candidate / "packages/li-ui").is_dir():
+            return candidate
+    return None
+
+
 def hook_path() -> Path | None:
     for rel in (
         "packages/lig/bench/wgpu_smoke.toml",
@@ -19,6 +31,11 @@ def hook_path() -> Path | None:
         p = ROOT / rel
         if p.is_file():
             return p
+        lic = lic_root()
+        if lic is not None:
+            alt = lic / rel
+            if alt.is_file():
+                return alt
     return None
 
 

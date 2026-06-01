@@ -535,29 +535,27 @@ def studio_profile_color(profile_id: int) -> Color
 
 def studio_paint_topbar_profile_cmds() -> int
   requires true
-  ensures result == 1
+  ensures result == 2
   decreases 0
 =
-  return 1
+  return 2
 
 def studio_paint_topbar_profile(frame: var PaintFrame, topbar: Rect, profile_id: int) -> unit
   requires frame.cmd_count >= 0
   requires studio_profile_id_valid(profile_id) == 1
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_topbar_profile_cmds()
-  ensures frame.last_kind == paint_op_stroke_rect()
+  ensures frame.last_kind == paint_op_stroke_round_rect()
   decreases profile_id
 =
   var pid_chip: int = profile_id
   var pid_color: int = profile_id
-  frame.cmd_count = frame.cmd_count + studio_paint_topbar_profile_cmds()
-  frame.last_kind = paint_op_stroke_rect()
   var top_copy: Rect = topbar
   var top_x: float = top_copy.x
   var top_y: float = top_copy.y
   var top_w: float = top_copy.w
   var top_h: float = top_copy.h
-  frame.last_rect = studio_profile_chip_rect_at(top_x, top_y, top_w, top_h, pid_chip)
-  frame.last_color = studio_profile_color(pid_color)
+  var chip_rect: Rect = studio_profile_chip_rect_at(top_x, top_y, top_w, top_h, pid_chip)
+  paint_frame_push_accent_chip(frame, chip_rect, studio_profile_color(pid_color))
 
 
 
@@ -1091,20 +1089,8 @@ def studio_agent_sync_chrome_from_run(compose: var StudioShellCompose, run: Stud
   ensures compose.agent.task_state == run.task_state
   decreases run.task_state
 =
-  var ctx: int = run.agent_context_label
-  if ctx == studio_agent_context_none():
-    ctx = studio_agent_context_for_shell(compose.inspector.has_selection, run.task_state)
-  var tool: StudioAgentToolRequest = studio_agent_tool_request_for_run(run)
-  compose.agent = studio_compose_agent_chrome_with_tool(compose.layout, run.task_state, ctx, tool)
-  if run.task_state == studio_agent_task_running():
-    compose.agent.progress = studio_compose_agent_progress_run(run, compose.agent.status_rect)
-  if run.task_state == studio_agent_task_done():
-    compose.agent.progress = studio_compose_agent_progress_run(run, compose.agent.status_rect)
-  if run.task_state == studio_agent_task_idle():
-    if compose.mode == studio_mode_agent():
-      studio_shell_apply_mode(compose, studio_mode_author())
-  if run.task_state == studio_agent_task_done():
-    studio_shell_apply_mode(compose, studio_mode_author())
+  studio_reactive_resync_agent_task(compose, run.task_state)
+  studio_reactive_flush_agent_from_run(compose, run)
 
 def studio_shell_agent_run_tick(compose: var StudioShellCompose, run: var StudioAgentRun) -> int
   requires compose.layout.viewport_w > 0.0
@@ -2154,10 +2140,80 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 31
+  ensures result == 39
   decreases 0
 =
-  return 31
+  return 39
+
+def studio_shell_widget_tree_version() -> int
+  requires true
+  ensures result == gui_shell_widget_tree_version()
+  decreases 0
+=
+  return gui_shell_widget_tree_version()
+
+def studio_reactive_shell_version() -> int
+  requires true
+  ensures result == gui_reactive_version()
+  decreases 0
+=
+  return gui_reactive_version()
+
+def studio_inspector_widget_pilot_version() -> int
+  requires true
+  ensures result == gui_inspector_pilot_version()
+  decreases 0
+=
+  return gui_inspector_pilot_version()
+
+def studio_shell_widget_tree_params(compose: StudioShellCompose) -> ShellWidgetTreeParams
+  requires compose.layout.viewport_w > 0.0
+  requires compose.layout.inspector.h > gui_inspector_pilot_header_h_px()
+  ensures result.has_selection == compose.inspector.has_selection
+  ensures result.active_dock_slot == compose.dock.active_slot
+  decreases compose.dock.active_slot
+=
+  return shell_widget_tree_params_from_stores(compose.reactive.agent_task, compose.reactive.palette_open, compose.reactive.shell_mode, compose.reactive.timeline_tick, compose.dock.active_slot, compose.inspector.has_selection, compose.scene_entity_count)
+
+def studio_shell_build_widget_tree(compose: StudioShellCompose) -> ShellWidgetTree
+  requires compose.layout.viewport_w > 0.0
+  requires compose.layout.inspector.w > 0.0
+  requires compose.layout.inspector.h > gui_inspector_pilot_header_h_px()
+  ensures result.region_count == shell_widget_tree_region_count()
+  decreases compose.dock.active_slot
+=
+  var params: ShellWidgetTreeParams = studio_shell_widget_tree_params(compose)
+  return shell_widget_tree_new(params, compose.layout.inspector.w, compose.layout.inspector.h)
+
+def studio_shell_layout_widget_tree(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires compose.layout.inspector.h > gui_inspector_pilot_header_h_px()
+  ensures compose.widget_tree_layout.region_count == shell_widget_tree_region_count()
+  decreases compose.dock.active_slot
+=
+  compose.widget_tree = studio_shell_build_widget_tree(compose)
+  compose.widget_tree_layout = shell_widget_tree_layout(compose.widget_tree, compose.layout)
+  compose.widget_tree_active = 1
+
+def studio_shell_attach_widget_tree(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  ensures compose.widget_tree_active == 1
+  ensures shell_widget_tree_all_regions_laid_out(compose.widget_tree_layout) == 1
+  decreases compose.dock.active_slot
+=
+  studio_shell_layout_widget_tree(compose)
+
+def studio_shell_sync_widget_tree_from_reactive(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires compose.widget_tree_active == 1
+  ensures compose.widget_tree.params.agent_task_state == store_int_get(compose.reactive.agent_task)
+  ensures compose.widget_tree.params.palette_open == store_int_get(compose.reactive.palette_open)
+  ensures compose.widget_tree.params.playhead_pct == store_float_get(compose.reactive.timeline_tick)
+  decreases compose.reactive.agent_task.generation
+=
+  var params: ShellWidgetTreeParams = studio_shell_widget_tree_params(compose)
+  compose.widget_tree = shell_widget_tree_new(params, compose.layout.inspector.w, compose.layout.inspector.h)
+  compose.widget_tree_layout = shell_widget_tree_layout(compose.widget_tree, compose.layout)
 
 def studio_agent_context_none() -> int
   requires true
@@ -2827,6 +2883,9 @@ type StudioInspectorCompose = object
   public field_count: int
   public field0: StudioInspectorField
   public field1: StudioInspectorField
+  public widget_pilot: int
+  public pilot_spec: InspectorPilotWidget
+  public pilot_layout: InspectorPilotLayoutResult
 
 type StudioViewportEmptyCompose = object
   public frame_rect: Rect
@@ -3034,8 +3093,10 @@ def studio_shell_apply_mode(compose: var StudioShellCompose, mode: int) -> unit
   decreases mode
 =
   compose.mode = mode
+  studio_reactive_resync_mode(compose, mode)
   var region: int = studio_mode_primary_region(mode)
   var _timing: PanelSwitchTiming = gui_panel_switch_to(compose.panel, region, 0.0)
+  studio_reactive_flush_mode_regions(compose)
 
 def studio_shell_handle_mode_trigger(compose: var StudioShellCompose, trigger: int) raises IO -> int
   requires studio_mode_valid(compose.mode) == 1
@@ -3067,6 +3128,17 @@ def studio_shell_sync_mode_from_env(compose: var StudioShellCompose) raises IO -
 =
   if studio_bench_mode_from_env() == 1:
     studio_shell_apply_mode(compose, studio_mode_bench())
+
+# Phase 2 — Function layer reactive stores on shell (agent FSM, palette, mode, timeline playhead).
+type StudioReactiveShell = object
+  public inv: ComposeInvalidation
+  public graph: ComposeDepGraph
+  public cache: ComposeCache
+  public agent_task: StoreInt
+  public palette_open: StoreInt
+  public shell_mode: StoreInt
+  public timeline_tick: StoreFloat
+  public agent_progress: DerivedInt
 
 # PH-GD-2 — last WorldSnapshot tick cached on shell (game profile).
 type StudioWorldCheckpoint = object
@@ -3103,6 +3175,204 @@ type StudioShellCompose = object
   public scene_entity_count: int
   public loading: StudioShellLoadingState
   public world_checkpoint: StudioWorldCheckpoint
+  public reactive: StudioReactiveShell
+  public widget_tree: ShellWidgetTree
+  public widget_tree_layout: ShellWidgetTreeLayout
+  public widget_tree_active: int
+
+
+def studio_reactive_shell_new(task_state: int, palette_open: int, mode: int, playhead_pct: float) -> StudioReactiveShell
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  requires palette_open >= studio_palette_closed_flag()
+  requires palette_open <= studio_palette_open_flag()
+  requires studio_mode_valid(mode) == 1
+  requires playhead_pct >= 0.0
+  requires playhead_pct <= 1.0
+  ensures store_int_get(result.agent_task) == task_state
+  ensures store_int_get(result.palette_open) == palette_open
+  ensures store_int_get(result.shell_mode) == mode
+  ensures store_float_get(result.timeline_tick) == playhead_pct
+  decreases task_state
+=
+  var rs: StudioReactiveShell
+  rs.inv = compose_invalidation_new()
+  rs.graph = compose_dep_graph_new()
+  rs.cache = compose_cache_new()
+  rs.agent_task = store_int_new(reactive_store_id_agent_task(), task_state)
+  rs.palette_open = store_int_new(reactive_store_id_palette_open(), palette_open)
+  rs.shell_mode = store_int_new(reactive_store_id_shell_mode(), mode)
+  rs.timeline_tick = store_float_new(reactive_store_id_timeline_tick(), playhead_pct)
+  rs.agent_progress = derived_int_new(0, reactive_store_id_agent_task(), derived_int_from_agent_task_state(task_state))
+  return rs
+
+def studio_reactive_shell_hydrate(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires studio_mode_valid(compose.mode) == 1
+  ensures compose.reactive.graph.agent_dirty == 0
+  ensures compose.reactive.graph.palette_dirty == 0
+  decreases compose.mode
+=
+  compose.reactive = studio_reactive_shell_new(compose.agent.task_state, compose.palette.is_open, compose.mode, compose.timeline.playhead_pct)
+
+def studio_reactive_resync_agent_task(compose: var StudioShellCompose, task_state: int) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  ensures store_int_get(compose.reactive.agent_task) == task_state
+  decreases task_state
+=
+  store_int_set_with_deps(compose.reactive.agent_task, task_state, compose.reactive.inv, compose.reactive.graph)
+
+def studio_reactive_resync_palette(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires compose.palette.is_open >= studio_palette_closed_flag()
+  requires compose.palette.is_open <= studio_palette_open_flag()
+  ensures store_int_get(compose.reactive.palette_open) == compose.palette.is_open
+  decreases compose.palette.is_open
+=
+  var pal: int = compose.palette.is_open
+  store_int_set_with_deps(compose.reactive.palette_open, pal, compose.reactive.inv, compose.reactive.graph)
+
+def studio_reactive_resync_mode(compose: var StudioShellCompose, mode: int) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires studio_mode_valid(mode) == 1
+  ensures store_int_get(compose.reactive.shell_mode) == mode
+  decreases mode
+=
+  store_int_set_with_deps(compose.reactive.shell_mode, mode, compose.reactive.inv, compose.reactive.graph)
+
+def studio_reactive_resync_timeline_playhead(compose: var StudioShellCompose, playhead_pct: float) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires playhead_pct >= 0.0
+  requires playhead_pct <= 1.0
+  ensures store_float_get(compose.reactive.timeline_tick) == playhead_pct
+  decreases 0
+=
+  store_float_set_with_deps(compose.reactive.timeline_tick, playhead_pct, compose.reactive.inv, compose.reactive.graph)
+
+def studio_reactive_flush_palette(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  ensures compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_palette()) == 0
+  decreases 0
+=
+  var gen: int = compose.reactive.palette_open.generation
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_palette(), gen) != 1:
+    compose_cache_note_skipped(compose.reactive.cache, compose_region_id_palette())
+    return
+  var pal: int = store_int_get(compose.reactive.palette_open)
+  compose.palette = studio_compose_palette(compose.layout.viewport_w, compose.layout.viewport_h, pal)
+  compose.panel.palette_open = pal
+  compose_dep_clear_region(compose.reactive.graph, compose_region_id_palette())
+  store_int_clear_dirty(compose.reactive.palette_open, compose.reactive.inv)
+  compose_cache_note_recomposed(compose.reactive.cache, compose_region_id_palette(), gen)
+  if compose.widget_tree_active == 1:
+    studio_shell_sync_widget_tree_from_reactive(compose)
+
+def studio_reactive_flush_timeline(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  ensures compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_timeline()) == 0
+  decreases 0
+=
+  var gen: int = compose.reactive.timeline_tick.generation
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_timeline(), gen) != 1:
+    compose_cache_note_skipped(compose.reactive.cache, compose_region_id_timeline())
+    return
+  var pct: float = store_float_get(compose.reactive.timeline_tick)
+  compose.timeline.playhead_pct = pct
+  compose.timeline.playhead_rect = studio_timeline_playhead_rect_at(compose.timeline.track_rect.x, compose.timeline.track_rect.y, compose.timeline.track_rect.w, compose.timeline.track_rect.h, pct)
+  compose_dep_clear_region(compose.reactive.graph, compose_region_id_timeline())
+  compose.reactive.timeline_tick.dirty = 0
+  compose_cache_note_recomposed(compose.reactive.cache, compose_region_id_timeline(), gen)
+  if compose.widget_tree_active == 1:
+    studio_shell_sync_widget_tree_from_reactive(compose)
+
+def studio_reactive_flush_mode_regions(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires studio_mode_valid(compose.mode) == 1
+  ensures store_int_get(compose.reactive.shell_mode) == compose.mode
+  decreases compose.mode
+=
+  var mode_gen: int = compose.reactive.shell_mode.generation
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_dock(), mode_gen) == 1:
+    compose_dep_clear_region(compose.reactive.graph, compose_region_id_dock())
+    compose_cache_note_recomposed(compose.reactive.cache, compose_region_id_dock(), mode_gen)
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_dock(), mode_gen) == 0:
+    compose_cache_note_skipped(compose.reactive.cache, compose_region_id_dock())
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_inspector(), mode_gen) == 1:
+    compose_dep_clear_region(compose.reactive.graph, compose_region_id_inspector())
+    compose_cache_note_recomposed(compose.reactive.cache, compose_region_id_inspector(), mode_gen)
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_inspector(), mode_gen) == 0:
+    compose_cache_note_skipped(compose.reactive.cache, compose_region_id_inspector())
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_viewport_hud(), mode_gen) == 1:
+    compose_dep_clear_region(compose.reactive.graph, compose_region_id_viewport_hud())
+    compose_cache_note_recomposed(compose.reactive.cache, compose_region_id_viewport_hud(), mode_gen)
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_viewport_hud(), mode_gen) == 0:
+    compose_cache_note_skipped(compose.reactive.cache, compose_region_id_viewport_hud())
+  store_int_clear_dirty(compose.reactive.shell_mode, compose.reactive.inv)
+  if compose.widget_tree_active == 1:
+    studio_shell_sync_widget_tree_from_reactive(compose)
+
+def studio_reactive_flush_agent_from_run(compose: var StudioShellCompose, run: StudioAgentRun) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires run.task_state >= studio_agent_task_idle()
+  requires run.task_state <= studio_agent_task_done()
+  ensures compose.agent.task_state == run.task_state
+  ensures compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_agent()) == 0
+  decreases run.task_state
+=
+  var gen: int = compose.reactive.agent_task.generation
+  if compose_cache_should_recompose(compose.reactive.cache, compose.reactive.graph, compose_region_id_agent(), gen) != 1:
+    compose_cache_note_skipped(compose.reactive.cache, compose_region_id_agent())
+    return
+  var ctx: int = run.agent_context_label
+  if ctx == studio_agent_context_none():
+    ctx = studio_agent_context_for_shell(compose.inspector.has_selection, run.task_state)
+  var tool: StudioAgentToolRequest = studio_agent_tool_request_for_run(run)
+  compose.agent = studio_compose_agent_chrome_with_tool(compose.layout, run.task_state, ctx, tool)
+  if run.task_state == studio_agent_task_running():
+    compose.agent.progress = studio_compose_agent_progress_run(run, compose.agent.status_rect)
+  if run.task_state == studio_agent_task_done():
+    compose.agent.progress = studio_compose_agent_progress_run(run, compose.agent.status_rect)
+  if run.task_state == studio_agent_task_idle():
+    if compose.mode == studio_mode_agent():
+      studio_shell_apply_mode(compose, studio_mode_author())
+  if run.task_state == studio_agent_task_done():
+    studio_shell_apply_mode(compose, studio_mode_author())
+  derived_int_sync_agent_progress(compose.reactive.agent_progress, compose.reactive.agent_task, compose.reactive.inv)
+  compose_dep_clear_region(compose.reactive.graph, compose_region_id_agent())
+  store_int_clear_dirty(compose.reactive.agent_task, compose.reactive.inv)
+  compose_cache_note_recomposed(compose.reactive.cache, compose_region_id_agent(), gen)
+  if compose.widget_tree_active == 1:
+    studio_shell_sync_widget_tree_from_reactive(compose)
+
+def studio_reactive_begin_flush_frame(compose: var StudioShellCompose) -> unit
+  requires compose.layout.viewport_w > 0.0
+  ensures compose.reactive.cache.recompose_count == 0
+  ensures compose.reactive.cache.skip_count == 0
+  decreases 0
+=
+  compose_cache_begin_frame(compose.reactive.cache)
+
+def studio_reactive_cache_tally(compose: var StudioShellCompose) -> int
+  requires compose.layout.viewport_w > 0.0
+  ensures result >= 0
+  ensures result <= compose_cache_region_count()
+  decreases 0
+=
+  return compose_cache_tally_partial(compose.reactive.cache, compose.reactive.graph, compose.reactive.agent_task.generation, compose.reactive.palette_open.generation, compose.reactive.shell_mode.generation, compose.reactive.timeline_tick.generation)
+
+def studio_reactive_timeline_sync_playhead(compose: var StudioShellCompose, tick: int, duration_ticks: int) raises IO -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires tick >= 0
+  requires duration_ticks >= 1
+  ensures compose_dep_region_is_dirty(compose.reactive.graph, compose_region_id_timeline()) == 0
+  decreases tick
+=
+  var _synced: int = li_rt_studio_timeline_sync_sim_tick(tick, duration_ticks)
+  var pct: float = li_rt_studio_timeline_playhead_pct_from_tick(tick, duration_ticks)
+  studio_reactive_resync_timeline_playhead(compose, pct)
+  studio_reactive_flush_timeline(compose)
 
 
 def studio_shell_loading_on() -> int
@@ -4784,6 +5054,7 @@ def studio_shell_timeline_tick_sim_step(compose: var StudioShellCompose, config:
   var rc: int = studio_timeline_tick_sim_step(config, sim_out, dt, duration_ticks)
   if rc == 1:
     studio_shell_world_checkpoint_store(compose, sim_out)
+    studio_reactive_timeline_sync_playhead(compose, sim_out.tick, duration_ticks)
   return rc
 
 def studio_game_world_checkpoint_roundtrip(session: SimSessionStub) raises Alloc, IO -> int
@@ -5046,39 +5317,65 @@ def studio_inspector_field_at(insp_x: float, insp_y: float, insp_w: float, row: 
   out.value_rect = rect_make(vx, vy, value_w, lh1)
   return out
 
+def studio_inspector_compose_from_pilot(layout: StudioShellLayout, has_selection: int, pilot: InspectorPilotWidget, pilot_layout: InspectorPilotLayoutResult) -> StudioInspectorCompose
+  requires layout.inspector.w >= studio_inspector_width_px()
+  requires has_selection >= 0
+  requires has_selection <= 1
+  requires pilot.has_selection == has_selection
+  requires pilot_layout.has_selection == has_selection
+  ensures result.widget_pilot == 1
+  ensures result.has_selection == has_selection
+  decreases has_selection
+=
+  var out: StudioInspectorCompose
+  out.rect = layout.inspector
+  out.header_rect = pilot_layout.header_layout.bounds
+  out.has_selection = has_selection
+  out.widget_pilot = 1
+  out.pilot_spec = pilot
+  out.pilot_layout = pilot_layout
+  if has_selection == 1:
+    out.field_rows = studio_inspector_field_rows()
+    out.field_count = studio_inspector_selection_field_count()
+    out.empty_visible = 0
+    out.field0.label_rect = inspector_pilot_field_label_rect(pilot_layout, 0)
+    out.field0.value_rect = inspector_pilot_field_value_rect(pilot_layout, 0)
+    out.field1.label_rect = inspector_pilot_field_label_rect(pilot_layout, 1)
+    out.field1.value_rect = inspector_pilot_field_value_rect(pilot_layout, 1)
+    out.field_row_rect = pilot_layout.fields_layout.bounds
+    out.hint_line1_rect = rect_make(0.0, 0.0, 0.0, 0.0)
+    out.hint_line2_rect = rect_make(0.0, 0.0, 0.0, 0.0)
+    out.hint_box_rect = rect_make(0.0, 0.0, 0.0, 0.0)
+  if has_selection == 0:
+    out.field_rows = 0
+    out.field_count = 0
+    out.empty_visible = 1
+    out.hint_line1_rect = inspector_pilot_empty_hint_rect(pilot_layout, 0)
+    out.hint_line2_rect = inspector_pilot_empty_hint_rect(pilot_layout, 1)
+    out.hint_box_rect = inspector_pilot_empty_hint_box_rect(pilot_layout)
+    out.field_row_rect = rect_make(0.0, 0.0, 0.0, 0.0)
+  return out
+
+def studio_compose_inspector_widget_pilot(layout: StudioShellLayout, has_selection: int) -> StudioInspectorCompose
+  requires layout.inspector.w >= studio_inspector_width_px()
+  requires has_selection >= 0
+  requires has_selection <= 1
+  ensures result.widget_pilot == 1
+  ensures result.has_selection == has_selection
+  decreases has_selection
+=
+  var pilot: InspectorPilotWidget = inspector_pilot_new(has_selection, layout.inspector.w, layout.inspector.h)
+  var pilot_layout: InspectorPilotLayoutResult = inspector_pilot_layout(pilot, layout.inspector.x, layout.inspector.y, layout.inspector.w, layout.inspector.h)
+  return studio_inspector_compose_from_pilot(layout, has_selection, pilot, pilot_layout)
+
 def studio_compose_inspector_selected(layout: StudioShellLayout) -> StudioInspectorCompose
   requires layout.inspector.w >= studio_inspector_width_px()
   ensures result.has_selection == 1
   ensures result.field_count == studio_inspector_selection_field_count()
+  ensures result.widget_pilot == 1
   decreases 0
 =
-  var lay: StudioShellLayout = layout
-  var insp_x: float = lay.inspector.x
-  var insp_y: float = lay.inspector.y
-  var insp_w: float = lay.inspector.w
-  var out: StudioInspectorCompose
-  out.rect = lay.inspector
-  var hx: float = lay.inspector.x
-  var hy: float = lay.inspector.y
-  var hw: float = lay.inspector.w
-  out.header_rect = studio_inspector_header_rect_at(hx, hy, hw)
-  out.has_selection = 1
-  out.field_rows = studio_inspector_field_rows()
-  out.field_count = studio_inspector_selection_field_count()
-  var f0x: float = lay.inspector.x
-  var f0y: float = lay.inspector.y
-  var f0w: float = lay.inspector.w
-  var f1x: float = lay.inspector.x
-  var f1y: float = lay.inspector.y
-  var f1w: float = lay.inspector.w
-  out.field0 = studio_inspector_field_at(f0x, f0y, f0w, 0)
-  out.field1 = studio_inspector_field_at(f1x, f1y, f1w, 1)
-  out.empty_visible = 0
-  out.hint_line1_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  out.hint_line2_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  out.hint_box_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  out.field_row_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  return out
+  return studio_compose_inspector_widget_pilot(layout, 1)
 
 def studio_inspector_joint_value_width_px(joint_rad: float, slot_max_w: float) -> float
   requires slot_max_w >= 24.0
@@ -5154,29 +5451,10 @@ def studio_compose_empty_inspector(layout: StudioShellLayout) -> StudioInspector
   requires layout.inspector.w >= studio_inspector_width_px()
   ensures result.has_selection == 0
   ensures result.empty_visible == 1
+  ensures result.widget_pilot == 1
   decreases 0
 =
-  var out: StudioInspectorCompose
-  out.rect = layout.inspector
-  out.header_rect = studio_inspector_header_rect_at(layout.inspector.x, layout.inspector.y, layout.inspector.w)
-  out.has_selection = 0
-  out.field_rows = 0
-  out.empty_visible = 1
-  var h1x: float = layout.inspector.x
-  var h1y: float = layout.inspector.y
-  var h1w: float = layout.inspector.w
-  var h2x: float = layout.inspector.x
-  var h2y: float = layout.inspector.y
-  var h2w: float = layout.inspector.w
-  var hbx: float = layout.inspector.x
-  var hby: float = layout.inspector.y
-  var hbw: float = layout.inspector.w
-  var hbh: float = layout.inspector.h
-  out.hint_line1_rect = studio_inspector_empty_hint_line_rect_at(h1x, h1y, h1w, 0)
-  out.hint_line2_rect = studio_inspector_empty_hint_line_rect_at(h2x, h2y, h2w, 1)
-  out.hint_box_rect = studio_inspector_empty_hint_box_rect_at(hbx, hby, hbw, hbh)
-  out.field_row_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  return out
+  return studio_compose_inspector_widget_pilot(layout, 0)
 
 def studio_compose_empty_viewport(layout: StudioShellLayout) -> StudioViewportEmptyCompose
   requires layout.viewport.w > 0.0
@@ -5881,24 +6159,7 @@ def studio_compose_shell_profile(w: float, h: float, active_dock_slot: int, has_
   out.timeline.playhead_rect = studio_timeline_playhead_rect_at(out.timeline.track_rect.x, out.timeline.track_rect.y, out.timeline.track_rect.w, out.timeline.track_rect.h, profile_tl_pct)
   out.timeline.playhead_pct = profile_tl_pct
   out.scene_entity_count = 0
-  out.inspector.rect = lay.inspector
-  out.inspector.header_rect = studio_inspector_header_rect_at(lay.inspector.x, lay.inspector.y, lay.inspector.w)
-  if has_selection == 0:
-    out.inspector.has_selection = 0
-    out.inspector.field_rows = 0
-    out.inspector.empty_visible = 1
-    out.inspector.hint_line1_rect = studio_inspector_empty_hint_line_rect_at(lay.inspector.x, lay.inspector.y, lay.inspector.w, 0)
-    out.inspector.hint_line2_rect = studio_inspector_empty_hint_line_rect_at(lay.inspector.x, lay.inspector.y, lay.inspector.w, 1)
-    out.inspector.hint_box_rect = studio_inspector_empty_hint_box_rect_at(lay.inspector.x, lay.inspector.y, lay.inspector.w, lay.inspector.h)
-    out.inspector.field_row_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  if has_selection == 1:
-    out.inspector.has_selection = 1
-    out.inspector.field_rows = studio_inspector_field_rows()
-    out.inspector.empty_visible = 0
-    out.inspector.hint_line1_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-    out.inspector.hint_line2_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-    out.inspector.hint_box_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-    out.inspector.field_row_rect = studio_inspector_field_row_rect_at(lay.inspector.x, lay.inspector.y, lay.inspector.w)
+  out.inspector = studio_compose_inspector_widget_pilot(lay, has_selection)
   out.viewport_empty.frame_rect = lay.viewport
   out.viewport_empty.empty_visible = 1
   out.viewport_empty.title_rect = studio_viewport_empty_title_rect_at(lay.viewport.x, lay.viewport.y, lay.viewport.w, lay.viewport.h)
@@ -5912,7 +6173,9 @@ def studio_compose_shell_profile(w: float, h: float, active_dock_slot: int, has_
   out.loading = studio_shell_loading_state_new()
   out.world_checkpoint = studio_world_checkpoint_empty()
   var mode0: int = studio_mode_from_profile(active_profile)
+  out.reactive = studio_reactive_shell_new(studio_agent_task_idle(), studio_palette_closed_flag(), mode0, profile_tl_pct)
   studio_shell_apply_mode(out, mode0)
+  studio_shell_attach_widget_tree(out)
   return out
 
 def studio_compose_shell(w: float, h: float, active_dock_slot: int, has_selection: int, scene_entity_count: int) -> StudioShellCompose
@@ -5948,24 +6211,7 @@ def studio_compose_shell(w: float, h: float, active_dock_slot: int, has_selectio
   var shell_tl_pct: float = studio_timeline_playhead_pct_from_tick(0, studio_timeline_duration_ticks_default())
   out.timeline.playhead_rect = studio_timeline_playhead_rect_at(out.timeline.track_rect.x, out.timeline.track_rect.y, out.timeline.track_rect.w, out.timeline.track_rect.h, shell_tl_pct)
   out.timeline.playhead_pct = shell_tl_pct
-  out.inspector.rect = out.layout.inspector
-  out.inspector.header_rect = studio_inspector_header_rect_at(out.layout.inspector.x, out.layout.inspector.y, out.layout.inspector.w)
-  if sel0 == 0:
-    out.inspector.has_selection = 0
-    out.inspector.field_rows = 0
-    out.inspector.empty_visible = 1
-    out.inspector.hint_line1_rect = studio_inspector_empty_hint_line_rect_at(out.layout.inspector.x, out.layout.inspector.y, out.layout.inspector.w, 0)
-    out.inspector.hint_line2_rect = studio_inspector_empty_hint_line_rect_at(out.layout.inspector.x, out.layout.inspector.y, out.layout.inspector.w, 1)
-    out.inspector.hint_box_rect = studio_inspector_empty_hint_box_rect_at(out.layout.inspector.x, out.layout.inspector.y, out.layout.inspector.w, out.layout.inspector.h)
-    out.inspector.field_row_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-  if sel0 == 1:
-    out.inspector.has_selection = 1
-    out.inspector.field_rows = studio_inspector_field_rows()
-    out.inspector.empty_visible = 0
-    out.inspector.hint_line1_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-    out.inspector.hint_line2_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-    out.inspector.hint_box_rect = rect_make(0.0, 0.0, 0.0, 0.0)
-    out.inspector.field_row_rect = studio_inspector_field_row_rect_at(out.layout.inspector.x, out.layout.inspector.y, out.layout.inspector.w)
+  out.inspector = studio_compose_inspector_widget_pilot(out.layout, sel0)
   out.viewport_empty.frame_rect = out.layout.viewport
   if scene0 == 0:
     out.viewport_empty.empty_visible = 1
@@ -5982,7 +6228,9 @@ def studio_compose_shell(w: float, h: float, active_dock_slot: int, has_selectio
   out.loading = studio_shell_loading_state_new()
   out.world_checkpoint = studio_world_checkpoint_empty()
   var mode0: int = studio_mode_default()
+  out.reactive = studio_reactive_shell_new(studio_agent_task_idle(), studio_palette_closed_flag(), mode0, shell_tl_pct)
   studio_shell_apply_mode(out, mode0)
+  studio_shell_attach_widget_tree(out)
   return out
 
 
@@ -6021,6 +6269,7 @@ def studio_compose_shell_palette(w: float, h: float, active_dock_slot: int, has_
   var slot_shell: int = active_dock_slot
   var out: StudioShellCompose = studio_compose_shell(w, h, slot_shell, has_selection, 0)
   out.palette = studio_compose_palette(out.layout.viewport_w, out.layout.viewport_h, palette_open)
+  studio_reactive_resync_palette(out)
   return out
 
 def studio_compose_shell_agent(w: float, h: float, active_dock_slot: int, has_selection: int, scene_entity_count: int, task_state: int) -> StudioShellCompose
@@ -6044,6 +6293,7 @@ def studio_compose_shell_agent(w: float, h: float, active_dock_slot: int, has_se
   var slot_shell: int = active_dock_slot
   var out: StudioShellCompose = studio_compose_shell(w, h, slot_shell, sel0, scene0)
   out.agent = studio_compose_agent_chrome(out.layout, task0, studio_agent_context_for_shell(ctx_sel0, ctx_task0))
+  studio_reactive_resync_agent_task(out, task0)
   return out
 
 
@@ -6064,57 +6314,48 @@ def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose
   decreases outliner.node_count
 =
   if outliner.node_count > 0:
-    frame.cmd_count = frame.cmd_count + 1
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = outliner.row0_rect
     if outliner.selected_node == outliner.node0.id:
-      frame.last_color = studio_color_accent_mint()
+      paint_frame_push(frame, paint_cmd_fill_round(outliner.row0_rect, studio_color_accent_mint(), studio_radius_sm_px()))
     if outliner.selected_node != outliner.node0.id:
-      frame.last_color = studio_color_border()
+      paint_frame_push(frame, paint_cmd_stroke_round(outliner.row0_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
   if outliner.node_count > 1:
-    frame.cmd_count = frame.cmd_count + 1
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = outliner.row1_rect
     if outliner.selected_node == outliner.node1.id:
-      frame.last_color = studio_color_accent_mint()
+      paint_frame_push(frame, paint_cmd_fill_round(outliner.row1_rect, studio_color_accent_mint(), studio_radius_sm_px()))
     if outliner.selected_node != outliner.node1.id:
-      frame.last_color = studio_color_border()
+      paint_frame_push(frame, paint_cmd_stroke_round(outliner.row1_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
   if outliner.node_count > 2:
-    frame.cmd_count = frame.cmd_count + 1
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = outliner.row2_rect
     if outliner.selected_node == outliner.node2.id:
-      frame.last_color = studio_color_accent_mint()
+      paint_frame_push(frame, paint_cmd_fill_round(outliner.row2_rect, studio_color_accent_mint(), studio_radius_sm_px()))
     if outliner.selected_node != outliner.node2.id:
-      frame.last_color = studio_color_border()
+      paint_frame_push(frame, paint_cmd_stroke_round(outliner.row2_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
 
 def studio_paint_dock_cmds() -> int
   requires true
-  ensures result == 2
+  ensures result == 4
   decreases 0
 =
-  return 2
+  return 4
 
 def studio_paint_timeline_cmds() -> int
   requires true
-  ensures result == 3
+  ensures result == 4
   decreases 0
 =
-  return 3
+  return 4
 
 def studio_paint_inspector_empty_cmds() -> int
   requires true
-  ensures result == 5
+  ensures result == inspector_pilot_paint_cmds(0)
   decreases 0
 =
-  return 5
+  return inspector_pilot_paint_cmds(0)
 
 def studio_paint_inspector_selected_cmds() -> int
   requires true
-  ensures result == 3
+  ensures result == inspector_pilot_paint_cmds(1)
   decreases 0
 =
-  return 3
+  return inspector_pilot_paint_cmds(1)
 
 def studio_paint_inspector_cmds(has_selection: int) -> int
   requires has_selection >= 0
@@ -6328,26 +6569,30 @@ def studio_paint_viewport_menu(frame: var PaintFrame, menu: StudioViewportMenuCo
 
 def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose) -> unit
   requires frame.cmd_count >= 0
+  requires dock.active_slot >= 0
+  requires dock.active_slot < icon_atlas_slot_count()
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_dock_cmds()
-  ensures frame.last_kind == paint_op_stroke_rect()
+  ensures frame.last_kind == paint_op_draw_image()
   ensures frame.last_rect.w == dock.active_slot_rect.w
-  decreases 0
+  decreases dock.active_slot
 =
-  frame.cmd_count = frame.cmd_count + studio_paint_dock_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = dock.active_slot_rect
-  frame.last_color = studio_color_accent_cyan()
+  paint_frame_push(frame, paint_cmd_fill_gradient(dock.rect, studio_color_bg_primary(), studio_color_bg_elevated()))
+  paint_frame_push(frame, paint_cmd_fill_round(dock.active_slot_rect, studio_color_accent_cyan(), studio_radius_sm_px()))
+  paint_frame_push(frame, paint_cmd_stroke_round(dock.active_slot_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
+  var icon_id: int = icon_atlas_image_for_dock_slot(dock.active_slot)
+  var icon_src: Rect = icon_atlas_src_rect(icon_id)
+  paint_frame_push(frame, paint_cmd_draw_image(dock.active_slot_rect, icon_id, icon_src, studio_color_text_primary()))
 
 def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose) -> unit
   requires frame.cmd_count >= 0
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_timeline_cmds()
-  ensures frame.last_kind == paint_op_stroke_rect()
+  ensures frame.last_kind == paint_op_stroke_round_rect()
   decreases 0
 =
-  frame.cmd_count = frame.cmd_count + studio_paint_timeline_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = timeline.playhead_rect
-  frame.last_color = studio_color_accent_amber()
+  paint_frame_push(frame, paint_cmd_fill_gradient(timeline.track_rect, studio_color_bg_primary(), studio_color_bg_elevated()))
+  paint_frame_push(frame, paint_cmd_stroke_round(timeline.track_rect, studio_color_border(), 1.0, studio_default_panel_radius_px()))
+  paint_frame_push(frame, paint_cmd_fill_round(timeline.playhead_rect, studio_color_accent_amber(), studio_radius_sm_px()))
+  paint_frame_push(frame, paint_cmd_stroke_round(timeline.play_btn_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
 
 def studio_paint_agent(frame: var PaintFrame, agent: StudioAgentChromeCompose) -> unit
   requires frame.cmd_count >= 0
@@ -6356,9 +6601,7 @@ def studio_paint_agent(frame: var PaintFrame, agent: StudioAgentChromeCompose) -
   decreases agent.task_state
 =
   frame.cmd_count = frame.cmd_count + studio_paint_agent_cmds(agent.task_state, agent.agent_context_label, agent.invoke_input_visible, agent.tool_trace_visible)
-  frame.last_kind = paint_op_fill_rect()
-  frame.last_rect = agent.rect
-  frame.last_color = studio_color_bg_elevated()
+  paint_frame_push(frame, paint_cmd_fill_round(agent.rect, studio_color_bg_elevated(), studio_default_panel_radius_px()))
   frame.last_kind = paint_op_fill_rect()
   frame.last_rect = agent.status_rect
   frame.last_color = studio_agent_status_color(agent.task_state)
@@ -6402,31 +6645,19 @@ def studio_paint_inspector(frame: var PaintFrame, inspector: StudioInspectorComp
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_inspector_cmds(inspector.has_selection)
   decreases inspector.has_selection
 =
+  if inspector.widget_pilot == 1:
+    inspector_pilot_paint(inspector.pilot_spec, inspector.pilot_layout, frame)
+    return
   if inspector.has_selection == 0:
-    frame.cmd_count = frame.cmd_count + studio_paint_inspector_empty_cmds()
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = inspector.rect
-    frame.last_color = studio_color_border()
-    frame.last_kind = paint_op_fill_rect()
-    frame.last_rect = inspector.hint_line1_rect
-    frame.last_color = studio_color_border()
-    frame.last_kind = paint_op_fill_rect()
-    frame.last_rect = inspector.hint_line2_rect
-    frame.last_color = studio_color_border()
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = inspector.hint_box_rect
-    frame.last_color = studio_color_border()
+    paint_frame_push_elevated_panel(frame, inspector.rect)
+    paint_frame_push(frame, paint_cmd_fill_round(inspector.hint_line1_rect, studio_color_bg_elevated(), studio_radius_sm_px()))
+    paint_frame_push(frame, paint_cmd_fill_round(inspector.hint_line2_rect, studio_color_bg_elevated(), studio_radius_sm_px()))
+    paint_frame_push(frame, paint_cmd_stroke_round(inspector.hint_box_rect, studio_color_border(), 1.0, studio_default_panel_radius_px()))
   if inspector.has_selection == 1:
-    frame.cmd_count = frame.cmd_count + studio_paint_inspector_selected_cmds()
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = inspector.rect
-    frame.last_color = studio_color_accent_violet()
-    frame.last_kind = paint_op_stroke_rect()
-    frame.last_rect = inspector.header_rect
-    frame.last_color = studio_color_accent_violet()
-    frame.last_kind = paint_op_fill_rect()
-    frame.last_rect = inspector.field_row_rect
-    frame.last_color = studio_color_bg_elevated()
+    paint_frame_push(frame, paint_cmd_fill_gradient(inspector.rect, studio_color_bg_primary(), studio_color_bg_elevated()))
+    paint_frame_push(frame, paint_cmd_stroke_round(inspector.rect, studio_color_accent_violet(), 1.0, studio_default_panel_radius_px()))
+    paint_frame_push(frame, paint_cmd_fill_round(inspector.header_rect, studio_color_accent_violet(), studio_radius_sm_px()))
+    paint_frame_push(frame, paint_cmd_fill_round(inspector.field_row_rect, studio_color_bg_elevated(), studio_radius_sm_px()))
 
 
 def studio_paint_compose_panels(frame: var PaintFrame, dock: StudioDockCompose, outliner: StudioOutlinerCompose, timeline: StudioTimelineCompose, inspector: StudioInspectorCompose) -> unit
@@ -6511,20 +6742,11 @@ def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose
   ensures frame.cmd_count == studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible)
   decreases compose.agent.task_state
 =
-  frame.cmd_count = frame.cmd_count + studio_paint_dock_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = compose.dock.active_slot_rect
-  frame.last_color = studio_color_accent_cyan()
+  studio_paint_dock(frame, compose.dock)
   studio_paint_outliner(frame, compose.outliner)
-  frame.cmd_count = frame.cmd_count + studio_paint_timeline_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = compose.timeline.playhead_rect
-  frame.last_color = studio_color_accent_amber()
+  studio_paint_timeline(frame, compose.timeline)
   studio_paint_inspector(frame, compose.inspector)
-  frame.cmd_count = frame.cmd_count + 1
-  frame.last_kind = paint_op_fill_rect()
-  frame.last_rect = compose.layout.topbar
-  frame.last_color = studio_color_bg_elevated()
+  paint_frame_push(frame, paint_cmd_fill_gradient(compose.layout.topbar, studio_color_bg_primary(), studio_color_bg_elevated()))
   var prof0: int = compose.config.active_profile
   studio_paint_topbar_profile(frame, compose.layout.topbar, prof0)
   if compose.viewport_error.visible == 1:
@@ -6708,6 +6930,9 @@ def studio_handle_studio_key(compose: var StudioShellCompose, input: InputState)
   var key_w: float = compose.layout.viewport_w
   var key_h: float = compose.layout.viewport_h
   var action: int = gui_handle_studio_key_palette(compose.panel, compose.palette, key_w, key_h, input)
+  if action != studio_key_action_none():
+    studio_reactive_resync_palette(compose)
+    studio_reactive_flush_palette(compose)
   if action == studio_key_action_palette_exec():
     var _applied: int = studio_palette_apply_action(compose, compose.panel.last_palette_action)
   return action
@@ -6760,10 +6985,10 @@ def studio_shell_demo_apply_profile(compose: var StudioShellCompose, profile_id:
 =
   compose.config = studio_project_config_new(profile_id)
 
-# WP-UX-14 — honest native_pixels: paint blit or wgpu readback/draw-list (not external CPU host alone).
+# WP-UX-14 — honest native_pixels: paint blit or wgpu readback/draw-list/swapchain (not external CPU host alone).
 def studio_native_pixel_source_honest(source: int) -> int
   requires source >= 0
-  requires source <= 4
+  requires source <= 5
   ensures result >= 0
   ensures result <= 1
   decreases source
@@ -6774,34 +6999,20 @@ def studio_native_pixel_source_honest(source: int) -> int
     return 1
   if source == lig_native_pixel_source_wgpu_draw_list():
     return 1
-  return 0
-
-# PH-HW desktop — SDL present host sets host_cpu; valid when LIG_HOST_PRESENT=1.
-def studio_native_pixel_source_honest_host_present(source: int) -> int raises IO
-  requires source >= 0
-  requires source <= 4
-  ensures result >= 0
-  ensures result <= 1
-  decreases source
-=
-  if lig_native_pixel_source_honest_product(source) == 1:
+  if source == lig_native_pixel_source_wgpu_swapchain():
     return 1
-  if lig_present_host_active() == 1:
-    if source == lig_native_pixel_source_host_cpu():
-      return 1
   return 0
 
 def studio_native_pixel_source_expected() -> int raises IO
   requires true
   ensures result >= 0
-  ensures result <= 4
+  ensures result <= 5
   decreases 0
 =
+  if lig_present_wgpu_swapchain_active() == 1:
+    return lig_native_pixel_source_wgpu_swapchain()
   if lig_present_wgpu_readback_active() == 1:
     return lig_native_pixel_source_wgpu_readback()
-  if lig_present_host_active() == 1:
-    if lig_present_host_native_pixel_source_flag() == lig_native_pixel_source_host_cpu():
-      return lig_native_pixel_source_host_cpu()
   return lig_native_pixel_source_paint_blit()
 
 def studio_native_pixels_wgpu_readback_host_smoke() -> int raises IO
@@ -6824,6 +7035,38 @@ def studio_native_pixels_wgpu_readback_host_smoke() -> int raises IO
   render_fps_counter_host_tick(counter)
   if counter.native_pixels != 1:
     return 4
+  return 0
+
+def studio_native_pixels_wgpu_swapchain_host_smoke() -> int raises IO
+  requires true
+  ensures result >= 0
+  ensures result <= 8
+  decreases 0
+=
+  if lig_present_wgpu_swapchain_active() != 1:
+    return 0
+  var vp_w: float = 1280.0
+  var vp_h: float = 720.0
+  var rb: LigWgpuSwapchainReadback = lig_wgpu_swapchain_readback_run()
+  if rb.status != lig_wgpu_swapchain_status_pass():
+    return 0
+  if lig_wgpu_swapchain_readback_passed(rb) != 1:
+    return 1
+  if rb.pixels_sampled <= 0:
+    return 2
+  if rb.native_pixel_source != lig_native_pixel_source_wgpu_swapchain():
+    return 3
+  var layout: StudioShellLayout = layout_studio_shell_adaptive(vp_w, vp_h)
+  var vp: ViewportRegion = gui_viewport_region_from_layout(layout)
+  var smoke: RenderViewportSmoke = render_wgpu_viewport_readback(vp)
+  if render_viewport_readback_ok(smoke) != 1:
+    return 4
+  if smoke.native_pixels != 1:
+    return 5
+  if lig_present_host_native_pixels_flag() != 1:
+    return 6
+  if lig_present_host_native_pixel_source_flag() != lig_native_pixel_source_wgpu_swapchain():
+    return 7
   return 0
 
 def studio_vertical_demo_compose(profile_id: int, frame_id: int, key_compose: int) -> StudioShellCompose
@@ -6853,6 +7096,241 @@ def studio_vertical_demo_compose(profile_id: int, frame_id: int, key_compose: in
     studio_attach_viewport_shell(out)
   return out
 
+def studio_present_loop_raster_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+# Phase 4 (wsg-w4-c-host-slim) — C present host is window/input/surface I/O only.
+def studio_c_host_slim_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+# Phase 5 (wsg-w5-windows-native) — Windows SDL present host (.exe), no WSL requirement.
+def studio_windows_native_present_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+# Phase 5 (wsg-w5-macos-wgpu) — macOS aarch64-apple-darwin wgpu/Metal surface (PH-HW WP3).
+def studio_macos_wgpu_present_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_macos_wgpu_surface_smoke() -> int raises IO
+  requires true
+  ensures result >= 0
+  ensures result <= 8
+  decreases 0
+=
+  if lig_present_host_active() != 1:
+    return 0
+  if lig_present_wgpu_swapchain_active() != 1:
+    return 0
+  var rb: LigWgpuSwapchainReadback = lig_wgpu_swapchain_readback_run()
+  if rb.status != lig_wgpu_swapchain_status_pass():
+    return 1
+  if lig_wgpu_swapchain_readback_passed(rb) != 1:
+    return 2
+  if rb.pixels_sampled <= 0:
+    return 3
+  if rb.native_pixel_source != lig_native_pixel_source_wgpu_swapchain():
+    return 4
+  if lig_present_surface_ok() != 1:
+    return 5
+  var layout: StudioShellLayout = layout_studio_shell_adaptive(1280.0, 720.0)
+  var vp: ViewportRegion = gui_viewport_region_from_layout(layout)
+  var smoke: RenderViewportSmoke = render_wgpu_viewport_readback(vp)
+  if render_viewport_readback_ok(smoke) != 1:
+    return 6
+  if smoke.native_pixels != 1:
+    return 7
+  return 0
+
+# Phase 5 (wsg-w5-linux-appimage) — Linux AppImage with bundled SDL/wgpu present host.
+def studio_linux_appimage_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_linux_appimage_smoke() -> int raises IO
+  requires true
+  ensures result >= 0
+  ensures result <= 4
+  decreases 0
+=
+  if lig_present_host_active() != 1:
+    return 0
+  if studio_present_loop_raster_version() != 1:
+    return 1
+  if studio_c_host_slim_version() != 1:
+    return 2
+  if lig_present_wgpu_swapchain_active() == 1:
+    var rb: LigWgpuSwapchainReadback = lig_wgpu_swapchain_readback_run()
+    if lig_wgpu_swapchain_readback_passed(rb) != 1:
+      return 3
+  return 0
+
+# Phase 5 (wsg-w5-installer-ci) — Windows + Linux installer matrix green on CI.
+def studio_installer_ci_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_installer_ci_smoke() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 6
+  decreases 0
+=
+  if studio_installer_ci_version() != 1:
+    return 1
+  if studio_windows_native_present_version() != 1:
+    return 2
+  if studio_linux_appimage_version() != 1:
+    return 3
+  if studio_macos_wgpu_present_version() != 1:
+    return 4
+  if studio_present_loop_raster_version() != 1:
+    return 5
+  if studio_c_host_slim_version() != 1:
+    return 6
+  return 0
+
+# Phase 5 (wsg-w5-perf-budgets) — viewport/UI perf budgets (PH-UX gates, release notes).
+def studio_perf_budgets_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_viewport_fps_budget() -> float
+  requires true
+  ensures result == 60.0
+  decreases 0
+=
+  return 60.0
+
+def studio_panel_switch_ms_budget() -> float
+  requires true
+  ensures result == 100.0
+  decreases 0
+=
+  return 100.0
+
+def studio_load_ms_budget() -> float
+  requires true
+  ensures result == 2000.0
+  decreases 0
+=
+  return 2000.0
+
+def studio_memory_warn_peak_mib_budget() -> float
+  requires true
+  ensures result == 512.0
+  decreases 0
+=
+  return 512.0
+
+def studio_perf_budgets_smoke() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 8
+  decreases 0
+=
+  if studio_perf_budgets_version() != 1:
+    return 1
+  if studio_viewport_fps_budget() != 60.0:
+    return 2
+  if studio_panel_switch_ms_budget() != 100.0:
+    return 3
+  if studio_load_ms_budget() != 2000.0:
+    return 4
+  if studio_memory_warn_peak_mib_budget() != 512.0:
+    return 5
+  if render_viewport_fps_target() != studio_viewport_fps_budget():
+    return 6
+  if gui_panel_switch_budget_ms() != studio_panel_switch_ms_budget():
+    return 7
+  if studio_installer_ci_version() != 1:
+    return 8
+  return 0
+
+# Phase 4 (wsg-w4-present-loop) — PaintFrame → Li UI rasterizer (CPU or wgpu) before host blit.
+def studio_shell_present_raster_pass(shell_w: float, shell_h: float, frame: PaintFrame, profile_id: int) -> RenderUiRasterResult raises IO
+  requires shell_w >= 0.0
+  requires shell_h >= 0.0
+  requires studio_profile_id_valid(profile_id) == 1
+  requires frame.cmd_count >= 0
+  ensures result.cmd_count == frame.cmd_count
+  decreases frame.cmd_count
+=
+  if lig_present_host_active() == 1:
+    return render_ui_raster_pass(shell_w, shell_h, frame, profile_id)
+  return render_ui_raster_pass_pure(shell_w, shell_h, frame, profile_id)
+
+def studio_shell_present_raster_and_blit(compose: StudioShellCompose, frame: PaintFrame, profile_id: int, frame_id: int) -> int raises IO
+  requires studio_profile_id_valid(profile_id) == 1
+  requires compose.layout.viewport_w > 0.0
+  requires compose.layout.viewport_h > 0.0
+  requires frame_id >= 0
+  requires frame_id <= 2
+  requires frame.cmd_count >= 0
+  ensures result >= 0
+  decreases frame_id
+=
+  var shell_w: float = compose.layout.viewport_w
+  var shell_h: float = compose.layout.viewport_h
+  var raster: RenderUiRasterResult = studio_shell_present_raster_pass(shell_w, shell_h, frame, profile_id)
+  if frame.cmd_count > 0:
+    if render_ui_raster_result_ok(raster) != 1:
+      return 40 + frame_id
+  if lig_present_host_active() != 1:
+    return 0
+  var vp: ViewportRegion = gui_viewport_region_from_layout(compose.layout)
+  var blit_fail_code: int = 52 + frame_id
+  if lig_present_wgpu_readback_active() == 1:
+    blit_fail_code = 54
+    var draw_list: RenderDrawList = render_draw_list_new()
+    render_draw_list_push_clear(draw_list, 0.05, 0.07, 0.1)
+    var draw_mat: RenderPbrLiteMaterial = render_pbr_lite_material_default()
+    render_draw_list_push_mesh(draw_list, 1, draw_mat)
+    render_draw_list_push_particles(draw_list, 1000, draw_mat)
+    if render_draw_list_submit(vp, draw_list, profile_id) != 1:
+      return 54 + frame_id
+  if lig_present_blit_paint_summary(vp.w, vp.h, profile_id, frame.cmd_count) != 1:
+    return blit_fail_code
+  var _presented: LigPresentFrame = studio_shell_host_present_loop_tick(vp.w, vp.h, frame_id)
+  if _presented.presented != 1:
+    return 50 + frame_id
+  if _presented.native_pixels != 1:
+    return 51 + frame_id
+  if lig_native_pixel_source_honest_product(_presented.native_pixel_source) != 1:
+    if lig_present_wgpu_readback_active() == 1:
+      return 55
+    return 53 + frame_id
+  var expected_src: int = studio_native_pixel_source_expected()
+  if _presented.native_pixel_source != expected_src:
+    if lig_present_wgpu_readback_active() == 1:
+      return 55
+    return 53 + frame_id
+  return 0
+
 def studio_vertical_demo_frame(profile_id: int, frame_id: int) -> int raises IO
   requires studio_profile_id_valid(profile_id) == 1
   requires frame_id >= 0
@@ -6878,39 +7356,9 @@ def studio_vertical_demo_frame(profile_id: int, frame_id: int) -> int raises IO
   studio_paint_shell_chrome(frame, compose)
   var topbar: Rect = compose.layout.topbar
   studio_paint_topbar_profile(frame, topbar, profile_id)
-  if lig_present_host_active() == 1:
-    var vp: ViewportRegion = gui_viewport_region_from_layout(compose.layout)
-    var present_w: float = 1280.0
-    var present_h: float = 720.0
-    var blit_fail_code: int = 52 + frame_id
-    if lig_present_wgpu_readback_active() == 1:
-      blit_fail_code = 54
-      var draw_list: RenderDrawList = render_draw_list_new()
-      render_draw_list_push_clear(draw_list, 0.05, 0.07, 0.1)
-      var draw_mat: RenderPbrLiteMaterial = render_pbr_lite_material_default()
-      render_draw_list_push_mesh(draw_list, 1, draw_mat)
-      render_draw_list_push_particles(draw_list, 1000, draw_mat)
-      if render_draw_list_submit(vp, draw_list, profile_id) != 1:
-        return 54 + frame_id
-    var paint_cmds: int = frame.cmd_count
-    if paint_cmds <= 0:
-      paint_cmds = studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible)
-    if lig_present_blit_paint_summary(present_w, present_h, profile_id, paint_cmds) != 1:
-      return blit_fail_code
-    var _presented: LigPresentFrame = studio_shell_host_present_loop_tick(present_w, present_h, frame_id)
-    if _presented.presented != 1:
-      return 50 + frame_id
-    if _presented.native_pixels != 1:
-      return 51 + frame_id
-    if studio_native_pixel_source_honest_host_present(_presented.native_pixel_source) != 1:
-      if lig_present_wgpu_readback_active() == 1:
-        return 55
-      return 53 + frame_id
-    var expected_src: int = studio_native_pixel_source_expected()
-    if _presented.native_pixel_source != expected_src:
-      if lig_present_wgpu_readback_active() == 1:
-        return 55
-      return 53 + frame_id
+  var present_rc: int = studio_shell_present_raster_and_blit(compose, frame, profile_id, frame_id)
+  if present_rc != 0:
+    return present_rc
   if frame_id == 0:
     return 0
   if frame_id == 1:

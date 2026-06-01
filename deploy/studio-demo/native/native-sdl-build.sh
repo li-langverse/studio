@@ -10,9 +10,7 @@ if grep -q 'SDL.h' "$SRC" 2>/dev/null; then
   needs_sdl=1
 fi
 extra=()
-if [[ "$BASE" == "studio_shell_present_host.c" ]] && [[ -f "$DIR/studio_shell_paint_fb.c" ]]; then
-  extra+=("$DIR/studio_shell_paint_fb.c")
-fi
+# STUDIO_SHELL_HOST_IO_ONLY — present host no longer links paint_fb.c (wsg-w4-c-host-slim).
 if [[ -x "$OUT" ]]; then
   stale=0
   if [[ "$SRC" -nt "$OUT" ]]; then stale=1; fi

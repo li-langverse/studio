@@ -14,11 +14,21 @@ The old `studio_shell_present_host.c` drew a single cyan HUD rectangle in a **hi
 | **li-gui** | Viewport region, keyboard routing, panel focus |
 | **li-studio** / **studio** | `studio_compose_shell_*`, `studio_paint_shell_chrome` (PaintFrame IR) |
 | **lig.present** | Host present bridge: swapchain stub, paint_blit honesty flags |
-| **SDL present host** | Native window + CPU blit of shell layout (`studio_shell_paint_fb`) |
+| **SDL present host** | **I/O only** — window/input/surface; Li `--rgb-ppm` blit (`STUDIO_SHELL_HOST_IO_ONLY`) |
 
-**wgpu viewport (WP-GD-05 / wsm-w2-wgpu-viewport):** scaffold only — `lig_wgpu_swapchain_readback_run`, draw-list submit stubs. No in-tree wgpu-rs swapchain pixels yet. Master plan path A target; path B (CPU paint_blit) is current honest product path.
+**wgpu viewport (WP-GD-05 / wsg-w3-wgpu-viewport-pixels):** `render_wgpu_viewport_readback` bridges `lig_wgpu_swapchain_readback_run` → `RenderViewportSmoke`; `native_pixels=1` when `LIG_WGPU_SWAPCHAIN=1` + `LIG_GPU_RUNNER=1` + `LIG_HOST_PRESENT=1`. CPU CI reports `blocked_runner` honestly; path B (CPU paint_blit) remains fallback.
 
 ## Real window launch (no installer)
+
+**Windows native (wsg-w5 — no WSL required when MinGW+SDL2 installed):**
+
+```powershell
+cd studio
+.\scripts\build-studio-shell-present-host.ps1 -WindowsNative
+.\scripts\start-li-world-studio-window.ps1 -Profile game
+```
+
+**WSL SDL fallback (Linux dev on Windows):**
 
 ```powershell
 cd studio
@@ -37,7 +47,18 @@ Equivalent:
 .\scripts\start-li-world-studio.ps1 -RealWindow -Profile game
 ```
 
-Requires WSL + SDL2 (`sudo apt install libsdl2-dev`) and X11/WSLg for visible window.
+Requires WSL + SDL2 (`sudo apt install libsdl2-dev`) and X11/WSLg for visible window when using ELF fallback. Windows native `.exe` path does not require WSL.
+
+**macOS aarch64 wgpu surface (wsg-w5-macos-wgpu — PH-HW WP3):**
+
+```bash
+cd studio
+brew install sdl2
+./scripts/build-studio-shell-present-host-macos.sh
+./scripts/start-li-world-studio-macos.sh
+```
+
+Sets `LIG_HOST_PRESENT=1`, `LIG_WGPU_SWAPCHAIN=1`, `LIG_GPU_RUNNER=1` for Metal/wgpu swapchain on Apple Silicon. Probe: `deploy/studio-demo/native/lig_macos_wgpu_surface_probe.c`.
 
 ## li-gui roadmap: Qt vs Svelte-like
 
@@ -65,5 +86,7 @@ Full phased roadmap: [GUI-LIBRARY-PLAN.md](GUI-LIBRARY-PLAN.md).
 |--------|-----------------|----------|
 | HTML mock | false | Marketing only |
 | C paint_fb capture (no SDL) | true | CI / headless evidence |
-| SDL present host (this path) | true | Real window; mirrors Li paint contracts |
-| wgpu swapchain | true (future) | Production target |
+| SDL present host (this path) | true | Real window; Li raster → `--rgb-ppm` blit |
+| Windows native `.exe` host | true | Real window on desktop; no WSL (wsg-w5) |
+| macOS Metal wgpu surface | true (when LIG_WGPU_SWAPCHAIN env) | Apple Silicon present path (wsg-w5-macos-wgpu) |
+| wgpu swapchain | true (when GPU runner env) | Production target (Path A) |

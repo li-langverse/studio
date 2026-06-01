@@ -11,4 +11,11 @@ wsl_root="$(wsl.exe wslpath -u "$ROOT" 2>/dev/null | tr -d '\r\n')"
   echo "world-studio-plan-lic-smokes-wsl: wslpath failed for repo root" >&2
   exit 1
 }
-MSYS2_ARG_CONV_EXCL='*' MSYS_NO_PATHCONV=1 wsl.exe bash -lc "cd '$wsl_root' && LIC=./build-wsl/compiler/lic/lic bash ./scripts/world-studio-plan-lic-smokes.sh"
+# shellcheck source=_studio-env.sh
+source "$ROOT/scripts/_studio-env.sh"
+lic_wsl="$(wsl.exe wslpath -u "$LIC_ROOT" 2>/dev/null | tr -d '\r\n')"
+[[ -n "$lic_wsl" ]] || {
+  echo "world-studio-plan-lic-smokes-wsl: wslpath failed for LIC_ROOT" >&2
+  exit 1
+}
+MSYS2_ARG_CONV_EXCL='*' MSYS_NO_PATHCONV=1 wsl.exe bash -lc "cd '$wsl_root' && export LIC_ROOT='$lic_wsl' && bash ./scripts/world-studio-plan-lic-smokes.sh"

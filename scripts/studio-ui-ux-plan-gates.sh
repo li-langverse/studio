@@ -5,6 +5,8 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=lib/benchmarks-env.sh
 source "$ROOT/scripts/lib/benchmarks-env.sh"
 
+# shellcheck source=lib/llvm-env.sh
+source "$ROOT/scripts/lib/llvm-env.sh"
 # shellcheck source=lib/li-ui.sh
 source "$ROOT/scripts/lib/li-ui.sh"
 li_detect_compilers 2>/dev/null || true
@@ -18,6 +20,7 @@ li_phase "studio-ui-ux scripts"
 [[ -f "$ROOT/scripts/bench-studio-viewport-perf.sh" ]] || fail "missing bench-studio-viewport-perf.sh"
 
 li_phase "design system (tokens + demo CSS)"
+chmod +x "$ROOT/scripts/studio-ui-ux-generate-design-system.sh" 2>/dev/null || true
 "$ROOT/scripts/studio-ui-ux-generate-design-system.sh" || fail "studio-ui-ux-generate-design-system"
 [[ -f "$ROOT/docs/design/studio-design-tokens.toml" ]] || fail "studio-design-tokens.toml"
 [[ -f "$ROOT/deploy/studio-demo/screenshots/studio-tokens.css" ]] || fail "studio-tokens.css"
@@ -49,6 +52,7 @@ li_phase "competitive intel doc"
 [[ -f "$BENCHMARKS_COMPETITIVE/studio-ui.toml" ]] || fail "studio-ui.toml bench registry"
 
 li_phase "studio-ui bench registry"
+chmod +x "$ROOT/scripts/bench-studio-viewport-perf.sh" 2>/dev/null || true
 "$ROOT/scripts/bench-studio-viewport-perf.sh" || fail "bench-studio-viewport-perf"
 python3 "$ROOT/scripts/studio-ui-ux-verify-bench-registry.py" || fail "studio-ui-ux-verify-bench-registry"
 
@@ -73,6 +77,7 @@ if [[ "${STUDIO_UI_UX_GATES_SKIP_BUILD:-0}" != "1" ]]; then
 fi
 
 li_phase "memory profile smoke"
+chmod +x "$ROOT/scripts/profile-animate-memory.sh" 2>/dev/null || true
 "$ROOT/scripts/profile-animate-memory.sh" || fail "profile-animate-memory"
 [[ -f "$ROOT/data/studio-ui-ux-plan-loop/latest-memory-profile.json" ]] \
   || fail "latest-memory-profile.json missing after profile-animate-memory"

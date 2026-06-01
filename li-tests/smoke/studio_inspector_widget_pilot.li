@@ -1,0 +1,29 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 32:
+    return 1
+  if studio_inspector_widget_pilot_version() != 1:
+    return 2
+  var layout: StudioShellLayout = layout_studio_shell_adaptive(1280.0, 720.0)
+  var insp: StudioInspectorCompose = studio_compose_inspector_widget_pilot(layout, 1)
+  if insp.widget_pilot != 1:
+    return 3
+  if insp.field_count < 2:
+    return 4
+  if insp.field0.value_rect.w <= 0.0:
+    return 5
+  var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 1)
+  if shell.inspector.widget_pilot != 1:
+    return 6
+  if shell.inspector.field_count < 2:
+    return 7
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_inspector(frame, shell.inspector)
+  if frame.cmd_count != studio_paint_inspector_selected_cmds():
+    return 8
+  return 0
