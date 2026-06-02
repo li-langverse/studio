@@ -533,6 +533,13 @@ def studio_profile_color(profile_id: int) -> Color
     return studio_color_accent_violet()
   return studio_color_accent_amber()
 
+def studio_paint_topbar_profile_cmds() -> int
+  requires true
+  ensures result == studio_paint_topbar_profile_accent_cmds() + 2 + studio_paint_glyph_run_cmds()
+  decreases 0
+=
+  return studio_paint_topbar_profile_accent_cmds() + 2 + studio_paint_glyph_run_cmds()
+
 def studio_paint_topbar_profile(frame: var PaintFrame, topbar: Rect, profile_id: int) -> unit
   requires frame.cmd_count >= 0
   requires studio_profile_id_valid(profile_id) == 1
