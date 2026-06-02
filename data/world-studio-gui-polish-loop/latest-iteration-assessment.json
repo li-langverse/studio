@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-06-02T04:45:00Z",
+  "todo": "wsp-w0-typography-readable",
+  "wave": "W0",
+  "wps": ["WP-UX-01", "WP-UX-10", "GUI-LIBRARY Phase 0"],
+  "native_only": true,
+  "polish_phase": "W0-complete",
+  "smokes": ["lic check li-tests/smoke/studio_polish_w0_typography.li"],
+  "gates": "pass",
+  "changes": [
+    "Synced studio/src/lib.li from lic li-studio: profile chip glyphs, outliner row labels, elevated inspector panels, gradient dock/timeline",
+    "li-ui studio_contrast_ratio_ok() documents ~12:1 text_primary on bg_primary (WCAG AA 4.5:1)",
+    "Typography tokens body_px=12 heading_px=14 via studio-design-tokens.toml"
+  ],
+  "baseline_screenshot": "installer/out/studio-screenshot-polish-baseline.png",
+  "iteration_screenshot": "installer/out/studio-screenshot-iteration-0.png",
+  "baseline_diff_note": "Iteration-0 reuses baseline frame until present host capture lands; structural regions unchanged — W0 adds glyph IR (draw_glyphs) on topbar/outliner vs flat rects-only wireframe.",
+  "polish_screenshot_paths": [
+    "installer/out/studio-screenshot-polish-baseline.png"
+  ],
+  "ux_scores": {
+    "UX-01": {"score": 2, "note": "Readable token sizes; glyph labels on profile chip and outliner"},
+    "UX-10": {"score": 2, "note": "Contrast ratio contract 12:1 documented; native raster still coarse"}
+  }
+}

@@ -11,7 +11,7 @@ warn() { echo "WARN: $*" >&2; }
 ok() { echo "OK: $*"; }
 
 PLAN_LOOP="$ROOT/docs/superpowers/plans/2026-05-31-world-studio-gui-polish-loop.md"
-GOAL="$ROOT/../data/goal-directed-sprints/world-studio-gui-polish.md"
+GOAL="$ROOT/data/goal-directed-sprints/world-studio-gui-polish.md"
 TOKENS="$ROOT/docs/design/studio-design-tokens.toml"
 POLISH_DIR="$ROOT/docs/demo/media/native-verticals/png"
 STATE_DIR="$ROOT/data/world-studio-gui-polish-loop"
@@ -139,5 +139,52 @@ p.write_text(json.dumps({
 PY
   ok "seeded $ASSESS"
 fi
+
+wsl_path_for_wsl() {
+  local p="$1"
+  p="${p//\\//}"
+  if [[ "$p" =~ ^/([a-zA-Z])/(.*)$ ]]; then
+    echo "/mnt/${BASH_REMATCH[1],,}/${BASH_REMATCH[2]}"
+    return
+  fi
+  if [[ "$p" =~ ^([A-Za-z]):/(.*)$ ]]; then
+    echo "/mnt/${BASH_REMATCH[1],,}/${BASH_REMATCH[2]}"
+    return
+  fi
+  echo "$p"
+}
+
+echo "==> lic check W0 polish smokes"
+lic_check_smoke() {
+  local smoke="$1"
+  [[ -f "$ROOT/li-tests/smoke/$smoke" ]] || fail "missing li-tests/smoke/$smoke"
+  local lic_smoke="packages/li-studio/li-tests/smoke/$smoke"
+  [[ -f "$LIC_ROOT/$lic_smoke" ]] || cp -f "$ROOT/li-tests/smoke/$smoke" "$LIC_ROOT/$lic_smoke"
+  if [[ -f "$ROOT/src/lib.li" && -f "$LIC_ROOT/packages/li-studio/src/lib.li" ]]; then
+    cp -f "$ROOT/src/lib.li" "$LIC_ROOT/packages/li-studio/src/lib.li"
+  fi
+  if [[ -f "$LIC_ROOT/build-wsl/compiler/lic/lic" ]] && command -v wsl >/dev/null 2>&1 \
+    && ! grep -qiE 'microsoft|wsl' /proc/version 2>/dev/null; then
+    local wsl_lic
+    wsl_lic="$(wsl_path_for_wsl "$LIC_ROOT")"
+    wsl -e bash -lc "cd '$wsl_lic' && '$wsl_lic/build-wsl/compiler/lic/lic' check --no-cache '$lic_smoke'" \
+      || fail "lic check $smoke (wsl)"
+    ok "lic check $smoke (wsl)"
+    return 0
+  fi
+  local lic_bin=""
+  lic_bin="$(resolve_lic 2>/dev/null || true)"
+  if [[ -n "$lic_bin" ]]; then
+    (cd "$LIC_ROOT" && "$lic_bin" check --no-cache "$lic_smoke") || fail "lic check $smoke"
+    ok "lic check $smoke"
+    return 0
+  fi
+  if [[ "${WORLD_STUDIO_GATES_SKIP_LIC:-0}" == "1" ]]; then
+    warn "lic not built — skip $smoke (WORLD_STUDIO_GATES_SKIP_LIC=1)"
+    return 0
+  fi
+  fail "lic not built — cannot check $smoke"
+}
+lic_check_smoke "studio_polish_w0_typography.li"
 
 ok "world-studio-gui-polish progress gates"
