@@ -14,7 +14,7 @@ def main() -> int
   var task0: int = compose0.agent.task_state
   var pal0: int = compose0.palette.is_open
   var ctx0: int = compose0.agent.agent_context_label
-  var exp0: int = studio_shell_chrome_count_palette(sel0, scene0, task0, pal0, ctx0, 0, compose0.viewport_display, compose0.viewport_menu, compose0.agent.invoke_input_visible, compose0.agent.tool_trace_visible)
+  var exp0: int = studio_shell_chrome_count_for_compose(compose0)
   var frame0: PaintFrame = paint_frame_new()
   studio_paint_shell_chrome(frame0, compose0)
   if frame0.cmd_count != exp0:
@@ -30,7 +30,7 @@ def main() -> int
   var task1: int = compose1.agent.task_state
   var pal1: int = compose1.palette.is_open
   var ctx1: int = compose1.agent.agent_context_label
-  var exp1: int = studio_shell_chrome_count_palette(sel1, scene1, task1, pal1, ctx1, 0, compose1.viewport_display, compose1.viewport_menu, compose1.agent.invoke_input_visible, compose1.agent.tool_trace_visible)
+  var exp1: int = studio_shell_chrome_count_for_compose(compose1)
   var frame1: PaintFrame = paint_frame_new()
   studio_paint_shell_chrome(frame1, compose1)
   if frame1.cmd_count != exp1:

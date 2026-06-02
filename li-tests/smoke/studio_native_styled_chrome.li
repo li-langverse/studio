@@ -16,10 +16,12 @@ def main() -> int
   var dock: StudioDockCompose = compose.dock
   var dframe: PaintFrame = paint_frame_new()
   studio_paint_dock(dframe, dock)
-  if dframe.last_kind != paint_op_draw_image():
+  if dframe.last_kind != paint_op_draw_glyphs():
     return 4
-  if dframe.cmd_count != studio_paint_dock_cmds():
+  if studio_paint_dock_cmds() != 14:
     return 7
+  if dframe.cmd_count != studio_paint_dock_cmds():
+    return 10
   var timeline: StudioTimelineCompose = compose.timeline
   var tframe: PaintFrame = paint_frame_new()
   studio_paint_timeline(tframe, timeline)

@@ -42,6 +42,54 @@ note = "T-PKG-li-studio-outliner PH-GD-1"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_polish_w0_typography.li"
+outcome = "check_ok"
+note = "wsp-w0: readable glyph labels on outliner, topbar, inspector, dock"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_polish_w2_focus_ring.li"
+outcome = "check_ok"
+note = "wsp-w2: panel focus ring wired in studio_paint_shell_chrome"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_polish_w2_shortcut_hints.li"
+outcome = "check_ok"
+note = "wsp-w2: Cmd+K topbar hint + palette digit shortcuts"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_polish_w3_viewport_grid.li"
+outcome = "check_ok"
+note = "wsp-w3: viewport grid axes, origin marker, 64px spacing, grid legend HUD"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_polish_w3_particles_sim.li"
+outcome = "check_ok"
+note = "wsp-w3: sim_rl reward preview + drug/scientific particle viewport compose"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_polish_w3_game_viewport.li"
+outcome = "check_ok"
+note = "wsp-w3: game profile 1280x720 entity preview blocks (not empty checkerboard)"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_polish_w4_shadows_spacing.li"
+outcome = "check_ok"
+note = "wsp-w4: panel shadows + 4/8px spacing rhythm on native shell chrome"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_polish_w4_vertical_chrome.li"
+outcome = "check_ok"
+note = "wsp-w4: per-vertical topbar accent + drug/game/rl viewport polish"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_agent_chrome.li"
 outcome = "check_ok"
 note = "T-PKG-li-studio-agent-chrome"
@@ -200,7 +248,19 @@ note = "wsg-w0-native-styled-chrome: dock/timeline/shell PaintCmd round-rect + g
 suite = "smoke"
 file = "smoke/studio_polish_w0_typography.li"
 outcome = "check_ok"
-note = "wsp-w0: typography readable, token contrast WCAG-ish, glyph labels on topbar/outliner"
+note = "wsp-w0: readable glyph labels on outliner, topbar, inspector, dock"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_polish_w1_glyphs.li"
+outcome = "check_ok"
+note = "wsp-w1: glyph pipeline, dock atlas icons, inspector fields, viewport HUD"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_polish_w2_hover.li"
+outcome = "check_ok"
+note = "wsp-w2: hover states on dock slots, outliner rows, timeline controls"
 
 [[tests]]
 suite = "smoke"
