@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-06-02T04:00:00Z",
+  "todo": "wsp-w0-typography-readable",
+  "wsp_todos_done": [
+    "wsp-w0-typography-readable",
+    "wsp-w0-token-contrast",
+    "wsp-w0-anti-wireframe-paint",
+    "wsp-w0-baseline-screenshot"
+  ],
+  "wave": "W0",
+  "wps": ["WP-UX-10", "WP-GD-05"],
+  "native_only": true,
+  "polish_phase": "W0-complete",
+  "li_std_studio_version": 40,
+  "smokes": [
+    "li-tests/smoke/studio_polish_w0_typography.li",
+    "li-tests/smoke/studio_outliner.li",
+    "li-tests/smoke/studio_native_styled_chrome.li"
+  ],
+  "gates": "world-studio-gui-polish-gates.sh pass",
+  "baseline_screenshot": "installer/out/studio-screenshot-polish-baseline.png",
+  "iteration_screenshot": "installer/out/studio-screenshot-iteration-0.png",
+  "polish_screenshot_paths": [],
+  "screenshot_note": "Present host not built in agent workspace; capture skipped (WORLD_STUDIO_POLISH_SKIP_CAPTURE=1). Baseline PNG committed; iteration-0 pending native host build.",
+  "design_review": {
+    "UX-01": {"score": 2, "note": "Glyph labels on profile chip + outliner rows; body 12px / heading 14px tokens"},
+    "UX-02": {"score": 2, "note": "Timeline gradients unchanged; playhead visible"},
+    "UX-03": {"score": 2, "note": "Inspector elevated panel + hint skeletons"},
+    "UX-04": {"score": 1, "note": "Palette unchanged this wave"},
+    "UX-05": {"score": 2, "note": "Profile chip glyph + dock icon atlas"},
+    "UX-06": {"score": 2, "note": "Agent strip unchanged"},
+    "UX-07": {"score": 2, "note": "Dock gradient + icon draw_image"},
+    "UX-08": {"score": 1, "note": "Viewport grid still structural"},
+    "UX-09": {"score": 2, "note": "Token contrast 12:1 stub verified"},
+    "UX-10": {"score": 2, "note": "Anti-wireframe: gradients, round rects, elevated inspector"},
+    "UX-11": {"score": 1, "note": "Empty states unchanged"},
+    "UX-12": {"score": 1, "note": "Vertical polish deferred to W4/W5"},
+    "UX-13": {"score": 1, "note": "HUD stubs"},
+    "UX-14": {"score": 1, "note": "Native pixels honesty unchanged"}
+  },
+  "regressions": "none",
+  "north_star_fit": "gaming / PH-UX visual baseline on native Li paint path"
+}

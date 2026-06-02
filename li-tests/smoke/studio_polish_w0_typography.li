@@ -1,0 +1,38 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 40:
+    return 1
+  if li_std_ui_version() < 5:
+    return 2
+  if studio_typography_body_px() < 12.0:
+    return 3
+  if studio_typography_glyph_line_height_px() < studio_typography_body_px():
+    return 4
+  if studio_typography_heading_px() < 14.0:
+    return 41
+  if studio_contrast_ratio_ok() < 4.5:
+    return 42
+  if font_atlas_codepoint_supported(studio_outliner_label_first_codepoint(studio_outliner_label_root())) != 1:
+    return 5
+  if studio_paint_outliner_row_cmds() != 2:
+    return 6
+  var layout: StudioShellLayout = layout_studio_shell_adaptive(1280.0, 720.0)
+  var compose: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 0, 0)
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_topbar_profile(frame, compose.layout.topbar, studio_profile_game())
+  if frame.last_kind != paint_op_draw_glyphs():
+    return 7
+  var empty_insp: StudioInspectorCompose = studio_compose_empty_inspector(layout)
+  var insp: PaintFrame = paint_frame_new()
+  studio_paint_inspector(insp, empty_insp)
+  if empty_insp.has_selection != 0:
+    return 8
+  if insp.cmd_count != studio_paint_inspector_empty_cmds():
+    return 9
+  return 0
