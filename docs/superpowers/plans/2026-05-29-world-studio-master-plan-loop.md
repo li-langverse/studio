@@ -127,4 +127,5 @@ This plan-loop file is consumed by:
 - `./scripts/world-studio-plan-completion-gate.sh`
 
 All `wsm-w*` items are marked **done** based on `data/world-studio-plan-loop/state.json`.
+Canonical plan hub: [WORLD-STUDIO-MASTER-PLAN.md](../../game-dev/WORLD-STUDIO-MASTER-PLAN.md)
 

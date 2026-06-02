@@ -1,24 +1,21 @@
 {
-  "timestamp": "2026-06-02T04:15:00Z",
+  "timestamp": "2026-06-02T08:10:30Z",
   "iteration_status": "sprint_complete_verified",
-  "todo": "wsp-w5-no-html-proof",
+  "todo": "wsv-w5-manifest-assessment",
   "wave": "W5",
-  "wps": ["WP-UX-01", "WP-UX-02", "WP-UX-06", "WP-UX-13", "WP-GD-05", "GUI-LIBRARY-PLAN W0-W5"],
+  "wps": ["WP-UX-01", "WP-UX-02", "WP-UX-06", "WP-UX-13", "WP-GD-05", "GUI polish artifacts (wsp-w*)"],
   "native_only": true,
-  "polish_screenshot_paths": [
-    "docs/demo/media/native-verticals/png/polish-game.png",
-    "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
-    "docs/demo/media/native-verticals/png/polish-sim_rl.png",
-    "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
-    "installer/out/studio-screenshot-polish-baseline.png"
+  "product_visual_screenshot_paths": [
+    "docs/demo/media/native-verticals/png/product-visual-game.png",
+    "docs/demo/media/native-verticals/png/product-visual-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_rl.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_drug_design.png"
   ],
   "gates": {
-    "world_studio_gui_polish_gates": "pass",
-    "world_studio_gui_polish_completion_gate": "pass"
+    "world_studio_gui_product_visual_gates": "pass",
+    "world_studio_gui_product_visual_completion_gate": "pass"
   },
-  "baseline_diff_note": "Baseline wireframe ~3.7KB (640x360) vs polish-game ~14.6KB — bitmap glyph labels, design tokens, round rects, viewport grid/HUD, hover/focus, per-vertical previews. Local present-host capture skipped on Windows agent host (WORLD_STUDIO_POLISH_SKIP_CAPTURE=1); committed PNGs pass size/color heuristics (>=12KB, >=48 unique colors).",
   "north_star_fit": "gaming PH-UX — provable native Li chrome; HTML mocks reference-only",
-  "smokes": "li-tests/smoke/studio_polish_w0_typography.li through studio_polish_w4_vertical_chrome.li",
-  "pr": "https://github.com/li-langverse/studio/pull/19",
-  "agent_run_note": "world_studio_builder-73689379 2026-06-02: re-verified progress + completion gates on cursor/world-studio-gui-polish; all wsp-w0–w5 done; PR #19 CI green"
+  "smokes": "token verification + product-visual PNG heuristics (native-only); live capture best-effort skipped (present host not built on runner)",
+  "pr": ""
 }

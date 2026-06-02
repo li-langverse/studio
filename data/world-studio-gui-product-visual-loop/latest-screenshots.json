@@ -1,17 +1,16 @@
 {
-  "timestamp": "2026-06-02T08:00:18.495949+00:00",
+  "timestamp": "2026-06-02T08:08:20.150519+00:00",
   "native_only": true,
   "paths": [
-    "installer/out/studio-screenshot-polish-baseline.png",
-    "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
-    "docs/demo/media/native-verticals/png/polish-game.png",
-    "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
-    "docs/demo/media/native-verticals/png/polish-sim_rl.png"
+    "docs/demo/media/native-verticals/png/product-visual-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/product-visual-game.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_drug_design.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_rl.png"
   ],
-  "polish_pngs": [
-    "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
-    "docs/demo/media/native-verticals/png/polish-game.png",
-    "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
-    "docs/demo/media/native-verticals/png/polish-sim_rl.png"
+  "product_visual_pngs": [
+    "docs/demo/media/native-verticals/png/product-visual-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/product-visual-game.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_drug_design.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_rl.png"
   ]
 }

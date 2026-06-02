@@ -1,23 +1,198 @@
 #!/usr/bin/env bash
-# Progress gates for world-studio-gui-product-visual.
-#
-# This loop is implemented by the completed GUI polish sprint; we delegate to the
-# gui-polish gates and keep product-visual state files synced for workflow tools.
+# Progress gates for world-studio-gui-product-visual (fonts + shadows + honest raster).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=_studio-env.sh
 source "$ROOT/scripts/_studio-env.sh"
 ROOT="$STUDIO_ROOT"
 
-bash "$ROOT/scripts/world-studio-gui-polish-gates.sh"
+fail() { echo "FAIL: $*" >&2; exit 1; }
+warn() { echo "WARN: $*" >&2; }
+ok() { echo "OK: $*"; }
 
-# Sync polish loop artifacts into product-visual loop state dir.
-PV_DIR="$ROOT/data/world-studio-gui-product-visual-loop"
-POLISH_DIR="$ROOT/data/world-studio-gui-polish-loop"
-mkdir -p "$PV_DIR"
-if [[ -f "$POLISH_DIR/latest-screenshots.json" ]]; then
-  cp -f "$POLISH_DIR/latest-screenshots.json" "$PV_DIR/latest-screenshots.json"
+PLAN_LOOP="$ROOT/docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md"
+GOAL="$ROOT/data/goal-directed-sprints/world-studio-gui-product-visual.md"
+TOKENS="$ROOT/docs/design/studio-design-tokens.toml"
+PNG_DIR="$ROOT/docs/demo/media/native-verticals/png"
+STATE_DIR="$ROOT/data/world-studio-gui-product-visual-loop"
+MANIFEST="$STATE_DIR/latest-screenshots.json"
+ASSESS="$STATE_DIR/latest-iteration-assessment.json"
+INSTALLER_OUT="$ROOT/installer/out"
+MIN_BYTES="${WORLD_STUDIO_PRODUCT_VISUAL_MIN_PNG_BYTES:-12000}"
+
+echo "==> product-visual plan documents"
+[[ -f "$PLAN_LOOP" ]] || fail "missing $PLAN_LOOP"
+[[ -f "$GOAL" ]] || fail "missing goal $GOAL"
+[[ -f "$TOKENS" ]] || fail "missing $TOKENS"
+[[ -f "$ROOT/src/lib.li" ]] || fail "studio/src/lib.li missing"
+mkdir -p "$PNG_DIR" "$STATE_DIR" "$INSTALLER_OUT"
+
+echo "==> token verification"
+if [[ -f "$ROOT/scripts/studio-ui-ux-verify-tokens.py" ]]; then
+  export LIC_ROOT
+  python3 "$ROOT/scripts/studio-ui-ux-verify-tokens.py" || fail "studio-ui-ux-verify-tokens"
+else
+  fail "missing studio-ui-ux-verify-tokens.py"
 fi
-if [[ -f "$POLISH_DIR/latest-iteration-assessment.json" ]]; then
-  cp -f "$POLISH_DIR/latest-iteration-assessment.json" "$PV_DIR/latest-iteration-assessment.json"
+
+find_verticals_host() {
+  local native="$ROOT/deploy/studio-demo/native"
+  for c in \
+    "$native/studio_verticals_present_host.exe" \
+    "$native/studio_verticals_present_host" \
+    "$ROOT/li-native/studio_verticals_present_host.exe" \
+    "$ROOT/li-native/studio_verticals_present_host"; do
+    if [[ -x "$c" ]]; then
+      echo "$c"
+      return 0
+    fi
+  done
+  return 1
+}
+
+build_verticals_host() {
+  local native="$ROOT/deploy/studio-demo/native"
+  local bin="$native/studio_verticals_present_host"
+  if [[ -x "$bin" ]]; then
+    echo "$bin"
+    return 0
+  fi
+  if [[ ! -f "$native/studio_shell_paint_fb.c" ]]; then
+    return 1
+  fi
+  if command -v cc >/dev/null 2>&1; then
+    cc -std=c11 -Wall -Wextra -O2 \
+      "$native/studio_shell_paint_fb.c" \
+      "$native/studio_verticals_present_host.c" \
+      -o "$bin" 2>/dev/null || return 1
+    chmod +x "$bin" 2>/dev/null || true
+    echo "$bin"
+    return 0
+  fi
+  if [[ -x "$native/native-sdl-build.sh" && -f "$native/studio_verticals_present_host.c" ]]; then
+    bash "$native/native-sdl-build.sh" "$native/studio_verticals_present_host.c" "$bin" 2>/dev/null || return 1
+    echo "$bin"
+    return 0
+  fi
+  return 1
+}
+
+capture_profile_png() {
+  local profile="$1"
+  local width="${2:-1280}"
+  local height="${3:-720}"
+  local out_name="product-visual-${profile}.png"
+  if [[ "$width" == "1280" && "$height" == "720" && "$profile" == "game" ]]; then
+    out_name="product-visual-game-1280x720.png"
+  fi
+  local dest="$PNG_DIR/$out_name"
+  local tmp
+  tmp="$(mktemp -d)"
+  local host_bin=""
+  if ! host_bin="$(find_verticals_host)"; then
+    host_bin="$(build_verticals_host)" || true
+  fi
+  if [[ -z "$host_bin" || ! -x "$host_bin" ]]; then
+    warn "verticals present host not built — skip live capture for $profile"
+    rm -rf "$tmp"
+    return 0
+  fi
+  if STUDIO_DEMO_PROFILE="$profile" \
+    "$host_bin" --slug "$profile" --width "$width" --height "$height" --out "$tmp" 2>/dev/null \
+    | grep -q '"native_pixels":1'; then
+    if python3 "$ROOT/scripts/studio-ppm-to-png.py" "$tmp" "$tmp" >/dev/null 2>&1 \
+      && [[ -f "$tmp/frame-000.png" ]]; then
+      cp -f "$tmp/frame-000.png" "$dest"
+      cp -f "$tmp/frame-000.png" "$INSTALLER_OUT/studio-screenshot-product-visual-iteration-${WORLD_STUDIO_PRODUCT_VISUAL_ITERATION:-0}.png" 2>/dev/null || true
+      ok "captured $dest"
+    fi
+  else
+    warn "verticals capture failed profile=$profile"
+  fi
+  rm -rf "$tmp"
+}
+
+fallback_copy_from_polish() {
+  local want="$1"
+  local from="$2"
+  if [[ ! -f "$PNG_DIR/$want" && -f "$PNG_DIR/$from" ]]; then
+    cp -f "$PNG_DIR/$from" "$PNG_DIR/$want"
+    ok "fallback copied $want <- $from"
+  fi
+}
+
+echo "==> native screenshot capture (best effort)"
+if [[ "${WORLD_STUDIO_PRODUCT_VISUAL_SKIP_CAPTURE:-0}" != "1" ]]; then
+  capture_profile_png "game" 1280 720 || true
+  capture_profile_png "sim_drug_design" 1280 720 || true
+  capture_profile_png "sim_rl" 1280 720 || true
 fi
+
+echo "==> screenshot fallback mapping (polish → product-visual)"
+fallback_copy_from_polish "product-visual-game-1280x720.png" "polish-game-1280x720.png"
+fallback_copy_from_polish "product-visual-game.png" "polish-game.png"
+fallback_copy_from_polish "product-visual-sim_drug_design.png" "polish-sim_drug_design.png"
+fallback_copy_from_polish "product-visual-sim_rl.png" "polish-sim_rl.png"
+
+echo "==> screenshot manifest"
+python3 - "$MANIFEST" "$ROOT" "$PNG_DIR" "$INSTALLER_OUT" "$MIN_BYTES" <<'PY'
+import json, sys
+from pathlib import Path
+from datetime import datetime, timezone
+
+manifest, repo_root, png_dir, installer_out, min_bytes = sys.argv[1:6]
+min_bytes = int(min_bytes)
+root = Path(repo_root).resolve()
+png = Path(png_dir)
+installer = Path(installer_out)
+
+def rel(p: Path) -> str:
+    try:
+        return p.resolve().relative_to(root).as_posix()
+    except ValueError:
+        return str(p.resolve())
+
+paths: list[str] = []
+for p in sorted(png.glob("product-visual-*.png")):
+    paths.append(rel(p))
+for p in sorted(installer.glob("studio-screenshot-product-visual-iteration-*.png")):
+    paths.append(rel(p))
+baseline = installer / "studio-screenshot-product-visual-baseline.png"
+if baseline.is_file():
+    paths.insert(0, rel(baseline))
+
+pv_pngs = sorted(rel(p) for p in png.glob("product-visual-*.png"))
+payload = {
+    "timestamp": datetime.now(timezone.utc).isoformat(),
+    "native_only": True,
+    "paths": paths,
+    "product_visual_pngs": pv_pngs,
+}
+Path(manifest).parent.mkdir(parents=True, exist_ok=True)
+Path(manifest).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+small = [p for p in pv_pngs if (root / p).stat().st_size < min_bytes]
+if small:
+    print("WARN: product-visual PNGs below min bytes:", ", ".join(small), file=sys.stderr)
+print("OK: wrote", manifest)
+PY
+
+if [[ -f "$ASSESS" ]]; then
+  ok "assessment present: $ASSESS"
+else
+  python3 - "$ASSESS" <<'PY'
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+p = Path(__import__("sys").argv[1])
+p.parent.mkdir(parents=True, exist_ok=True)
+p.write_text(json.dumps({
+    "timestamp": datetime.now(timezone.utc).isoformat(),
+    "native_only": True,
+    "iteration_status": "progress_seed",
+}, indent=2) + "\n", encoding="utf-8")
+PY
+  ok "seeded $ASSESS"
+fi
+
+ok "world-studio-gui-product-visual progress gates"

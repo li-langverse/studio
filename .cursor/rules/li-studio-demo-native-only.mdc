@@ -1,13 +1,26 @@
 ---
-description: Native-only policy for World Studio product proof
+description: Native-only policy for Li World Studio demos
 ---
 
-Rule: **World Studio product proof is native Li only.**
+# Li Studio demo — native only
 
-- **Allowed**: native composition + paint in `li-studio`/`li-ui`/`li-gui`, Li rasterizer pixels presented via SDL/host, `li-render` / `lig` viewport paths, MCP dispatch through `studio_mcp_tool_*`, smokes under `li-tests/smoke/`.
-- **Forbidden**: treating `deploy/studio-demo/` HTML/CSS/JS as the product runtime, or using marketing mocks as evidence of shipped UI.
+World Studio’s shipped runtime is **native Li** (`li-studio`, `li-ui`, `li-gui`, `li-render`, `li-sim-*`) and native hosts.
 
-Notes:
+## Allowed
 
-- `deploy/studio-demo/` may contain reference demos, capture hosts, or marketing mocks. Those are **not** the shipped Studio runtime unless explicitly routed through `li-render` and still gated by proof (`lic build` / smokes).
-- Gate scripts and screenshots must prefer **honest pixel paths** (Li rasterizer / wgpu readback) and should flag any fallback that bypasses Li.
+- Native composition + paint in `li-studio` / `li-ui` / `li-gui`
+- Li rasterizer pixels presented via SDL/host; `li-render` / `lig` viewport paths
+- MCP dispatch through `studio_mcp_tool_*`
+- Smokes under `li-tests/smoke/` and `packages/*/li-tests/smoke/`
+
+## Forbidden
+
+- Treating `deploy/studio-demo/*.html` (marketing mocks) as the shipped app/runtime
+- Using HTML/CSS/JS studio runtime as product proof
+
+## Proof requirement
+
+When claiming progress/completion, provide native artifacts:
+
+- `docs/demo/media/native-verticals/png/*.png` screenshots from native pixels
+- `lic check` / `lic build` gates where required by the current plan loop
