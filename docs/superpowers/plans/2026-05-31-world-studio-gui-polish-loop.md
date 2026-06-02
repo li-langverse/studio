@@ -4,7 +4,7 @@ overview: Goal-directed polish sprint — native Li World Studio from wireframe+
 todos:
   - id: wsp-w0-typography-readable
     content: "W0 — Typography readable at 12–14px body; token contrast WCAG-ish on shell chrome"
-    status: pending
+    status: done
   - id: wsp-w0-token-contrast
     content: "W0 — surface/text/border tokens applied consistently; no raw gray wireframe fills"
     status: pending

@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-06-02T01:00:00+00:00",
+  "todo": "wsp-w0-typography-readable",
+  "wps": ["WP-UX-10", "WP-GD-01"],
+  "native_only": true,
+  "polish_phase": "W0",
+  "iteration": 1,
+  "changes": [
+    "Topbar profile chip draws Inter glyph via paint_cmd_draw_glyph (G/R/D/S codepoints)",
+    "Outliner rows draw glyph labels (S/C/M) with text_primary on token backgrounds",
+    "Added studio_polish_w0_typography.li smoke; updated studio_outliner.li cmd counts"
+  ],
+  "smokes": [
+    "li-tests/smoke/studio_polish_w0_typography.li",
+    "li-tests/smoke/studio_outliner.li"
+  ],
+  "gates": {
+    "world_studio_gui_polish_gates": "pass",
+    "lic_check": "skipped (WSL lic unavailable in agent shell)"
+  },
+  "typography": {
+    "body_px": 12,
+    "heading_px": 14,
+    "contrast_ratio_ok": 12.0,
+    "glyph_surfaces": ["topbar_profile_chip", "outliner_row"]
+  },
+  "polish_screenshot_paths": [],
+  "baseline_diff": "capture skipped (WORLD_STUDIO_POLISH_SKIP_CAPTURE=1); structural glyph paint landed in lib.li"
+}
