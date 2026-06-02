@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-02T21:36:00.000000+00:00",
+  "timestamp": "2026-06-02T21:45:00.000000+00:00",
   "native_only": true,
   "todo": "wsv-w5-acceptance-screenshots",
   "wps": [
@@ -7,11 +7,11 @@
     "WP-UX-05"
   ],
   "summary": [
-    "Product-visual sprint verified complete: all wsv-w0..w5 todos done; progress + completion gates PASS.",
-    "Eight acceptance PNGs present under docs/demo/media/native-verticals/png/product-visual-*.png.",
-    "PR #66 (cursor/world-studio-gui-product-visual) open with all CI checks green.",
-    "Headless Li capture unavailable in this workspace (PPM failures); existing committed PNGs satisfy heuristics.",
-    "paint_fb mirror still present for deprecated CI only; product truth is Li rasterizer."
+    "Product-visual sprint complete: all wsv-w0..w5 todos done; progress + completion gates PASS.",
+    "Eight acceptance PNGs committed; PNG heuristics pass in completion gate.",
+    "PR #66 open on cursor/world-studio-gui-product-visual with all CI checks green.",
+    "Local Li headless capture fails: PaintFrame.cmd_count stays 0 at runtime in this workspace lic build (regenerate via CI/native-sdl-capture).",
+    "paint_fb mirror retained for deprecated CI only; product truth remains Li rasterizer API."
   ],
   "evidence": {
     "product_visual_gates": "scripts/world-studio-gui-product-visual-gates.sh — PASS",
