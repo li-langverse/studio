@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-06-02T02:30:00Z",
+  "todo": "wsp-w0-typography-readable",
+  "wave": "W0",
+  "wps": ["WP-UX-10", "WP-GD-08", "wsg-w0-typography-tokens"],
+  "native_only": true,
+  "polish_phase": "W0-complete",
+  "polish_screenshot_paths": [
+    "installer/out/studio-screenshot-polish-baseline.png",
+    "installer/out/studio-screenshot-iteration-0.png"
+  ],
+  "baseline_diff": {
+    "baseline": "installer/out/studio-screenshot-polish-baseline.png",
+    "iteration": "installer/out/studio-screenshot-iteration-0.png",
+    "note": "W0 adds glyph labels (profile chip + outliner S/C/M), gradients on dock/timeline/inspector, token-driven contrast via studio_contrast_ratio_ok; baseline wireframe retained for regression compare until present host capture lands."
+  },
+  "smokes": [
+    "lic check packages/li-studio/li-tests/smoke/studio_polish_w0_typography.li",
+    "lic check packages/li-studio/li-tests/smoke/studio_outliner.li",
+    "lic check packages/li-studio/li-tests/smoke/studio_native_styled_chrome.li"
+  ],
+  "gates": "world-studio-gui-polish-gates.sh",
+  "design_review": {
+    "UX-01": { "score": 2, "note": "Glyph profile chip + outliner initials; full strings in W1" },
+    "UX-10": { "score": 2, "note": "Token contrast + elevated panels; focus ring W2" }
+  },
+  "north_star_fit": "gaming/studio UX — provable PaintCmd chrome, native-only product truth"
+}
