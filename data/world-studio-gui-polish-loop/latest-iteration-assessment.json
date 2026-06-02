@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-06-02T03:40:00Z",
+  "native_only": true,
+  "polish_phase": "W0",
+  "todo": [
+    "wsp-w0-typography-readable",
+    "wsp-w0-token-contrast",
+    "wsp-w0-anti-wireframe-paint",
+    "wsp-w0-baseline-screenshot"
+  ],
+  "wp_ids": ["wsg-w0-typography-tokens", "wsg-w0-paint-ops", "WP-UX-10"],
+  "smokes": [
+    "lic check packages/li-studio/li-tests/smoke/studio_polish_w0_typography.li",
+    "lic check packages/li-studio/li-tests/smoke/studio_outliner.li",
+    "lic check li-tests/smoke/studio_polish_w0_typography.li (studio repo mirror)"
+  ],
+  "gates": {
+    "world_studio_gui_polish_gates": "pass",
+    "world_studio_gui_polish_completion": "pending (W1–W5 open)"
+  },
+  "baseline_screenshot_diff": {
+    "baseline": "installer/out/studio-screenshot-polish-baseline.png",
+    "iteration": "installer/out/studio-screenshot-iteration-0.png",
+    "note": "W0 adds glyph labels (profile chip + outliner), round-rect skeleton/empty viewport, token-driven fills. Live capture deferred until present host built; iteration-0 seeded from baseline for manifest; re-capture after host build expected to show glyph contrast vs flat rects."
+  },
+  "polish_screenshot_paths": [
+    "installer/out/studio-screenshot-polish-baseline.png",
+    "installer/out/studio-screenshot-iteration-0.png"
+  ],
+  "design_review": {
+    "UX-01": { "score": 1, "note": "Glyphs on chip/outliner; full shell labels in W1" },
+    "UX-10": { "score": 2, "note": "studio_contrast_ratio_ok 12:1 contract; token skeleton fills" }
+  },
+  "north_star_fit": "gaming / World Studio native chrome — proof via lic check smokes"
+}
