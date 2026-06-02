@@ -1,0 +1,14 @@
+---
+description: Native-only policy for World Studio product proof
+---
+
+Rule: **World Studio product proof is native Li only.**
+
+- **Allowed**: `src/*.li` compose/paint, Li rasterizer output presented via SDL host, `li-render` / `lig` viewport paths, MCP dispatch through `studio_mcp_tool_*`, smokes under `li-tests/smoke/`.
+- **Forbidden**: Treating `deploy/studio-demo/` HTML/CSS/JS as the product runtime, or using marketing mocks as evidence of shipped UI.
+
+Notes:
+
+- `deploy/studio-demo/` may contain reference demos, capture hosts, or marketing mocks. Those are **not** the shipped Studio runtime unless explicitly routed through `li-render` and still gated by `lic build`.
+- Screenshot and gate scripts must prefer **honest pixel paths** (Li rasterizer / wgpu readback) and should flag any fallback that bypasses Li.
+

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Capture one native PNG per World Studio vertical (C paint_blit host — deprecated; prefer wgpu readback).
-# See deploy/studio-demo/native/DEPRECATED.md and scripts/studio-c-host-retirement-gate.sh.
+# Capture one native PNG per World Studio vertical.
+# Product-truth default: SDL host presents pixels produced by Li rasterizer (no C paint_fb mirror).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 NATIVE="$ROOT/deploy/studio-demo/native"
-BIN="${STUDIO_VERTICALS_PRESENT_HOST_BIN:-$NATIVE/studio_verticals_present_host}"
+BIN="${STUDIO_VERTICALS_PRESENT_HOST_BIN:-$NATIVE/studio_shell_present_host}"
 PNG_DIR="${STUDIO_VERTICALS_NATIVE_PNG_DIR:-$ROOT/docs/demo/media/native-verticals/png}"
 META="${STUDIO_VERTICALS_NATIVE_META:-$ROOT/docs/demo/media/native-verticals/capture.json}"
 WIDTH="${STUDIO_VERTICALS_CAPTURE_WIDTH:-1920}"
@@ -27,25 +27,32 @@ VERTICALS=(
 
 mkdir -p "$PNG_DIR"
 chmod +x "$NATIVE/native-sdl-build.sh" 2>/dev/null || true
-# paint-blit shell: host + studio_shell_paint_fb (no SDL)
-if [[ -f "$NATIVE/studio_shell_paint_fb.c" ]]; then
-  rm -f "$BIN" 2>/dev/null || true
-  cc -std=c11 -Wall -Wextra -O2 \
-    "$NATIVE/studio_shell_paint_fb.c" \
-    "$NATIVE/studio_verticals_present_host.c" \
-    -o "$BIN"
-else
-  bash "$NATIVE/native-sdl-build.sh" "$NATIVE/studio_verticals_present_host.c" "$BIN"
-fi
+
+# Product-truth capture uses the IO-only SDL host and requires a Li-produced RGB PPM.
+# The legacy C paint_fb mirror is intentionally not used here.
+bash "$NATIVE/native-sdl-build.sh" "$NATIVE/studio_shell_present_host.c" "$BIN"
 
 run_one() {
   local slug="$1"
   local pid="$2"
   local tmp
   tmp="$(mktemp -d)"
+  local ppm="$tmp/${slug}.ppm"
+  local png="$tmp/${slug}.png"
   local json
-  if ! json=$("$BIN" --profile-id "$pid" --slug "$slug" --out "$tmp" \
-    --width "$WIDTH" --height "$HEIGHT" 2>/dev/null); then
+  # Expect the Li rasterizer to write the RGB PPM to $ppm for this profile.
+  # This repo intentionally does not attempt to generate the PPM via C mirror.
+  if [[ ! -f "$ppm" ]]; then
+    if [[ "${STUDIO_VERTICALS_ALLOW_SOLID_FALLBACK:-0}" == "1" ]]; then
+      # Host will fall back to solid background (pixel_source=surface_io_only).
+      :
+    else
+      echo "studio-verticals-capture-native: missing Li PPM for $slug ($ppm). Set STUDIO_VERTICALS_ALLOW_SOLID_FALLBACK=1 to soft-run." >&2
+      rm -rf "$tmp"
+      return 1
+    fi
+  fi
+  if ! json=$("$BIN" --width "$WIDTH" --height "$HEIGHT" --rgb-ppm "$ppm" --screenshot "$ppm" 2>/dev/null); then
     rm -rf "$tmp"
     return 1
   fi
@@ -53,15 +60,20 @@ run_one() {
     rm -rf "$tmp"
     return 1
   fi
+  if [[ ! -f "$ppm" ]]; then
+    rm -rf "$tmp"
+    return 1
+  fi
   if ! python3 "$ROOT/scripts/studio-ppm-to-png.py" "$tmp" "$tmp" >/dev/null 2>&1; then
     rm -rf "$tmp"
     return 1
   fi
-  if [[ ! -f "$tmp/frame-000.png" ]]; then
+  if [[ -f "$tmp/${slug}.png" ]]; then
+    cp "$tmp/${slug}.png" "$PNG_DIR/${slug}.png"
+  else
     rm -rf "$tmp"
     return 1
   fi
-  cp "$tmp/frame-000.png" "$PNG_DIR/${slug}.png"
   rm -rf "$tmp"
   echo "$json"
   return 0
@@ -104,6 +116,7 @@ pngs = sorted(png_dir.glob("*.png"))
 meta.parent.mkdir(parents=True, exist_ok=True)
 paint_blit_n = sum(1 for r in rows if r.get("capture_mode") == "paint_blit")
 chip_only_n = sum(1 for r in rows if r.get("capture_mode") == "cpu_chip_only")
+surface_only_n = sum(1 for r in rows if r.get("pixel_source") == "surface_io_only")
 meta.write_text(
     json.dumps(
         {
@@ -115,7 +128,8 @@ meta.write_text(
             "requires_min_verticals": 2,
             "capture_paint_blit": paint_blit_n,
             "capture_cpu_chip_only": chip_only_n,
-            "note": "paint_blit_shell mirrors studio_paint_shell_chrome layout; not li-studio-demo SDL window",
+            "capture_surface_io_only": surface_only_n,
+            "note": "product-truth capture expects Li RGB PPM input (pixel_source=li_rgb_ppm) and uses studio_shell_present_host (SDL IO only).",
             "frames": rows,
         },
         indent=2,

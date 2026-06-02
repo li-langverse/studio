@@ -1,65 +1,62 @@
 #!/usr/bin/env bash
+# Completion gate: all P0..P5 todos done + screenshot set present.
 set -euo pipefail
-
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-cd "$ROOT"
 
-python3 - <<'PY'
-import json
-import re
+fail() { echo "FAIL: $*" >&2; exit 1; }
+ok() { echo "OK: $*"; }
+
+LOOP="$ROOT/docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md"
+SHOTS="$ROOT/data/world-studio-gui-product-visual-loop/latest-screenshots.json"
+
+[[ -f "$LOOP" ]] || fail "missing plan loop $LOOP"
+
+echo "==> progress gates"
+bash "$ROOT/scripts/world-studio-gui-product-visual-gates.sh"
+
+echo "==> plan todos all done"
+python3 - "$LOOP" <<'PY'
+import re, sys
 from pathlib import Path
-
-plan = Path("docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md").read_text(encoding="utf-8")
-items = re.findall(
-  r"^- id: (wsv-\S+)\\s*\\r?\\n\\s+content: .*?\\r?\\n\\s+status: (\\w+)",
-  plan,
-  flags=re.M,
+text = Path(sys.argv[1]).read_text(encoding="utf-8")
+todo_blocks = re.findall(
+    r"^  - id: (wsv-w[0-9]+-[a-z0-9_-]+)\n(?:^    .+\n)+?^    status: (\w+)\n",
+    text,
+    flags=re.M,
 )
-assert items, "No wsv-* todos found"
-pending = [i for i,s in items if s != "done"]
+pending = [(i, s) for (i, s) in todo_blocks if s != "done"]
 if pending:
-  print("GOAL_INCOMPLETE")
-  print("pending:", ", ".join(pending))
-  raise SystemExit(1)
-
-# Require screenshot manifest to exist and list at least one PNG
-manifest_path = Path("data/world-studio-gui-product-visual-loop/latest-screenshots.json")
-if not manifest_path.exists():
-  print("GOAL_INCOMPLETE")
-  print("missing:", str(manifest_path))
-  raise SystemExit(1)
-
-data = json.loads(manifest_path.read_text(encoding="utf-8"))
-pngs = data.get("pngs", [])
-if not isinstance(pngs, list) or not pngs:
-  print("GOAL_INCOMPLETE")
-  print("manifest has no pngs[]")
-  raise SystemExit(1)
-
-# Heuristic: demand at least one 1280x720 capture and minimum file size (entropy proxy)
-root = Path(".").resolve()
-ok_1280 = False
-small = []
-for rel in pngs:
-  p = (root / rel).resolve()
-  if not p.exists():
-    small.append(f"missing:{rel}")
-    continue
-  if "1280x720" in p.name:
-    ok_1280 = True
-  if p.stat().st_size < 40000:
-    small.append(f"small:{rel}:{p.stat().st_size}")
-
-if not ok_1280:
-  print("GOAL_INCOMPLETE")
-  print("need at least one 1280x720 png")
-  raise SystemExit(1)
-
-if small:
-  print("GOAL_INCOMPLETE")
-  print("png_heuristics:", ", ".join(small[:10]))
-  raise SystemExit(1)
-
-print("GOAL_COMPLETE")
+    raise SystemExit("FAIL: pending todos: " + ", ".join(f"{i}={s}" for i, s in pending))
+print("OK: all wsv todos done")
 PY
+
+echo "==> screenshots manifest + files"
+[[ -f "$SHOTS" ]] || fail "missing $SHOTS"
+python3 - "$SHOTS" "$ROOT" <<'PY'
+import json, sys
+from pathlib import Path
+shots = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+root = Path(sys.argv[2])
+
+paths = []
+for key in ("pngs", "screenshots"):
+    v = shots.get(key, [])
+    if isinstance(v, list):
+        if key == "pngs":
+            paths.extend([p for p in v if isinstance(p, str)])
+        else:
+            paths.extend([s.get("path") for s in v if isinstance(s, dict) and isinstance(s.get("path"), str)])
+
+missing = [p for p in paths if not (root / p).is_file()]
+if missing:
+    raise SystemExit("FAIL: missing screenshot files: " + ", ".join(missing[:10]))
+
+need = [p for p in paths if "product-visual-" in Path(p).name and p.endswith(".png")]
+if len(need) < 7:
+    raise SystemExit(f"FAIL: expected >=7 product-visual PNGs, got {len(need)}")
+
+print("OK: screenshots present")
+PY
+
+ok "world-studio-gui-product-visual-completion-gate"
 

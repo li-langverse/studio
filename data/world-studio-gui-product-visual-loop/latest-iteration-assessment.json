@@ -1,0 +1,14 @@
+{
+  "todo": "wsv-w0-raster-truth",
+  "wps": ["WP-UX-14", "WP-UX-14b"],
+  "native_only": true,
+  "summary": [
+    "Updated native vertical capture to default to SDL IO-only host + Li RGB PPM input (no C paint_fb mirror build path).",
+    "Added product-visual plan loop + gates/completion scripts to make raster-truth and screenshot manifests first-class."
+  ],
+  "evidence": {
+    "capture_script": "scripts/studio-verticals-capture-native.sh",
+    "product_visual_gates": "scripts/world-studio-gui-product-visual-gates.sh"
+  }
+}
+

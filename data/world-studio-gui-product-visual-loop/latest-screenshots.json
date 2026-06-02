@@ -1,5 +1,8 @@
 {
   "generated_at": "2026-06-02T00:00:00Z",
-  "pngs": []
+  "iteration": 1,
+  "note": "Screenshots are produced once Li RGB PPM capture is wired in the local environment; see scripts/studio-verticals-capture-native.sh.",
+  "pngs": [],
+  "screenshots": []
 }
 
