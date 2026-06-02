@@ -26,9 +26,9 @@ def main() -> int
     return 8
   if studio_paint_agent_cmds(studio_agent_task_failed()) != 5:
     return 9
-  var shell_fail: StudioShellCompose = studio_compose_shell_agent(1920.0, 1080.0, 0, 0, studio_agent_task_failed())
+  var shell_fail: StudioShellCompose = studio_compose_shell_agent(1920.0, 1080.0, 0, 0, 0, studio_agent_task_failed())
   var frame_fail: PaintFrame = paint_frame_new()
   studio_paint_shell_chrome(frame_fail, shell_fail)
-  if frame_fail.cmd_count != studio_shell_chrome_count(0, studio_agent_task_failed()):
+  if frame_fail.cmd_count != studio_shell_chrome_count_for_compose(shell_fail):
     return 10
   return 0
