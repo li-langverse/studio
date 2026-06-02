@@ -1,21 +1,22 @@
 {
-  "timestamp": "2026-06-02T08:10:30Z",
-  "iteration_status": "sprint_complete_verified",
-  "todo": "wsv-w5-manifest-assessment",
-  "wave": "W5",
-  "wps": ["WP-UX-01", "WP-UX-02", "WP-UX-06", "WP-UX-13", "WP-GD-05", "GUI polish artifacts (wsp-w*)"],
+  "timestamp": "2026-06-02T07:31:39.395326+00:00",
   "native_only": true,
-  "product_visual_screenshot_paths": [
-    "docs/demo/media/native-verticals/png/product-visual-game.png",
-    "docs/demo/media/native-verticals/png/product-visual-game-1280x720.png",
-    "docs/demo/media/native-verticals/png/product-visual-sim_rl.png",
-    "docs/demo/media/native-verticals/png/product-visual-sim_drug_design.png"
+  "todo": "wsv-w1-typography-font-atlas",
+  "wps": [
+    "WP-UX-14"
   ],
-  "gates": {
-    "world_studio_gui_product_visual_gates": "pass",
-    "world_studio_gui_product_visual_completion_gate": "pass"
+  "summary": [
+    "Added GUI product-visual plan loop + gates/completion scripts to prioritize raster truth and native-only evidence.",
+    "Updated native window launcher to present pixels from Li raster PPM when available (no C paint_fb mirror linkage)."
+  ],
+  "evidence": {
+    "product_visual_gates": "scripts/world-studio-gui-product-visual-gates.sh",
+    "product_visual_loop": "docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md"
   },
-  "north_star_fit": "gaming PH-UX — provable native Li chrome; HTML mocks reference-only",
-  "smokes": "token verification + product-visual PNG heuristics (native-only); live capture best-effort skipped (present host not built on runner)",
-  "pr": "https://github.com/li-langverse/studio/pull/66"
+  "product_visual_phase": "P1",
+  "captures": {
+    "ppm_available": false,
+    "png_written": false,
+    "blocked_reason": "Runner cannot execute lic (GLIBC/GLIBCXX mismatch), so headless Li raster capture and lic check smokes are blocked in this workspace."
+  }
 }

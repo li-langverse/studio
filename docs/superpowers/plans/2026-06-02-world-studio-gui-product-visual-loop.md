@@ -1,25 +1,25 @@
 ---
 name: World Studio GUI product-visual loop
-overview: Product-quality native Studio visuals — real fonts + shadows + honest raster. This loop is naming/packaging for the already-landed GUI polish work, with product-visual screenshot outputs and gates.
+overview: Goal-directed sprint — push the native Li Studio shell from “nice wireframe” to product-quality visuals (real text, elevation/shadows, single pixel truth). Screenshot-gated; HTML mocks are reference only.
 todos:
-  - id: wsv-w0-real-text
-    content: "W0 — Real text: font atlas wired; shell labels use draw_glyphs (no placeholder rects)"
+  - id: wsv-w0-raster-truth
+    content: "W0 — Raster truth: SDL host presents pixels from Li rasterizer (no C paint_fb mirror as product truth)"
     status: done
-  - id: wsv-w1-elevation
-    content: "W1 — Elevation: tokenized shadows + subtle blur on panels; no flat wireframe blocks"
+  - id: wsv-w1-typography-font-atlas
+    content: "W1 — Typography: real text via font atlas + draw_glyphs (no 5×7 glyphs / bit-bars) for key chrome labels"
     status: done
-  - id: wsv-w2-single-pixel-truth
-    content: "W2 — Single pixel truth: host presents pixels from Li rasterizer (native_pixels=1), not HTML"
-    status: done
-  - id: wsv-w3-product-visual-pngs
-    content: "W3 — product-visual-*.png per vertical under docs/demo/media/native-verticals/png/"
-    status: done
-  - id: wsv-w4-game-1280x720
-    content: "W4 — product-visual-game-1280x720.png captured for game profile"
-    status: done
-  - id: wsv-w5-manifest-assessment
-    content: "W5 — latest-screenshots.json + latest-iteration-assessment.json written under data/world-studio-gui-product-visual-loop/"
-    status: done
+  - id: wsv-w2-elevation-shadows
+    content: "W2 — Elevation: tokenized shadows + blur (subtle) on panels; consistent depth model across shell regions"
+    status: pending
+  - id: wsv-w3-icons-density
+    content: "W3 — Icons + density: icon atlas + spacing rhythm; dock/topbar/tooling feels compact and readable"
+    status: pending
+  - id: wsv-w4-viewport-polish
+    content: "W4 — Viewport polish: HUD text + honest pixels; overlays match product chrome quality"
+    status: pending
+  - id: wsv-w5-acceptance-screenshots
+    content: "W5 — Acceptance: 1280×720 + 7 vertical screenshots; manifest updated; completion gate passes"
+    status: pending
 isProject: false
 ---
 
@@ -29,22 +29,30 @@ isProject: false
 **Branch:** `cursor/world-studio-gui-product-visual`  
 **Hub:** [GUI-LIBRARY-PLAN.md](../../GUI-LIBRARY-PLAN.md)
 
-This loop is strictly **native-only**: HTML marketing mocks are reference-only.
+## Mission (product-quality native UI)
+
+- **Real text** (font atlas → `draw_glyphs`), not 5×7 glyphs / bit-bars
+- **Elevation** (tokenized shadows + blur), not single-offset fills
+- **Single pixel truth**: the SDL host presents pixels from the **Li rasterizer**, not the C `paint_fb` mirror
+- **Proof + gates**: each iteration produces native screenshots and updates plan status
 
 ## Phase status
 
+Update each iteration. Mark **DONE** only when every `wsv-w*` todo in that wave is `status: done` in the YAML above.
+
 | Phase | Scope | Status |
 |-------|-------|--------|
-| **W0** | Real text (`draw_glyphs`) | **DONE** |
-| **W1** | Elevation/shadows | **DONE** |
-| **W2** | Single pixel truth / honesty | **DONE** |
-| **W3** | Vertical product visuals | **DONE** |
-| **W4** | 1280×720 game capture | **DONE** |
-| **W5** | Manifest + assessment + completion gate | **DONE** |
+| **P0** | Raster truth (SDL host uses Li raster) | **DONE** |
+| **P1** | Typography (TTF→atlas + readable labels) | **DONE** |
+| **P2** | Elevation (tokenized shadows + blur) | pending |
+| **P3** | Icons + density (icon atlas, spacing rhythm) | pending |
+| **P4** | Viewport polish (HUD text + honest pixels) | pending |
+| **P5** | Acceptance (1280×720 + 7 vertical screenshots) | pending |
 
 ## Gates
 
 ```bash
+set -euo pipefail
 ./scripts/world-studio-gui-product-visual-gates.sh
 ./scripts/world-studio-gui-product-visual-completion-gate.sh
 ```

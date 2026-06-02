@@ -1,150 +1,143 @@
 #!/usr/bin/env bash
-# Progress gates for world-studio-gui-product-visual (fonts + shadows + honest raster).
+# Progress gates for world-studio-gui-product-visual (fonts + elevation + honest raster).
+# Captures screenshots via Li headless raster (studio_vertical_capture_ppm_auto).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export STUDIO_ROOT="$ROOT"
 # shellcheck source=_studio-env.sh
 source "$ROOT/scripts/_studio-env.sh"
-ROOT="$STUDIO_ROOT"
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 warn() { echo "WARN: $*" >&2; }
 ok() { echo "OK: $*"; }
 
-PLAN_LOOP="$ROOT/docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md"
-GOAL="$ROOT/data/goal-directed-sprints/world-studio-gui-product-visual.md"
-TOKENS="$ROOT/docs/design/studio-design-tokens.toml"
-PNG_DIR="$ROOT/docs/demo/media/native-verticals/png"
-STATE_DIR="$ROOT/data/world-studio-gui-product-visual-loop"
+PLAN_LOOP="$STUDIO_ROOT/docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md"
+TOKENS="$STUDIO_ROOT/docs/design/studio-design-tokens.toml"
+PNG_DIR="$STUDIO_ROOT/docs/demo/media/native-verticals/png"
+STATE_DIR="$STUDIO_ROOT/data/world-studio-gui-product-visual-loop"
 MANIFEST="$STATE_DIR/latest-screenshots.json"
 ASSESS="$STATE_DIR/latest-iteration-assessment.json"
-INSTALLER_OUT="$ROOT/installer/out"
-MIN_BYTES="${WORLD_STUDIO_PRODUCT_VISUAL_MIN_PNG_BYTES:-12000}"
+INSTALLER_OUT="$STUDIO_ROOT/installer/out"
+MIN_PNG_BYTES="${WORLD_STUDIO_PRODUCT_VISUAL_MIN_PNG_BYTES:-12000}"
+BUILD_DIR="$STUDIO_ROOT/build"
+CAP_640="$BUILD_DIR/studio-capture-vertical-640x360"
+CAP_720="$BUILD_DIR/studio-capture-vertical-1280x720"
+PPM_640="/tmp/studio-vertical-capture-640x360.ppm"
+PPM_720="/tmp/studio-vertical-capture-1280x720.ppm"
 
 echo "==> product-visual plan documents"
 [[ -f "$PLAN_LOOP" ]] || fail "missing $PLAN_LOOP"
-[[ -f "$GOAL" ]] || fail "missing goal $GOAL"
 [[ -f "$TOKENS" ]] || fail "missing $TOKENS"
-[[ -f "$ROOT/src/lib.li" ]] || fail "studio/src/lib.li missing"
-mkdir -p "$PNG_DIR" "$STATE_DIR" "$INSTALLER_OUT"
+[[ -f "$STUDIO_ROOT/src/lib.li" ]] || fail "studio/src/lib.li missing"
+mkdir -p "$PNG_DIR" "$STATE_DIR" "$INSTALLER_OUT" "$BUILD_DIR"
 
 echo "==> token verification"
-if [[ -f "$ROOT/scripts/studio-ui-ux-verify-tokens.py" ]]; then
+if [[ -f "$STUDIO_ROOT/scripts/studio-ui-ux-verify-tokens.py" ]]; then
   export LIC_ROOT
-  python3 "$ROOT/scripts/studio-ui-ux-verify-tokens.py" || fail "studio-ui-ux-verify-tokens"
+  python3 "$STUDIO_ROOT/scripts/studio-ui-ux-verify-tokens.py" || fail "studio-ui-ux-verify-tokens"
 else
   fail "missing studio-ui-ux-verify-tokens.py"
 fi
 
-find_verticals_host() {
-  local native="$ROOT/deploy/studio-demo/native"
-  for c in \
-    "$native/studio_verticals_present_host.exe" \
-    "$native/studio_verticals_present_host" \
-    "$ROOT/li-native/studio_verticals_present_host.exe" \
-    "$ROOT/li-native/studio_verticals_present_host"; do
-    if [[ -x "$c" ]]; then
-      echo "$c"
-      return 0
-    fi
-  done
+echo "==> raster truth (no paint_fb-as-product)"
+if [[ -f "$STUDIO_ROOT/deploy/studio-demo/native/studio_shell_paint_fb.c" ]]; then
+  warn "paint_fb mirror still exists (allowed for deprecated CI captures), but product-visual captures must use Li raster truth"
+fi
+
+resolve_lic_bin() {
+  if command -v lic >/dev/null 2>&1; then
+    command -v lic
+    return 0
+  fi
+  if resolve_lic >/dev/null 2>&1; then
+    resolve_lic
+    return 0
+  fi
   return 1
 }
 
-build_verticals_host() {
-  local native="$ROOT/deploy/studio-demo/native"
-  local bin="$native/studio_verticals_present_host"
-  if [[ -x "$bin" ]]; then
-    echo "$bin"
-    return 0
-  fi
-  if [[ ! -f "$native/studio_shell_paint_fb.c" ]]; then
+build_capture_bins() {
+  local lic_bin=""
+  if ! lic_bin="$(resolve_lic_bin)"; then
+    warn "lic not runnable; skipping Li headless capture build"
     return 1
   fi
-  if command -v cc >/dev/null 2>&1; then
-    cc -std=c11 -Wall -Wextra -O2 \
-      "$native/studio_shell_paint_fb.c" \
-      "$native/studio_verticals_present_host.c" \
-      -o "$bin" 2>/dev/null || return 1
-    chmod +x "$bin" 2>/dev/null || true
-    echo "$bin"
-    return 0
+  if [[ ! -x "$CAP_640" ]]; then
+    "$lic_bin" build --allow-open-vc --no-lean-verify "$STUDIO_ROOT/src/capture_vertical_640x360.li" -o "$CAP_640" \
+      || return 1
   fi
-  if [[ -x "$native/native-sdl-build.sh" && -f "$native/studio_verticals_present_host.c" ]]; then
-    bash "$native/native-sdl-build.sh" "$native/studio_verticals_present_host.c" "$bin" 2>/dev/null || return 1
-    echo "$bin"
-    return 0
+  if [[ ! -x "$CAP_720" ]]; then
+    "$lic_bin" build --allow-open-vc --no-lean-verify "$STUDIO_ROOT/src/capture_vertical_1280x720.li" -o "$CAP_720" \
+      || return 1
   fi
-  return 1
+  return 0
 }
 
-capture_profile_png() {
-  local profile="$1"
-  local width="${2:-1280}"
-  local height="${3:-720}"
-  local out_name="product-visual-${profile}.png"
-  if [[ "$width" == "1280" && "$height" == "720" && "$profile" == "game" ]]; then
-    out_name="product-visual-game-1280x720.png"
-  fi
-  local dest="$PNG_DIR/$out_name"
+ppm_to_png() {
+  local ppm="$1"
+  local dest="$2"
   local tmp
   tmp="$(mktemp -d)"
-  local host_bin=""
-  if ! host_bin="$(find_verticals_host)"; then
-    host_bin="$(build_verticals_host)" || true
-  fi
-  if [[ -z "$host_bin" || ! -x "$host_bin" ]]; then
-    warn "verticals present host not built — skip live capture for $profile"
+  cp -f "$ppm" "$tmp/frame-000.ppm"
+  if python3 "$STUDIO_ROOT/scripts/studio-ppm-to-png.py" "$tmp" "$tmp" >/dev/null 2>&1 \
+    && [[ -f "$tmp/frame-000.png" ]]; then
+    cp -f "$tmp/frame-000.png" "$dest"
     rm -rf "$tmp"
     return 0
   fi
-  if STUDIO_DEMO_PROFILE="$profile" \
-    "$host_bin" --slug "$profile" --width "$width" --height "$height" --out "$tmp" 2>/dev/null \
-    | grep -q '"native_pixels":1'; then
-    if python3 "$ROOT/scripts/studio-ppm-to-png.py" "$tmp" "$tmp" >/dev/null 2>&1 \
-      && [[ -f "$tmp/frame-000.png" ]]; then
-      cp -f "$tmp/frame-000.png" "$dest"
-      cp -f "$tmp/frame-000.png" "$INSTALLER_OUT/studio-screenshot-product-visual-iteration-${WORLD_STUDIO_PRODUCT_VISUAL_ITERATION:-0}.png" 2>/dev/null || true
-      ok "captured $dest"
-    fi
-  else
-    warn "verticals capture failed profile=$profile"
-  fi
   rm -rf "$tmp"
+  return 1
 }
 
-fallback_copy_from_polish() {
-  local want="$1"
-  local from="$2"
-  if [[ ! -f "$PNG_DIR/$want" && -f "$PNG_DIR/$from" ]]; then
-    cp -f "$PNG_DIR/$from" "$PNG_DIR/$want"
-    ok "fallback copied $want <- $from"
+capture_one() {
+  local profile="$1"
+  local width="$2"
+  local height="$3"
+  export STUDIO_DEMO_PROFILE="$profile"
+
+  if [[ "$width" == "640" && "$height" == "360" ]]; then
+    if "$CAP_640" && [[ -f "$PPM_640" ]]; then
+      ppm_to_png "$PPM_640" "$PNG_DIR/product-visual-${profile}.png" \
+        && ok "captured product-visual-${profile}.png (Li headless raster)"
+      return 0
+    fi
+    warn "Li headless capture failed profile=$profile size=640x360"
+    return 0
   fi
+
+  if [[ "$width" == "1280" && "$height" == "720" ]]; then
+    if "$CAP_720" && [[ -f "$PPM_720" ]]; then
+      ppm_to_png "$PPM_720" "$PNG_DIR/product-visual-${profile}-1280x720.png" \
+        && ok "captured product-visual-${profile}-1280x720.png (Li headless raster)"
+      return 0
+    fi
+    warn "Li headless capture failed profile=$profile size=1280x720"
+    return 0
+  fi
+
+  warn "unsupported capture size ${width}x${height}"
+  return 0
 }
 
 echo "==> native screenshot capture (best effort)"
 if [[ "${WORLD_STUDIO_PRODUCT_VISUAL_SKIP_CAPTURE:-0}" != "1" ]]; then
-  capture_profile_png "game" 1280 720 || true
-  capture_profile_png "sim_drug_design" 1280 720 || true
-  capture_profile_png "sim_rl" 1280 720 || true
+  if build_capture_bins; then
+    capture_one "game" 640 360 || true
+    capture_one "game" 1280 720 || true
+    capture_one "sim_drug_design" 640 360 || true
+    capture_one "sim_rl" 640 360 || true
+  fi
 fi
 
-echo "==> screenshot fallback mapping (polish → product-visual)"
-fallback_copy_from_polish "product-visual-game-1280x720.png" "polish-game-1280x720.png"
-fallback_copy_from_polish "product-visual-game.png" "polish-game.png"
-fallback_copy_from_polish "product-visual-sim_drug_design.png" "polish-sim_drug_design.png"
-fallback_copy_from_polish "product-visual-sim_rl.png" "polish-sim_rl.png"
-
 echo "==> screenshot manifest"
-python3 - "$MANIFEST" "$ROOT" "$PNG_DIR" "$INSTALLER_OUT" "$MIN_BYTES" <<'PY'
+python3 - "$MANIFEST" "$STUDIO_ROOT" "$PNG_DIR" "$MIN_PNG_BYTES" <<'PY'
 import json, sys
 from pathlib import Path
-from datetime import datetime, timezone
 
-manifest, repo_root, png_dir, installer_out, min_bytes = sys.argv[1:6]
+manifest, repo_root, png_dir, min_bytes = sys.argv[1:5]
 min_bytes = int(min_bytes)
 root = Path(repo_root).resolve()
-png = Path(png_dir)
-installer = Path(installer_out)
+png_dir = Path(png_dir)
 
 def rel(p: Path) -> str:
     try:
@@ -152,26 +145,17 @@ def rel(p: Path) -> str:
     except ValueError:
         return str(p.resolve())
 
-paths: list[str] = []
-for p in sorted(png.glob("product-visual-*.png")):
-    paths.append(rel(p))
-for p in sorted(installer.glob("studio-screenshot-product-visual-iteration-*.png")):
-    paths.append(rel(p))
-baseline = installer / "studio-screenshot-product-visual-baseline.png"
-if baseline.is_file():
-    paths.insert(0, rel(baseline))
-
-pv_pngs = sorted(rel(p) for p in png.glob("product-visual-*.png"))
+pngs = sorted(png_dir.glob("product-visual-*.png"))
+paths = [rel(p) for p in pngs]
 payload = {
-    "timestamp": datetime.now(timezone.utc).isoformat(),
+    "timestamp": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
     "native_only": True,
     "paths": paths,
-    "product_visual_pngs": pv_pngs,
+    "pngs": [rel(p) for p in pngs],
 }
 Path(manifest).parent.mkdir(parents=True, exist_ok=True)
 Path(manifest).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-
-small = [p for p in pv_pngs if (root / p).stat().st_size < min_bytes]
+small = [rel(p) for p in pngs if p.stat().st_size < min_bytes]
 if small:
     print("WARN: product-visual PNGs below min bytes:", ", ".join(small), file=sys.stderr)
 print("OK: wrote", manifest)
@@ -189,7 +173,7 @@ p.parent.mkdir(parents=True, exist_ok=True)
 p.write_text(json.dumps({
     "timestamp": datetime.now(timezone.utc).isoformat(),
     "native_only": True,
-    "iteration_status": "progress_seed",
+    "product_visual_phase": "progress",
 }, indent=2) + "\n", encoding="utf-8")
 PY
   ok "seeded $ASSESS"
