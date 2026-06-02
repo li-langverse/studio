@@ -1,0 +1,36 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 45:
+    return 1
+  if studio_paint_viewport_drug_preview_cmds() != 6:
+    return 2
+  if studio_paint_viewport_profile_preview_cmds(studio_profile_sim_drug_design()) != 6:
+    return 3
+  var vp: Rect = rect_make(0.0, 0.0, 1280.0, 720.0)
+  var drug_frame: PaintFrame = paint_frame_new()
+  studio_paint_viewport_drug_preview(drug_frame, vp)
+  if drug_frame.cmd_count != studio_paint_viewport_drug_preview_cmds():
+    return 4
+  var game: StudioShellCompose = studio_compose_shell_profile(1280.0, 720.0, 0, 1, studio_profile_game())
+  game.scene_entity_count = 1
+  game.viewport_empty.empty_visible = 0
+  studio_attach_viewport_shell(game)
+  var top_frame: PaintFrame = paint_frame_new()
+  studio_paint_topbar_profile(top_frame, game.layout.topbar, studio_profile_game())
+  if top_frame.cmd_count != studio_paint_topbar_profile_cmds():
+    return 5
+  if top_frame.last_kind != paint_op_draw_glyphs():
+    return 6
+  var rl: StudioShellCompose = studio_vertical_demo_compose(studio_profile_sim_rl(), 0, 0)
+  if rl.config.active_profile != studio_profile_sim_rl():
+    return 7
+  var rl_frame: PaintFrame = paint_frame_new()
+  studio_paint_viewport_profile_preview(rl_frame, rl.layout.viewport, studio_profile_sim_rl())
+  if rl_frame.cmd_count != studio_paint_viewport_rl_preview_cmds():
+    return 8
+  return 0

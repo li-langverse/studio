@@ -4,67 +4,67 @@ overview: Goal-directed polish sprint — native Li World Studio from wireframe+
 todos:
   - id: wsp-w0-typography-readable
     content: "W0 — Typography readable at 12–14px body; token contrast WCAG-ish on shell chrome"
-    status: pending
+    status: done
   - id: wsp-w0-token-contrast
     content: "W0 — surface/text/border tokens applied consistently; no raw gray wireframe fills"
-    status: pending
+    status: done
   - id: wsp-w0-anti-wireframe-paint
     content: "W0 — paint_fb / studio_paint anti-wireframe pass (round rects, elevation, not flat blocks)"
-    status: pending
+    status: done
   - id: wsp-w0-baseline-screenshot
     content: "W0 — polish-baseline vs iteration-0 screenshot diff documented in assessment JSON"
-    status: pending
+    status: done
   - id: wsp-w1-glyph-pipeline
     content: "W1 — glyph pipeline wired; draw_glyphs used for shell labels (not placeholder rects)"
-    status: pending
+    status: done
   - id: wsp-w1-inspector-labels
     content: "W1 — inspector shows real field labels + values (drug_litl pilot minimum)"
-    status: pending
+    status: done
   - id: wsp-w1-dock-icons
     content: "W1 — dock/toolbar icons from atlas by token name (not colored squares)"
-    status: pending
+    status: done
   - id: wsp-w1-viewport-overlays
     content: "W1 — viewport HUD overlays (mode, selection, grid legend) readable"
-    status: pending
+    status: done
   - id: wsp-w2-hover-states
     content: "W2 — hover states visible on buttons, list rows, timeline clips"
-    status: pending
+    status: done
   - id: wsp-w2-focus-ring
     content: "W2 — focus ring + keyboard nav feedback on interactive controls"
-    status: pending
+    status: done
   - id: wsp-w2-shortcut-hints
     content: "W2 — command palette / shortcut hints visible where spec’d"
-    status: pending
+    status: done
   - id: wsp-w3-viewport-grid
     content: "W3 — viewport grid + axes polish (not debug placeholder lines)"
-    status: pending
+    status: done
   - id: wsp-w3-particles-sim
     content: "W3 — particles / sim viz stub replaced with profile-appropriate preview"
-    status: pending
+    status: done
   - id: wsp-w3-game-profile-viz
     content: "W3 — game profile 1280×720 viewport content not empty checkerboard only"
-    status: pending
+    status: done
   - id: wsp-w4-gradients-shadows
     content: "W4 — gradients + subtle shadows on panels (native PaintCmd, no HTML)"
-    status: pending
+    status: done
   - id: wsp-w4-spacing-rhythm
     content: "W4 — 4/8px spacing rhythm on shell regions; align to design tokens"
-    status: pending
+    status: done
   - id: wsp-w4-vertical-polish
     content: "W4 — per-vertical chrome pass (game, sim_rl, sim_drug_design minimum)"
-    status: pending
+    status: done
   - id: wsp-w5-polish-png-set
     content: "W5 — polish-*.png per vertical under docs/demo/media/native-verticals/png/"
-    status: pending
+    status: done
   - id: wsp-w5-game-1280x720
     content: "W5 — polish-game-1280x720.png captured at full HD game profile"
-    status: pending
+    status: done
   - id: wsp-w5-screenshot-manifest
     content: "W5 — latest-screenshots.json lists all polish paths + iteration PNGs"
-    status: pending
+    status: done
   - id: wsp-w5-no-html-proof
     content: "W5 — completion gate rejects HTML-only proof; native PNG size/heuristic pass"
-    status: pending
+    status: done
 isProject: false
 ---
 

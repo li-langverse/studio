@@ -11,7 +11,7 @@ warn() { echo "WARN: $*" >&2; }
 ok() { echo "OK: $*"; }
 
 PLAN_LOOP="$ROOT/docs/superpowers/plans/2026-05-31-world-studio-gui-polish-loop.md"
-GOAL="$ROOT/../data/goal-directed-sprints/world-studio-gui-polish.md"
+GOAL="$ROOT/data/goal-directed-sprints/world-studio-gui-polish.md"
 TOKENS="$ROOT/docs/design/studio-design-tokens.toml"
 POLISH_DIR="$ROOT/docs/demo/media/native-verticals/png"
 STATE_DIR="$ROOT/data/world-studio-gui-polish-loop"
@@ -35,18 +35,45 @@ else
   fail "missing studio-ui-ux-verify-tokens.py"
 fi
 
-find_present_host() {
-  local native="$ROOT/li-native"
+find_verticals_host() {
+  local native="$ROOT/deploy/studio-demo/native"
   for c in \
-    "$native/studio_shell_present_host.exe" \
-    "$native/studio_shell_present_host" \
-    "$ROOT/native/out/studio_shell_present_host.exe" \
-    "$ROOT/native/out/studio_shell_present_host"; do
+    "$native/studio_verticals_present_host.exe" \
+    "$native/studio_verticals_present_host" \
+    "$ROOT/li-native/studio_verticals_present_host.exe" \
+    "$ROOT/li-native/studio_verticals_present_host"; do
     if [[ -x "$c" ]]; then
       echo "$c"
       return 0
     fi
   done
+  return 1
+}
+
+build_verticals_host() {
+  local native="$ROOT/deploy/studio-demo/native"
+  local bin="$native/studio_verticals_present_host"
+  if [[ -x "$bin" ]]; then
+    echo "$bin"
+    return 0
+  fi
+  if [[ ! -f "$native/studio_shell_paint_fb.c" ]]; then
+    return 1
+  fi
+  if command -v cc >/dev/null 2>&1; then
+    cc -std=c11 -Wall -Wextra -O2 \
+      "$native/studio_shell_paint_fb.c" \
+      "$native/studio_verticals_present_host.c" \
+      -o "$bin" 2>/dev/null || return 1
+    chmod +x "$bin" 2>/dev/null || true
+    echo "$bin"
+    return 0
+  fi
+  if [[ -x "$native/native-sdl-build.sh" && -f "$native/studio_verticals_present_host.c" ]]; then
+    bash "$native/native-sdl-build.sh" "$native/studio_verticals_present_host.c" "$bin" 2>/dev/null || return 1
+    echo "$bin"
+    return 0
+  fi
   return 1
 }
 
@@ -59,25 +86,30 @@ capture_profile_png() {
     out_name="polish-game-1280x720.png"
   fi
   local dest="$POLISH_DIR/$out_name"
-  local ppm="$INSTALLER_OUT/frame-polish-${profile}.ppm"
+  local tmp
+  tmp="$(mktemp -d)"
   local host_bin=""
-  if ! host_bin="$(find_present_host)"; then
-    warn "present host not built — skip live capture for $profile"
+  if ! host_bin="$(find_verticals_host)"; then
+    host_bin="$(build_verticals_host)" || true
+  fi
+  if [[ -z "$host_bin" || ! -x "$host_bin" ]]; then
+    warn "verticals present host not built — skip live capture for $profile"
+    rm -rf "$tmp"
     return 0
   fi
-  STUDIO_DEMO_PROFILE="$profile" \
-    "$host_bin" --width "$width" --height "$height" --screenshot "$ppm" || warn "screenshot host failed profile=$profile"
-  if [[ -f "$ppm" ]]; then
-    python3 "$ROOT/scripts/studio-ppm-to-png.py" "$(dirname "$ppm")" "$(dirname "$ppm")" 2>/dev/null || true
-    local png="$(dirname "$ppm")/frame-polish-${profile}.png"
-    if [[ ! -f "$png" ]]; then
-      png="$(dirname "$ppm")/frame-000.png"
-    fi
-    if [[ -f "$png" ]]; then
-      cp -f "$png" "$dest"
+  if STUDIO_DEMO_PROFILE="$profile" \
+    "$host_bin" --slug "$profile" --width "$width" --height "$height" --out "$tmp" 2>/dev/null \
+    | grep -q '"native_pixels":1'; then
+    if python3 "$ROOT/scripts/studio-ppm-to-png.py" "$tmp" "$tmp" >/dev/null 2>&1 \
+      && [[ -f "$tmp/frame-000.png" ]]; then
+      cp -f "$tmp/frame-000.png" "$dest"
+      cp -f "$tmp/frame-000.png" "$INSTALLER_OUT/studio-screenshot-iteration-${WORLD_STUDIO_POLISH_ITERATION:-0}.png" 2>/dev/null || true
       ok "captured $dest"
     fi
+  else
+    warn "verticals capture failed profile=$profile"
   fi
+  rm -rf "$tmp"
 }
 
 echo "==> native screenshot capture (best effort)"
@@ -92,31 +124,40 @@ if [[ "${WORLD_STUDIO_POLISH_SKIP_CAPTURE:-0}" != "1" ]]; then
 fi
 
 echo "==> screenshot manifest"
-python3 - "$MANIFEST" "$POLISH_DIR" "$INSTALLER_OUT" "$MIN_POLISH_BYTES" <<'PY'
+python3 - "$MANIFEST" "$ROOT" "$POLISH_DIR" "$INSTALLER_OUT" "$MIN_POLISH_BYTES" <<'PY'
 import json, os, sys
 from pathlib import Path
 
-manifest, polish_dir, installer_out, min_bytes = sys.argv[1:5]
+manifest, repo_root, polish_dir, installer_out, min_bytes = sys.argv[1:6]
 min_bytes = int(min_bytes)
+root = Path(repo_root).resolve()
 polish = Path(polish_dir)
 installer = Path(installer_out)
+
+def rel(p: Path) -> str:
+    try:
+        return p.resolve().relative_to(root).as_posix()
+    except ValueError:
+        return str(p.resolve())
+
 paths: list[str] = []
 for p in sorted(polish.glob("polish-*.png")):
-    paths.append(str(p.resolve()))
+    paths.append(rel(p))
 for p in sorted(installer.glob("studio-screenshot-iteration-*.png")):
-    paths.append(str(p.resolve()))
+    paths.append(rel(p))
 baseline = installer / "studio-screenshot-polish-baseline.png"
 if baseline.is_file():
-    paths.insert(0, str(baseline.resolve()))
+    paths.insert(0, rel(baseline))
+polish_pngs = sorted(rel(p) for p in polish.glob("polish-*.png"))
 payload = {
     "timestamp": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
     "native_only": True,
     "paths": paths,
-    "polish_pngs": [str(p) for p in polish.glob("polish-*.png")],
+    "polish_pngs": polish_pngs,
 }
 Path(manifest).parent.mkdir(parents=True, exist_ok=True)
 Path(manifest).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-small = [p for p in payload["polish_pngs"] if Path(p).stat().st_size < min_bytes]
+small = [p for p in polish_pngs if (root / p).stat().st_size < min_bytes]
 if small:
     print("WARN: polish PNGs below min bytes:", ", ".join(small), file=sys.stderr)
 print("OK: wrote", manifest)

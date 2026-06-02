@@ -10,7 +10,7 @@ def main() -> int raises IO
     return 1
   if render_viewport_fps_target() != 60.0:
     return 2
-  if studio_paint_viewport_hud_cmds() != 3:
+  if studio_paint_viewport_hud_cmds() != 12:
     return 3
   studio_viewport_display_reset_for_profile(studio_profile_sim_scientific())
   var sci: StudioShellCompose = studio_compose_shell_profile(1280.0, 720.0, 0, 1, studio_profile_sim_scientific())
@@ -35,7 +35,7 @@ def main() -> int raises IO
     return 11
   var frame: PaintFrame = paint_frame_new()
   studio_paint_shell_chrome(frame, sci)
-  var exp_cmds: int = studio_shell_chrome_count_palette(1, 1, studio_agent_task_idle(), studio_palette_closed_flag(), studio_agent_context_none(), studio_viewport_error_none(), sci.viewport_display, sci.viewport_menu, sci.agent.invoke_input_visible, sci.agent.tool_trace_visible)
+  var exp_cmds: int = studio_shell_chrome_count_for_compose(sci)
   if frame.cmd_count != exp_cmds:
     return 12
   return 0
