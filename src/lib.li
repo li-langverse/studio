@@ -616,6 +616,7 @@ def studio_outliner_label_first_codepoint(label_id: int) -> int
   requires label_id >= studio_outliner_label_root()
   requires label_id <= studio_outliner_label_mesh()
   ensures font_atlas_codepoint_supported(result) == 1
+  ensures result == 87 or result == 67 or result == 77
   decreases label_id
 =
   if label_id == studio_outliner_label_root():
@@ -640,6 +641,7 @@ def studio_outliner_label_glyph_count(label_id: int) -> int
 def studio_profile_label_first_codepoint(profile_id: int) -> int
   requires studio_profile_id_valid(profile_id) == 1
   ensures font_atlas_codepoint_supported(result) == 1
+  ensures result == 71 or result == 82 or result == 68 or result == 83
   decreases profile_id
 =
   if profile_id == studio_profile_game():
