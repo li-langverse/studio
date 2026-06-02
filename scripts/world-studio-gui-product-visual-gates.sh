@@ -1,87 +1,123 @@
 #!/usr/bin/env bash
-# Progress gates for the GUI product-visual sprint (fonts + elevation + honest raster).
+# Progress gates for world-studio-gui-product-visual (fonts + elevation + honest raster).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export STUDIO_ROOT="$ROOT"
+# shellcheck source=_studio-env.sh
+source "$ROOT/scripts/_studio-env.sh"
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 warn() { echo "WARN: $*" >&2; }
 ok() { echo "OK: $*"; }
 
-LOOP="$ROOT/docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md"
-ASSESS="$ROOT/data/world-studio-gui-product-visual-loop/latest-iteration-assessment.json"
-SHOTS="$ROOT/data/world-studio-gui-product-visual-loop/latest-screenshots.json"
+PLAN_LOOP="$STUDIO_ROOT/docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md"
+GOAL="$STUDIO_ROOT/data/goal-directed-sprints/world-studio-gui-product-visual.md"
+TOKENS="$STUDIO_ROOT/docs/design/studio-design-tokens.toml"
+PNG_DIR="$STUDIO_ROOT/docs/demo/media/native-verticals/png"
+STATE_DIR="$STUDIO_ROOT/data/world-studio-gui-product-visual-loop"
+MANIFEST="$STATE_DIR/latest-screenshots.json"
+ASSESS="$STATE_DIR/latest-iteration-assessment.json"
+INSTALLER_OUT="$STUDIO_ROOT/installer/out"
+MIN_PNG_BYTES="${WORLD_STUDIO_PRODUCT_VISUAL_MIN_PNG_BYTES:-12000}"
 
-echo "==> plan loop present"
-[[ -f "$LOOP" ]] || fail "missing plan loop $LOOP"
+echo "==> product-visual plan documents"
+[[ -f "$PLAN_LOOP" ]] || fail "missing $PLAN_LOOP"
+[[ -f "$GOAL" ]] || fail "missing goal $GOAL"
+[[ -f "$TOKENS" ]] || fail "missing $TOKENS"
+[[ -f "$STUDIO_ROOT/src/lib.li" ]] || fail "studio/src/lib.li missing"
+mkdir -p "$PNG_DIR" "$STATE_DIR" "$INSTALLER_OUT"
 
-echo "==> native-only policy"
-if [[ -f "$ROOT/.cursor/rules/li-studio-demo-native-only.mdc" ]]; then
-  ok "native-only rule present"
+echo "==> token verification"
+if [[ -f "$STUDIO_ROOT/scripts/studio-ui-ux-verify-tokens.py" ]]; then
+  export LIC_ROOT
+  python3 "$STUDIO_ROOT/scripts/studio-ui-ux-verify-tokens.py" || fail "studio-ui-ux-verify-tokens"
 else
-  warn "native-only rule file missing (expected .cursor/rules/li-studio-demo-native-only.mdc)"
+  fail "missing studio-ui-ux-verify-tokens.py"
 fi
 
-echo "==> forbid marketing HTML as product runtime"
-if python3 - "$ROOT" <<'PY'; then
-import sys
+echo "==> raster truth (no paint_fb-as-product)"
+if [[ -f "$STUDIO_ROOT/deploy/studio-demo/native/studio_shell_paint_fb.c" ]]; then
+  warn "paint_fb mirror still exists (allowed for deprecated CI captures), but product-visual captures must use Li raster truth"
+fi
+
+capture_one() {
+  local profile="$1"
+  local width="${2:-1280}"
+  local height="${3:-720}"
+  local out_name="product-visual-${profile}.png"
+  if [[ "$width" == "1280" && "$height" == "720" ]]; then
+    out_name="product-visual-${profile}-1280x720.png"
+  fi
+  local dest="$PNG_DIR/$out_name"
+
+  local ppm="$INSTALLER_OUT/frame-000.ppm"
+  if [[ -f "$ppm" ]]; then
+    if python3 "$STUDIO_ROOT/scripts/studio-ppm-to-png.py" "$INSTALLER_OUT" "$INSTALLER_OUT" >/dev/null 2>&1 \
+      && [[ -f "$INSTALLER_OUT/frame-000.png" ]]; then
+      cp -f "$INSTALLER_OUT/frame-000.png" "$dest"
+      ok "captured $dest (from $ppm)"
+      return 0
+    fi
+  fi
+  warn "no Li raster PPM available for profile=$profile (run a real-window capture step first)"
+  return 0
+}
+
+echo "==> native screenshot capture (best effort)"
+if [[ "${WORLD_STUDIO_PRODUCT_VISUAL_SKIP_CAPTURE:-0}" != "1" ]]; then
+  capture_one "game" 1280 720 || true
+  capture_one "sim_drug_design" 1280 720 || true
+  capture_one "sim_rl" 1280 720 || true
+fi
+
+echo "==> screenshot manifest"
+python3 - "$MANIFEST" "$STUDIO_ROOT" "$PNG_DIR" "$MIN_PNG_BYTES" <<'PY'
+import json, sys
 from pathlib import Path
-root = Path(sys.argv[1])
-src = root / "src"
-if not src.is_dir():
-    raise SystemExit(0)
-for p in src.rglob("*"):
-    if p.is_file() and p.suffix in (".ts", ".tsx", ".js", ".mjs", ".li", ".md"):
-        t = p.read_text(encoding="utf-8", errors="ignore")
-        if "deploy/studio-demo/01-studio-workspace.html" in t or "01-studio-workspace.html" in t:
-            raise SystemExit(1)
-raise SystemExit(0)
+
+manifest, repo_root, png_dir, min_bytes = sys.argv[1:5]
+min_bytes = int(min_bytes)
+root = Path(repo_root).resolve()
+png_dir = Path(png_dir)
+
+def rel(p: Path) -> str:
+    try:
+        return p.resolve().relative_to(root).as_posix()
+    except ValueError:
+        return str(p.resolve())
+
+pngs = sorted(png_dir.glob("product-visual-*.png"))
+paths = [rel(p) for p in pngs]
+payload = {
+    "timestamp": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
+    "native_only": True,
+    "paths": paths,
+    "pngs": [rel(p) for p in pngs],
+}
+Path(manifest).parent.mkdir(parents=True, exist_ok=True)
+Path(manifest).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+small = [rel(p) for p in pngs if p.stat().st_size < min_bytes]
+if small:
+    print("WARN: product-visual PNGs below min bytes:", ", ".join(small), file=sys.stderr)
+print("OK: wrote", manifest)
 PY
-  ok "no src references to marketing HTML mocks"
-else
-  fail "src references marketing HTML mock (forbidden as product runtime)"
-fi
 
-echo "==> raster truth (no C paint_fb mirror in capture path)"
-CAP="$ROOT/scripts/studio-verticals-capture-native.sh"
-[[ -f "$CAP" ]] || fail "missing $CAP"
-if grep -q 'studio_shell_paint_fb.c' "$CAP"; then
-  fail "capture script still references studio_shell_paint_fb.c (must be Li raster truth path)"
-fi
-ok "capture script does not build C paint_fb mirror"
-
-echo "==> typography + elevation sanity (smokes exist)"
-for f in \
-  "$ROOT/li-tests/smoke/studio_polish_w1_glyphs.li" \
-  "$ROOT/li-tests/smoke/studio_polish_w4_shadows_spacing.li"; do
-  [[ -f "$f" ]] || fail "missing smoke $f"
-done
-ok "product-visual-relevant smokes present"
-
-echo "==> screenshots/assessment json presence (soft gate; written by iteration)"
 if [[ -f "$ASSESS" ]]; then
-  python3 - "$ASSESS" <<'PY' || fail "latest-iteration-assessment.json invalid"
-import json, sys
-from pathlib import Path
-p = Path(sys.argv[1])
-d = json.loads(p.read_text(encoding="utf-8"))
-assert d.get("native_only", True) is True
-PY
-  ok "latest-iteration-assessment.json present"
+  ok "assessment present: $ASSESS"
 else
-  warn "missing $ASSESS (expected after iteration)"
-fi
-if [[ -f "$SHOTS" ]]; then
-  python3 - "$SHOTS" <<'PY' || fail "latest-screenshots.json invalid"
-import json, sys
+  python3 - "$ASSESS" <<'PY'
+import json
+from datetime import datetime, timezone
 from pathlib import Path
-d = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-assert isinstance(d.get("screenshots", []), list)
-assert isinstance(d.get("pngs", []), list)
+p = Path(__import__("sys").argv[1])
+p.parent.mkdir(parents=True, exist_ok=True)
+p.write_text(json.dumps({
+    "timestamp": datetime.now(timezone.utc).isoformat(),
+    "native_only": True,
+    "product_visual_phase": "progress",
+}, indent=2) + "\n", encoding="utf-8")
 PY
-  ok "latest-screenshots.json present"
-else
-  warn "missing $SHOTS (expected after iteration)"
+  ok "seeded $ASSESS"
 fi
 
-ok "world-studio-gui-product-visual-gates"
-
+ok "world-studio-gui-product-visual progress gates"

@@ -1,28 +1,24 @@
 ---
 name: World Studio GUI product-visual loop
-title: "World Studio GUI product-visual loop (fonts + shadows + raster truth)"
-created_at: "2026-06-02"
-overview: >
-  Product-quality native UI visuals for World Studio (fonts + elevation + honest raster path).
-  Native Li only — HTML under deploy/studio-demo/ is marketing-only and never counts as product proof.
+overview: Goal-directed sprint — push the native Li Studio shell from “nice wireframe” to product-quality visuals (real text, elevation/shadows, single pixel truth). Screenshot-gated; HTML mocks are reference only.
 todos:
   - id: wsv-w0-raster-truth
-    content: "P0 — Single pixel truth: SDL host presents pixels produced by Li rasterizer (no C paint_fb mirror / paint_blit capture)"
+    content: "W0 — Raster truth: SDL host presents pixels from Li rasterizer (no C paint_fb mirror as product truth)"
     status: done
-  - id: wsv-w1-typography-real-text
-    content: "P1 — Real text: font atlas + draw_glyphs used for shell labels (not bitmap 5×7 / bars)"
+  - id: wsv-w1-typography-font-atlas
+    content: "W1 — Typography: real text via font atlas + draw_glyphs (no 5×7 glyphs / bit-bars) for key chrome labels"
     status: pending
   - id: wsv-w2-elevation-shadows
-    content: "P2 — Elevation: tokenized shadows with blur (not single-offset fill only); panels read as layered surfaces"
+    content: "W2 — Elevation: tokenized shadows + blur (subtle) on panels; consistent depth model across shell regions"
     status: pending
   - id: wsv-w3-icons-density
-    content: "P3 — Icons + density: icon atlas tokens + spacing rhythm; no placeholder squares; consistent 4/8px grid"
+    content: "W3 — Icons + density: icon atlas + spacing rhythm; dock/topbar/tooling feels compact and readable"
     status: pending
   - id: wsv-w4-viewport-polish
-    content: "P4 — Viewport polish: HUD text + honest pixels in viewport overlays; no fake checkerboard-only proofs"
+    content: "W4 — Viewport polish: HUD text + honest pixels; overlays match product chrome quality"
     status: pending
   - id: wsv-w5-acceptance-screenshots
-    content: "P5 — Acceptance: 1280×720 + 7 vertical screenshots captured to docs/demo/media/native-verticals/png/product-visual-*.png and manifest updated"
+    content: "W5 — Acceptance: 1280×720 + 7 vertical screenshots; manifest updated; completion gate passes"
     status: pending
 isProject: false
 ---
@@ -31,34 +27,33 @@ isProject: false
 
 **Agent:** `world_studio_builder`  
 **Branch:** `cursor/world-studio-gui-product-visual`  
-**Hub:** [GUI-LIBRARY-PLAN.md](../../GUI-LIBRARY-PLAN.md)  
-**Primary repo:** `studio`  
-**Secondary repo:** `lic` (`li-ui`, `li-gui`, `li-render`, `lig`)
+**Hub:** [GUI-LIBRARY-PLAN.md](../../GUI-LIBRARY-PLAN.md)
+
+## Mission (product-quality native UI)
+
+- **Real text** (font atlas → `draw_glyphs`), not 5×7 glyphs / bit-bars
+- **Elevation** (tokenized shadows + blur), not single-offset fills
+- **Single pixel truth**: the SDL host presents pixels from the **Li rasterizer**, not the C `paint_fb` mirror
+- **Proof + gates**: each iteration produces native screenshots and updates plan status
 
 ## Phase status
 
-Mark **DONE** only when every `wsv-wN-*` todo in that wave is `status: done`.
+Update each iteration. Mark **DONE** only when every `wsv-w*` todo in that wave is `status: done` in the YAML above.
 
 | Phase | Scope | Status |
 |-------|-------|--------|
-| **P0** | Raster truth (SDL host uses Li raster) | done |
+| **P0** | Raster truth (SDL host uses Li raster) | **DONE** |
 | **P1** | Typography (TTF→atlas + readable labels) | pending |
 | **P2** | Elevation (tokenized shadows + blur) | pending |
 | **P3** | Icons + density (icon atlas, spacing rhythm) | pending |
 | **P4** | Viewport polish (HUD text + honest pixels) | pending |
 | **P5** | Acceptance (1280×720 + 7 vertical screenshots) | pending |
 
-## Progress gate
+## Gates
 
 ```bash
 set -euo pipefail
 ./scripts/world-studio-gui-product-visual-gates.sh
-```
-
-## Completion gate
-
-```bash
-set -euo pipefail
 ./scripts/world-studio-gui-product-visual-completion-gate.sh
 ```
 

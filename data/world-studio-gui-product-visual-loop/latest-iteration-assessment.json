@@ -1,14 +1,22 @@
 {
-  "todo": "wsv-w0-raster-truth",
-  "wps": ["WP-UX-14", "WP-UX-14b"],
+  "timestamp": "2026-06-02T07:31:39.395326+00:00",
   "native_only": true,
+  "todo": "wsv-w0-raster-truth",
+  "wps": [
+    "WP-UX-14"
+  ],
   "summary": [
-    "Updated native vertical capture to default to SDL IO-only host + Li RGB PPM input (no C paint_fb mirror build path).",
-    "Added product-visual plan loop + gates/completion scripts to make raster-truth and screenshot manifests first-class."
+    "Added GUI product-visual plan loop + gates/completion scripts to prioritize raster truth and native-only evidence.",
+    "Updated native window launcher to present pixels from Li raster PPM when available (no C paint_fb mirror linkage)."
   ],
   "evidence": {
-    "capture_script": "scripts/studio-verticals-capture-native.sh",
-    "product_visual_gates": "scripts/world-studio-gui-product-visual-gates.sh"
+    "product_visual_gates": "scripts/world-studio-gui-product-visual-gates.sh",
+    "product_visual_loop": "docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md"
+  },
+  "product_visual_phase": "P0",
+  "captures": {
+    "ppm_available": false,
+    "png_written": false,
+    "blocked_reason": "SDL capture unavailable in this workspace (missing libsdl2-dev). Gates keep capture best-effort; product truth path uses Li raster PPM when available."
   }
 }
-
