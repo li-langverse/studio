@@ -1,0 +1,20 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 40:
+    return 1
+  if studio_contrast_ratio_ok() < 4.5:
+    return 2
+  var primary: Color = studio_color_text_primary()
+  var bg: Color = studio_color_bg_primary()
+  if primary.r <= bg.r and primary.g <= bg.g and primary.b <= bg.b:
+    return 3
+  var muted: Color = studio_color_text_muted()
+  if muted.r >= primary.r and muted.g >= primary.g and muted.b >= primary.b:
+    return 4
+  return 0

@@ -48,6 +48,24 @@ note = "wsp-w0: readable glyph labels on outliner, topbar, inspector, dock"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_polish_w0_token_contrast.li"
+outcome = "check_ok"
+note = "wsp-w0: design token contrast on shell chrome"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_polish_w0_anti_wireframe.li"
+outcome = "check_ok"
+note = "wsp-w0: round rects + gradients (anti-wireframe paint)"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_polish_w0_baseline.li"
+outcome = "check_ok"
+note = "wsp-w0: shell frame paint baseline counts"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_polish_w2_focus_ring.li"
 outcome = "check_ok"
 note = "wsp-w2: panel focus ring wired in studio_paint_shell_chrome"
