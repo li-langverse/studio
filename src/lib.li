@@ -1039,6 +1039,145 @@ def studio_paint_elevated_panel_with_shadow(frame: var PaintFrame, rect: Rect) -
   studio_paint_panel_shadow_at_depth(frame, rect, studio_elevation_depth_raised())
   paint_frame_push_elevated_panel(frame, rect)
 
+# WSV W3 — density + icon inset (compact dock/topbar/tooling).
+def studio_density_dock_slot_size_px() -> float
+  requires true
+  ensures result == 32.0
+  decreases 0
+=
+  return 32.0
+
+def studio_density_dock_slot_gap_px() -> float
+  requires true
+  ensures result == 4.0
+  ensures result == studio_spacing_unit_px()
+  decreases 0
+=
+  return 4.0
+
+def studio_density_dock_padding_px() -> float
+  requires true
+  ensures result == 8.0
+  ensures result == studio_spacing_rhythm_px()
+  decreases 0
+=
+  return 8.0
+
+def studio_density_dock_icon_inset_px() -> float
+  requires true
+  ensures result == 4.0
+  decreases 0
+=
+  return 4.0
+
+def studio_density_topbar_tool_size_px() -> float
+  requires true
+  ensures result == 28.0
+  decreases 0
+=
+  return 28.0
+
+def studio_density_topbar_tool_gap_px() -> float
+  requires true
+  ensures result == 4.0
+  ensures result == studio_spacing_unit_px()
+  decreases 0
+=
+  return 4.0
+
+def studio_density_topbar_tool_count() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_density_timeline_play_icon_inset_px() -> float
+  requires true
+  ensures result == 6.0
+  decreases 0
+=
+  return 6.0
+
+def studio_icon_content_rect(anchor: Rect, inset_px: float) -> Rect
+  requires anchor.w >= inset_px * 2.0 + 8.0
+  requires anchor.h >= inset_px * 2.0 + 8.0
+  requires inset_px >= 0.0
+  ensures result.w >= 8.0
+  ensures result.h >= 8.0
+  decreases 0
+=
+  return rect_make(anchor.x + inset_px, anchor.y + inset_px, anchor.w - inset_px - inset_px, anchor.h - inset_px - inset_px)
+
+def studio_dock_icon_content_rect(slot_rect: Rect) -> Rect
+  requires slot_rect.w >= studio_density_dock_icon_inset_px() * 2.0 + 8.0
+  requires slot_rect.h >= studio_density_dock_icon_inset_px() * 2.0 + 8.0
+  ensures result.w >= 8.0
+  decreases 0
+=
+  return studio_icon_content_rect(slot_rect, studio_density_dock_icon_inset_px())
+
+def studio_topbar_tool_rect_at(topbar: Rect, tool_index: int) -> Rect
+  requires topbar.w >= 200.0
+  requires topbar.h >= studio_density_topbar_tool_size_px()
+  requires tool_index >= 0
+  requires tool_index < studio_density_topbar_tool_count()
+  ensures result.w == studio_density_topbar_tool_size_px()
+  ensures result.h == studio_density_topbar_tool_size_px()
+  decreases tool_index
+=
+  var size: float = studio_density_topbar_tool_size_px()
+  var gap: float = studio_density_topbar_tool_gap_px()
+  var pad: float = studio_spacing_rhythm_px()
+  var count: int = studio_density_topbar_tool_count()
+  var span: float = float(count) * size + float(count - 1) * gap
+  var x0: float = topbar.x + topbar.w - pad - span
+  var y: float = topbar.y + (topbar.h - size) / 2.0
+  var x: float = x0 + float(tool_index) * (size + gap)
+  return rect_make(x, y, size, size)
+
+def studio_topbar_tool_icon_id(tool_index: int) -> int
+  requires tool_index >= 0
+  requires tool_index < studio_density_topbar_tool_count()
+  ensures result >= 0
+  decreases tool_index
+=
+  if tool_index == 0:
+    return icon_atlas_image_for_dock_slot(4)
+  return icon_atlas_image_for_dock_slot(2)
+
+def studio_paint_topbar_tool_cmds() -> int
+  requires true
+  ensures result == studio_density_topbar_tool_count() * 2
+  decreases 0
+=
+  return studio_density_topbar_tool_count() * 2
+
+def studio_paint_topbar_tools(frame: var PaintFrame, topbar: Rect) -> unit
+  requires frame.cmd_count >= 0
+  requires topbar.w >= 200.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_topbar_tool_cmds()
+  ensures frame.last_kind == paint_op_draw_image()
+  decreases 0
+=
+  var tool: int = 0
+  while tool < studio_density_topbar_tool_count():
+    var tool_rect: Rect = studio_topbar_tool_rect_at(topbar, tool)
+    paint_frame_push(frame, paint_cmd_fill_round(tool_rect, studio_color_bg_elevated(), studio_radius_sm_px()))
+    var icon_rect: Rect = studio_dock_icon_content_rect(tool_rect)
+    var icon_id: int = studio_topbar_tool_icon_id(tool)
+    var icon_src: Rect = icon_atlas_src_rect(icon_id)
+    paint_frame_push(frame, paint_cmd_draw_image(icon_rect, icon_id, icon_src, studio_color_text_muted()))
+    tool = tool + 1
+
+def studio_timeline_play_icon_content_rect(btn: Rect) -> Rect
+  requires btn.w >= studio_timeline_play_btn_size_px()
+  requires btn.h >= studio_timeline_play_btn_size_px()
+  ensures result.w >= 8.0
+  decreases 0
+=
+  return studio_icon_content_rect(btn, studio_density_timeline_play_icon_inset_px())
+
 def studio_topbar_profile_accent_rect(topbar: Rect) -> Rect
   requires topbar.w >= studio_spacing_rhythm_px()
   requires topbar.h >= studio_spacing_rhythm_px()
@@ -3099,10 +3238,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 46
+  ensures result == 47
   decreases 0
 =
-  return 46
+  return 47
 
 def studio_shell_widget_tree_version() -> int
   requires true
@@ -3248,24 +3387,24 @@ def studio_dock_slot_count() -> int
 
 def studio_dock_slot_size_px() -> float
   requires true
-  ensures result == 36.0
+  ensures result == studio_density_dock_slot_size_px()
   decreases 0
 =
-  return 36.0
+  return studio_density_dock_slot_size_px()
 
 def studio_dock_slot_gap_px() -> float
   requires true
-  ensures result == 8.0
+  ensures result == studio_density_dock_slot_gap_px()
   decreases 0
 =
-  return 8.0
+  return studio_density_dock_slot_gap_px()
 
 def studio_dock_padding_px() -> float
   requires true
-  ensures result == 12.0
+  ensures result == studio_density_dock_padding_px()
   decreases 0
 =
-  return 12.0
+  return studio_density_dock_padding_px()
 
 
 def studio_outliner_max_nodes() -> int
@@ -7336,10 +7475,10 @@ def studio_paint_dock_cmds() -> int
 
 def studio_paint_timeline_cmds() -> int
   requires true
-  ensures result == studio_paint_panel_shadow_cmds() + 6
+  ensures result == studio_paint_panel_shadow_cmds() + 7
   decreases 0
 =
-  return studio_paint_panel_shadow_cmds() + 6
+  return studio_paint_panel_shadow_cmds() + 7
 
 def studio_paint_inspector_empty_cmds() -> int
   requires true
@@ -7793,12 +7932,13 @@ def studio_paint_dock_slot(frame: var PaintFrame, dock: StudioDockCompose, slot:
     paint_frame_push(frame, paint_cmd_stroke_round(slot_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
   var icon_id: int = icon_atlas_image_for_dock_slot(slot)
   var icon_src: Rect = icon_atlas_src_rect(icon_id)
+  var icon_dest: Rect = studio_dock_icon_content_rect(slot_rect)
   var icon_tint: Color = studio_color_text_muted()
   if is_active == 1:
     icon_tint = studio_color_text_primary()
   if hovered == 1:
     icon_tint = studio_color_text_primary()
-  paint_frame_push(frame, paint_cmd_draw_image(slot_rect, icon_id, icon_src, icon_tint))
+  paint_frame_push(frame, paint_cmd_draw_image(icon_dest, icon_id, icon_src, icon_tint))
 
 def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose, hover: StudioShellHoverState) -> unit
   requires frame.cmd_count >= 0
@@ -7816,7 +7956,7 @@ def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose, hover: Stu
   studio_paint_dock_slot(frame, dock, 3, studio_shell_hover_dock_slot_is(hover, 3))
   studio_paint_dock_slot(frame, dock, 4, studio_shell_hover_dock_slot_is(hover, 4))
   var active_rect: Rect = studio_dock_slot_rect_at(dock.rect.x, dock.rect.y, dock.rect.w, dock.rect.h, dock.active_slot)
-  var dock_label_rect: Rect = rect_make(dock.rect.x, active_rect.y + active_rect.h + 2.0, dock.rect.w, studio_typography_caption_line_height_px())
+  var dock_label_rect: Rect = rect_make(dock.rect.x, active_rect.y + active_rect.h + studio_spacing_unit_px(), dock.rect.w, studio_typography_caption_line_height_px())
   var cap_cp: int = studio_dock_slot_caption_first_codepoint(dock.active_slot)
   var cap_cnt: int = studio_dock_slot_caption_glyph_count(dock.active_slot)
   studio_paint_glyph_text(frame, dock_label_rect, cap_cp, cap_cnt, studio_color_text_muted())
@@ -7843,6 +7983,13 @@ def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose
     play_fill = studio_color_hover_surface()
   paint_frame_push(frame, paint_cmd_fill_round(timeline.play_btn_rect, play_fill, studio_radius_sm_px()))
   paint_frame_push(frame, paint_cmd_stroke_round(timeline.play_btn_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
+  var play_icon_id: int = icon_atlas_image_for_dock_slot(3)
+  var play_icon_src: Rect = icon_atlas_src_rect(play_icon_id)
+  var play_icon_dest: Rect = studio_timeline_play_icon_content_rect(timeline.play_btn_rect)
+  var play_icon_tint: Color = studio_color_text_primary()
+  if hover.timeline_play_btn == 1:
+    play_icon_tint = studio_color_accent_cyan()
+  paint_frame_push(frame, paint_cmd_draw_image(play_icon_dest, play_icon_id, play_icon_src, play_icon_tint))
 
 def studio_paint_agent(frame: var PaintFrame, agent: StudioAgentChromeCompose) -> unit
   requires frame.cmd_count >= 0
@@ -7994,7 +8141,7 @@ def studio_shell_chrome_count_palette(has_selection: int, scene_entity_count: in
   var ts0: int = task_state
   var pal0: int = palette_open
   var ctx0: int = agent_context_label
-  return studio_paint_compose_panels_count(sel0) + 1 + studio_paint_topbar_profile_cmds() + studio_paint_palette_shortcut_hints_cmds(pal0) + studio_shell_viewport_cmds(scene0, viewport_error_kind, display, menu, profile_id) + studio_paint_agent_cmds(ts0, ctx0, invoke_visible, tool_trace_visible) + studio_paint_palette_cmds(pal0)
+  return studio_paint_compose_panels_count(sel0) + 1 + studio_paint_topbar_profile_cmds() + studio_paint_topbar_tool_cmds() + studio_paint_palette_shortcut_hints_cmds(pal0) + studio_shell_viewport_cmds(scene0, viewport_error_kind, display, menu, profile_id) + studio_paint_agent_cmds(ts0, ctx0, invoke_visible, tool_trace_visible) + studio_paint_palette_cmds(pal0)
 
 def studio_shell_chrome_count_for_compose(compose: StudioShellCompose) -> int
   requires compose.panel.active_region >= studio_region_dock()
@@ -8018,6 +8165,7 @@ def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose
   paint_frame_push(frame, paint_cmd_fill_gradient(compose.layout.topbar, studio_color_bg_primary(), studio_color_bg_elevated()))
   var prof0: int = compose.config.active_profile
   studio_paint_topbar_profile(frame, compose.layout.topbar, prof0)
+  studio_paint_topbar_tools(frame, compose.layout.topbar)
   studio_paint_palette_shortcut_hints(frame, compose.layout.topbar, compose.palette)
   if compose.viewport_error.visible == 1:
     studio_paint_viewport_error(frame, compose.viewport_error)

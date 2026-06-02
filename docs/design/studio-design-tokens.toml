@@ -59,6 +59,15 @@ shadow_spread_px = 6.0
 shadow_alpha_falloff = 0.45
 elevated_extra_layers = 1
 
+[density]
+dock_slot_size_px = 32
+dock_slot_gap_px = 4
+dock_padding_px = 8
+dock_icon_inset_px = 4
+topbar_tool_size_px = 28
+topbar_tool_gap_px = 4
+timeline_play_icon_inset_px = 6
+
 [icons]
 dock_scene = "dock_scene"
 dock_assets = "dock_assets"

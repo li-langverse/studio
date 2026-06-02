@@ -13,7 +13,7 @@ todos:
     status: done
   - id: wsv-w3-icons-density
     content: "W3 — Icons + density: icon atlas + spacing rhythm; dock/topbar/tooling feels compact and readable"
-    status: pending
+    status: done
   - id: wsv-w4-viewport-polish
     content: "W4 — Viewport polish: HUD text + honest pixels; overlays match product chrome quality"
     status: pending
@@ -45,7 +45,7 @@ Update each iteration. Mark **DONE** only when every `wsv-w*` todo in that wave 
 | **P0** | Raster truth (SDL host uses Li raster) | **DONE** |
 | **P1** | Typography (TTF→atlas + readable labels) | **DONE** |
 | **P2** | Elevation (tokenized shadows + blur) | **DONE** |
-| **P3** | Icons + density (icon atlas, spacing rhythm) | pending |
+| **P3** | Icons + density (icon atlas, spacing rhythm) | **DONE** |
 | **P4** | Viewport polish (HUD text + honest pixels) | pending |
 | **P5** | Acceptance (1280×720 + 7 vertical screenshots) | pending |
 

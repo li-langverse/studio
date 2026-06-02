@@ -90,6 +90,12 @@ note = "wsv-w2: tokenized multi-layer panel shadows + raised elevation depth"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_product_visual_w3_icons_density.li"
+outcome = "check_ok"
+note = "wsv-w3: compact dock icon inset + topbar tool atlas + timeline play glyph"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_polish_w4_vertical_chrome.li"
 outcome = "check_ok"
 note = "wsp-w4: per-vertical topbar accent + drug/game/rl viewport polish"

@@ -6,7 +6,7 @@ def main() -> int
   ensures result == 0
   decreases 0
 =
-  if li_std_studio_version() < 46:
+  if li_std_studio_version() < 47:
     return 1
   if studio_spacing_unit_px() != 4.0:
     return 2
@@ -22,7 +22,7 @@ def main() -> int
     return 7
   if studio_paint_dock_cmds() != 20:
     return 8
-  if studio_paint_timeline_cmds() != 9:
+  if studio_paint_timeline_cmds() != 10:
     return 9
   if studio_paint_topbar_profile_cmds() != 4:
     return 10
