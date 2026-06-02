@@ -13,7 +13,11 @@ from pathlib import Path
 
 p = Path("docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md")
 text = p.read_text(encoding="utf-8")
-ids = re.findall(r"^- id: (wsv-[^\\s]+)\\n\\s+content: .+\\n\\s+status: (\\w+)", text, flags=re.M)
+ids = re.findall(
+    r"^- id: (wsv-\\S+)\\s*\\r?\\n\\s+content: .*?\\r?\\n\\s+status: (\\w+)",
+    text,
+    flags=re.M,
+)
 assert ids, "No wsv-* todos found in plan YAML"
 print(f"ok: plan_todos={len(ids)}")
 PY

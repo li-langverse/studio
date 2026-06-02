@@ -10,7 +10,11 @@ import re
 from pathlib import Path
 
 plan = Path("docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md").read_text(encoding="utf-8")
-items = re.findall(r"^- id: (wsv-[^\\s]+)\\n\\s+content: .+\\n\\s+status: (\\w+)", plan, flags=re.M)
+items = re.findall(
+  r"^- id: (wsv-\\S+)\\s*\\r?\\n\\s+content: .*?\\r?\\n\\s+status: (\\w+)",
+  plan,
+  flags=re.M,
+)
 assert items, "No wsv-* todos found"
 pending = [i for i,s in items if s != "done"]
 if pending:
