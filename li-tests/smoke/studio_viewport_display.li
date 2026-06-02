@@ -50,7 +50,7 @@ def main() -> int raises IO
   var frame: PaintFrame = paint_frame_new()
   studio_attach_viewport_shell(sci)
   studio_paint_shell_chrome(frame, sci)
-  var exp_cmds: int = studio_shell_chrome_count_palette(1, 1, studio_agent_task_idle(), studio_palette_closed_flag(), studio_agent_context_none(), studio_viewport_error_none(), sci.viewport_display, sci.viewport_menu, sci.agent.invoke_input_visible, sci.agent.tool_trace_visible)
+  var exp_cmds: int = studio_shell_chrome_count_for_compose(sci)
   if frame.cmd_count != exp_cmds:
     return 17
   return 0

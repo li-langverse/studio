@@ -1,0 +1,34 @@
+import studio
+
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 45:
+    return 1
+  if studio_viewport_display_profile_wants_scene(studio_profile_game()) != 1:
+    return 2
+  if studio_paint_viewport_game_preview_cmds() != 6:
+    return 3
+  var game: StudioShellCompose = studio_vertical_demo_compose(studio_profile_game(), 0, 0)
+  if game.scene_entity_count != 1:
+    return 4
+  if game.viewport_empty.empty_visible != 0:
+    return 5
+  if game.viewport_display.background != studio_viewport_bg_grid():
+    return 6
+  if game.viewport_display.particle_dots_visible != 0:
+    return 7
+  var vp: Rect = game.layout.viewport
+  var preview: PaintFrame = paint_frame_new()
+  studio_paint_viewport_profile_preview(preview, vp, studio_profile_game())
+  if preview.cmd_count != studio_paint_viewport_game_preview_cmds():
+    return 8
+  if preview.last_kind != paint_op_stroke_round_rect():
+    return 9
+  var shell: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(shell, game)
+  if shell.cmd_count != studio_shell_chrome_count_for_compose(game):
+    return 10
+  return 0
