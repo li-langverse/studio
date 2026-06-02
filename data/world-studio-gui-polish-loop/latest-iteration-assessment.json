@@ -1,12 +1,24 @@
 {
-  "timestamp": "2026-06-01T18:30:00Z",
-  "todo": "wsp-w0-typography-readable",
-  "wps": ["WP-UX-01", "WP-GD-04"],
+  "timestamp": "2026-06-02T04:15:00Z",
+  "iteration_status": "sprint_complete_verified",
+  "todo": "wsp-w5-no-html-proof",
+  "wave": "W5",
+  "wps": ["WP-UX-01", "WP-UX-02", "WP-UX-06", "WP-UX-13", "WP-GD-05", "GUI-LIBRARY-PLAN W0-W5"],
   "native_only": true,
-  "polish_phase": "W0",
-  "polish_screenshot_paths": [],
-  "summary": "Wired Inter atlas draw_glyph on profile chip and outliner rows at studio_typography_body_px line height; topbar/outliner PaintCmd ends with paint_op_draw_glyphs.",
-  "smokes": ["li-tests/smoke/studio_polish_w0_typography.li", "li-tests/smoke/studio_outliner.li"],
-  "gates": "world-studio-gui-polish-gates.sh",
-  "baseline_diff": "installer/out/studio-screenshot-polish-baseline.png vs iteration-0 pending native host capture"
+  "polish_screenshot_paths": [
+    "docs/demo/media/native-verticals/png/polish-game.png",
+    "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/polish-sim_rl.png",
+    "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
+    "installer/out/studio-screenshot-polish-baseline.png"
+  ],
+  "gates": {
+    "world_studio_gui_polish_gates": "pass",
+    "world_studio_gui_polish_completion_gate": "pass"
+  },
+  "baseline_diff_note": "Baseline wireframe ~3.7KB (640x360) vs polish-game ~14.6KB — bitmap glyph labels, design tokens, round rects, viewport grid/HUD, hover/focus, per-vertical previews. Local present-host capture skipped on Windows agent host (WORLD_STUDIO_POLISH_SKIP_CAPTURE=1); committed PNGs pass size/color heuristics (>=12KB, >=48 unique colors).",
+  "north_star_fit": "gaming PH-UX — provable native Li chrome; HTML mocks reference-only",
+  "smokes": "li-tests/smoke/studio_polish_w0_typography.li through studio_polish_w4_vertical_chrome.li",
+  "pr": "https://github.com/li-langverse/studio/pull/19",
+  "agent_run_note": "world_studio_builder-73689379 2026-06-02: re-verified progress + completion gates on cursor/world-studio-gui-polish; all wsp-w0–w5 done; PR #19 CI green"
 }

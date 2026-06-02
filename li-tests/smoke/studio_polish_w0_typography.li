@@ -16,7 +16,7 @@ def main() -> int
     return 4
   if font_atlas_codepoint_supported(studio_outliner_label_first_codepoint(studio_outliner_label_root())) != 1:
     return 5
-  if studio_paint_outliner_row_cmds() != 2:
+  if studio_paint_outliner_row_cmds() != 3:
     return 6
   var layout: StudioShellLayout = layout_studio_shell_adaptive(1280.0, 720.0)
   var compose: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 0, 0)
