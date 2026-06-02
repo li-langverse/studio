@@ -7583,6 +7583,94 @@ def studio_linux_appimage_smoke() -> int raises IO
       return 3
   return 0
 
+# Phase 5 (wsg-w5-installer-ci) — Windows + Linux installer matrix green on CI.
+def studio_installer_ci_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_installer_ci_smoke() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 6
+  decreases 0
+=
+  if studio_installer_ci_version() != 1:
+    return 1
+  if studio_windows_native_present_version() != 1:
+    return 2
+  if studio_linux_appimage_version() != 1:
+    return 3
+  if studio_macos_wgpu_present_version() != 1:
+    return 4
+  if studio_present_loop_raster_version() != 1:
+    return 5
+  if studio_c_host_slim_version() != 1:
+    return 6
+  return 0
+
+# Phase 5 (wsg-w5-perf-budgets) — viewport/UI perf budgets (PH-UX gates, release notes).
+def studio_perf_budgets_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_viewport_fps_budget() -> float
+  requires true
+  ensures result == 60.0
+  decreases 0
+=
+  return 60.0
+
+def studio_panel_switch_ms_budget() -> float
+  requires true
+  ensures result == 100.0
+  decreases 0
+=
+  return 100.0
+
+def studio_load_ms_budget() -> float
+  requires true
+  ensures result == 2000.0
+  decreases 0
+=
+  return 2000.0
+
+def studio_memory_warn_peak_mib_budget() -> float
+  requires true
+  ensures result == 512.0
+  decreases 0
+=
+  return 512.0
+
+def studio_perf_budgets_smoke() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 8
+  decreases 0
+=
+  if studio_perf_budgets_version() != 1:
+    return 1
+  if studio_viewport_fps_budget() != 60.0:
+    return 2
+  if studio_panel_switch_ms_budget() != 100.0:
+    return 3
+  if studio_load_ms_budget() != 2000.0:
+    return 4
+  if studio_memory_warn_peak_mib_budget() != 512.0:
+    return 5
+  if render_viewport_fps_target() != studio_viewport_fps_budget():
+    return 6
+  if gui_panel_switch_budget_ms() != studio_panel_switch_ms_budget():
+    return 7
+  if studio_installer_ci_version() != 1:
+    return 8
+  return 0
+
 def studio_headless_golden_version() -> int
   requires true
   ensures result == 1
