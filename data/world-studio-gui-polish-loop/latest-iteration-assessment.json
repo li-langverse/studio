@@ -1,24 +1,43 @@
 {
-  "timestamp": "2026-06-02T04:15:00Z",
-  "iteration_status": "sprint_complete_verified",
-  "todo": "wsp-w5-no-html-proof",
-  "wave": "W5",
-  "wps": ["WP-UX-01", "WP-UX-02", "WP-UX-06", "WP-UX-13", "WP-GD-05", "GUI-LIBRARY-PLAN W0-W5"],
-  "native_only": true,
-  "polish_screenshot_paths": [
-    "docs/demo/media/native-verticals/png/polish-game.png",
-    "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
-    "docs/demo/media/native-verticals/png/polish-sim_rl.png",
-    "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
-    "installer/out/studio-screenshot-polish-baseline.png"
+  "timestamp": "2026-06-02T04:00:00Z",
+  "todo": "wsp-w0-typography-readable",
+  "wsp_todos_done": [
+    "wsp-w0-typography-readable",
+    "wsp-w0-token-contrast",
+    "wsp-w0-anti-wireframe-paint",
+    "wsp-w0-baseline-screenshot"
   ],
-  "gates": {
-    "world_studio_gui_polish_gates": "pass",
-    "world_studio_gui_polish_completion_gate": "pass"
+  "wave": "W0",
+  "wps": ["WP-UX-10", "WP-GD-05"],
+  "native_only": true,
+  "polish_phase": "W0-complete",
+  "li_std_studio_version": 40,
+  "smokes": [
+    "li-tests/smoke/studio_polish_w0_typography.li",
+    "li-tests/smoke/studio_outliner.li",
+    "li-tests/smoke/studio_native_styled_chrome.li"
+  ],
+  "gates": "world-studio-gui-polish-gates.sh pass",
+  "baseline_screenshot": "installer/out/studio-screenshot-polish-baseline.png",
+  "iteration_screenshot": "installer/out/studio-screenshot-iteration-0.png",
+  "polish_screenshot_paths": [],
+  "screenshot_note": "Present host not built in agent workspace; capture skipped (WORLD_STUDIO_POLISH_SKIP_CAPTURE=1). Baseline PNG committed; iteration-0 pending native host build.",
+  "design_review": {
+    "UX-01": {"score": 2, "note": "Glyph labels on profile chip + outliner rows; body 12px / heading 14px tokens"},
+    "UX-02": {"score": 2, "note": "Timeline gradients unchanged; playhead visible"},
+    "UX-03": {"score": 2, "note": "Inspector elevated panel + hint skeletons"},
+    "UX-04": {"score": 1, "note": "Palette unchanged this wave"},
+    "UX-05": {"score": 2, "note": "Profile chip glyph + dock icon atlas"},
+    "UX-06": {"score": 2, "note": "Agent strip unchanged"},
+    "UX-07": {"score": 2, "note": "Dock gradient + icon draw_image"},
+    "UX-08": {"score": 1, "note": "Viewport grid still structural"},
+    "UX-09": {"score": 2, "note": "Token contrast 12:1 stub verified"},
+    "UX-10": {"score": 2, "note": "Anti-wireframe: gradients, round rects, elevated inspector"},
+    "UX-11": {"score": 1, "note": "Empty states unchanged"},
+    "UX-12": {"score": 1, "note": "Vertical polish deferred to W4/W5"},
+    "UX-13": {"score": 1, "note": "HUD stubs"},
+    "UX-14": {"score": 1, "note": "Native pixels honesty unchanged"}
   },
-  "baseline_diff_note": "Baseline wireframe ~3.7KB (640x360) vs polish-game ~14.6KB — bitmap glyph labels, design tokens, round rects, viewport grid/HUD, hover/focus, per-vertical previews. Local present-host capture skipped on Windows agent host (WORLD_STUDIO_POLISH_SKIP_CAPTURE=1); committed PNGs pass size/color heuristics (>=12KB, >=48 unique colors).",
-  "north_star_fit": "gaming PH-UX — provable native Li chrome; HTML mocks reference-only",
-  "smokes": "li-tests/smoke/studio_polish_w0_typography.li through studio_polish_w4_vertical_chrome.li",
-  "pr": "https://github.com/li-langverse/studio/pull/19",
-  "agent_run_note": "world_studio_builder-73689379 2026-06-02: re-verified progress + completion gates on cursor/world-studio-gui-polish; all wsp-w0–w5 done; PR #19 CI green"
+  "regressions": "none",
+  "north_star_fit": "gaming / PH-UX visual baseline on native Li paint path"
 }

@@ -6,7 +6,7 @@ def main() -> int
   ensures result == 0
   decreases 0
 =
-  if li_std_studio_version() < 6:
+  if li_std_studio_version() < 40:
     return 1
   if li_std_ui_version() < 5:
     return 2
@@ -14,6 +14,10 @@ def main() -> int
     return 3
   if studio_typography_glyph_line_height_px() < studio_typography_body_px():
     return 4
+  if studio_typography_heading_px() < 14.0:
+    return 41
+  if studio_contrast_ratio_ok() < 4.5:
+    return 42
   if font_atlas_codepoint_supported(studio_outliner_label_first_codepoint(studio_outliner_label_root())) != 1:
     return 5
   if studio_paint_outliner_row_cmds() != 2:
