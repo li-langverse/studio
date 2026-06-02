@@ -1,21 +1,23 @@
 {
-  "timestamp": "2026-06-02T22:00:00.000000+00:00",
+  "timestamp": "2026-06-02T23:30:00.000000+00:00",
   "native_only": true,
-  "todo": "wsv-w3-icons-density",
+  "todo": "wsv-w4-viewport-polish",
   "wps": [
+    "WP-UX-13",
     "WP-UX-14"
   ],
   "summary": [
-    "Added [density] design tokens: 32px dock slots, 4px gaps/padding rhythm, 4px icon inset.",
-    "Dock and topbar tooling use atlas draw_image with inset rects; timeline play button shows timeline atlas icon.",
-    "studio_paint_topbar_tools (settings + sim); li_std_studio_version 47; smoke studio_product_visual_w3_icons_density.li."
+    "Added [viewport] design tokens: overlay scrim alpha, HUD chip height, menu/tier/biomol chip dimensions.",
+    "Viewport error and empty states use scrim + elevated panels with draw_glyphs labels and chip-style retry/CTA.",
+    "Viewport display tier/biomol chips and menu buttons match shell chrome; particle dots use fill_round.",
+    "li_std_studio_version 48; smoke studio_product_visual_w4_viewport_polish.li."
   ],
   "evidence": {
     "product_visual_gates": "scripts/world-studio-gui-product-visual-gates.sh",
     "product_visual_loop": "docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md",
-    "smoke": "li-tests/smoke/studio_product_visual_w3_icons_density.li"
+    "smoke": "li-tests/smoke/studio_product_visual_w4_viewport_polish.li"
   },
-  "product_visual_phase": "P3",
+  "product_visual_phase": "P4",
   "captures": {
     "ppm_available": false,
     "png_written": false,

@@ -16,7 +16,7 @@ todos:
     status: done
   - id: wsv-w4-viewport-polish
     content: "W4 — Viewport polish: HUD text + honest pixels; overlays match product chrome quality"
-    status: pending
+    status: done
   - id: wsv-w5-acceptance-screenshots
     content: "W5 — Acceptance: 1280×720 + 7 vertical screenshots; manifest updated; completion gate passes"
     status: pending
@@ -46,7 +46,7 @@ Update each iteration. Mark **DONE** only when every `wsv-w*` todo in that wave 
 | **P1** | Typography (TTF→atlas + readable labels) | **DONE** |
 | **P2** | Elevation (tokenized shadows + blur) | **DONE** |
 | **P3** | Icons + density (icon atlas, spacing rhythm) | **DONE** |
-| **P4** | Viewport polish (HUD text + honest pixels) | pending |
+| **P4** | Viewport polish (HUD text + honest pixels) | **DONE** |
 | **P5** | Acceptance (1280×720 + 7 vertical screenshots) | pending |
 
 ## Gates

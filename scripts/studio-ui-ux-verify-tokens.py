@@ -60,6 +60,14 @@ ELEVATION_FLOAT_MAP = {
     "shadow_alpha_falloff": ("studio_elevation_shadow_alpha_falloff", "elevation"),
 }
 
+VIEWPORT_FLOAT_MAP = {
+    "overlay_scrim_alpha": ("studio_viewport_overlay_scrim_alpha", "viewport"),
+    "hud_chip_height_px": ("studio_viewport_hud_chip_height_px", "viewport"),
+    "menu_chip_inset_px": ("studio_viewport_menu_chip_inset_px", "viewport"),
+    "tier_chip_width_px": ("studio_viewport_tier_chip_width_px", "viewport"),
+    "biomol_chip_width_px": ("studio_viewport_biomol_chip_width_px", "viewport"),
+}
+
 DENSITY_FLOAT_MAP = {
     "dock_slot_size_px": ("studio_density_dock_slot_size_px", "density"),
     "dock_slot_gap_px": ("studio_density_dock_slot_gap_px", "density"),
@@ -201,6 +209,7 @@ def main() -> int:
         "typography": parse_toml_section(TOKENS, "typography"),
         "radius": parse_toml_section(TOKENS, "radius"),
         "elevation": parse_toml_section(TOKENS, "elevation"),
+        "viewport": parse_toml_section(TOKENS, "viewport"),
         "density": parse_toml_section(TOKENS, "density"),
     }
 
@@ -221,6 +230,20 @@ def main() -> int:
                 if actual_i != int(tom):
                     errors.append(f"{fn}: studio {actual_i} != TOML {int(tom)}")
             elif actual != tom:
+                errors.append(f"{fn}: studio {actual} != TOML {tom}")
+
+        for key, (fn, section) in VIEWPORT_FLOAT_MAP.items():
+            raw = sections[section].get(key)
+            if raw is None:
+                errors.append(f"missing TOML {section}.{key}")
+                continue
+            tom = float(raw)
+            try:
+                actual = parse_palette_float(STUDIO_LIB, fn)
+            except KeyError:
+                errors.append(f"missing studio {fn} in {STUDIO_LIB}")
+                continue
+            if actual != tom:
                 errors.append(f"{fn}: studio {actual} != TOML {tom}")
 
         for key, (fn, section) in DENSITY_FLOAT_MAP.items():

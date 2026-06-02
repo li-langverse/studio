@@ -1178,6 +1178,123 @@ def studio_timeline_play_icon_content_rect(btn: Rect) -> Rect
 =
   return studio_icon_content_rect(btn, studio_density_timeline_play_icon_inset_px())
 
+# WSV W4 — viewport overlay polish (HUD chips, error/empty overlays, menu chips).
+def studio_viewport_overlay_scrim_alpha() -> float
+  requires true
+  ensures result == 0.55
+  decreases 0
+=
+  return 0.55
+
+def studio_viewport_hud_chip_height_px() -> float
+  requires true
+  ensures result == 14.0
+  decreases 0
+=
+  return 14.0
+
+def studio_viewport_menu_chip_inset_px() -> float
+  requires true
+  ensures result == 4.0
+  decreases 0
+=
+  return 4.0
+
+def studio_viewport_tier_chip_width_px() -> float
+  requires true
+  ensures result == 120.0
+  decreases 0
+=
+  return 120.0
+
+def studio_viewport_biomol_chip_width_px() -> float
+  requires true
+  ensures result == 88.0
+  decreases 0
+=
+  return 88.0
+
+def studio_viewport_overlay_scrim_color() -> Color
+  requires true
+  ensures result.a == studio_viewport_overlay_scrim_alpha()
+  decreases 0
+=
+  return color_rgb(0.0, 0.0, 0.0, studio_viewport_overlay_scrim_alpha())
+
+def studio_viewport_error_retry_label_first_codepoint() -> int
+  requires true
+  ensures result == 82
+  decreases 0
+=
+  return 82
+
+def studio_viewport_error_retry_label_glyph_count() -> int
+  requires true
+  ensures result == 5
+  decreases 0
+=
+  return 5
+
+def studio_viewport_empty_title_first_codepoint() -> int
+  requires true
+  ensures result == 78
+  decreases 0
+=
+  return 78
+
+def studio_viewport_empty_title_glyph_count() -> int
+  requires true
+  ensures result == 11
+  decreases 0
+=
+  return 11
+
+def studio_viewport_empty_cta_first_codepoint() -> int
+  requires true
+  ensures result == 73
+  decreases 0
+=
+  return 73
+
+def studio_viewport_empty_cta_glyph_count() -> int
+  requires true
+  ensures result == 11
+  decreases 0
+=
+  return 11
+
+def studio_viewport_display_tier_label_first_codepoint() -> int
+  requires true
+  ensures result == 77
+  decreases 0
+=
+  return 77
+
+def studio_viewport_display_tier_label_glyph_count() -> int
+  requires true
+  ensures result == 7
+  decreases 0
+=
+  return 7
+
+def studio_viewport_empty_card_rect(title: Rect, cta: Rect) -> Rect
+  requires title.w >= 8.0
+  requires cta.w >= 8.0
+  ensures result.w >= title.w
+  ensures result.h >= title.h + cta.h
+  decreases 0
+=
+  var pad: float = studio_spacing_rhythm_px()
+  var x: float = title.x - pad
+  if cta.x - pad < x:
+    x = cta.x - pad
+  var w: float = title.w + pad + pad
+  if cta.w + pad + pad > w:
+    w = cta.w + pad + pad
+  var y: float = title.y - pad
+  var h: float = (cta.y + cta.h + pad) - y
+  return rect_make(x, y, w, h)
+
 def studio_topbar_profile_accent_rect(topbar: Rect) -> Rect
   requires topbar.w >= studio_spacing_rhythm_px()
   requires topbar.h >= studio_spacing_rhythm_px()
@@ -3105,6 +3222,49 @@ def studio_paint_viewport_hud(frame: var PaintFrame, display: StudioViewportDisp
   studio_paint_viewport_hud_chip(frame, display.grid_legend_rect, grid_color)
   studio_paint_glyph_text(frame, display.grid_legend_rect, studio_viewport_hud_grid_label_first_codepoint(), studio_viewport_hud_grid_label_glyph_count(), studio_color_text_muted())
 
+def studio_viewport_display_biomol_label_first_codepoint(style: int) -> int
+  requires style >= studio_biomol_style_cartoon()
+  requires style <= studio_biomol_style_sticks()
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases style
+=
+  if style == studio_biomol_style_surface():
+    return 83
+  if style == studio_biomol_style_sticks():
+    return 83
+  return 67
+
+def studio_viewport_display_biomol_label_glyph_count(style: int) -> int
+  requires style >= studio_biomol_style_cartoon()
+  requires style <= studio_biomol_style_sticks()
+  ensures result >= 6
+  decreases style
+=
+  if style == studio_biomol_style_surface():
+    return 7
+  if style == studio_biomol_style_sticks():
+    return 6
+  return 7
+
+def studio_paint_viewport_chip_cmds() -> int
+  requires true
+  ensures result == studio_paint_viewport_hud_chip_cmds() + studio_paint_glyph_run_cmds()
+  decreases 0
+=
+  return studio_paint_viewport_hud_chip_cmds() + studio_paint_glyph_run_cmds()
+
+def studio_paint_viewport_chip(frame: var PaintFrame, chip: Rect, accent: Color, first_codepoint: int, glyph_count: int, text_color: Color) -> unit
+  requires frame.cmd_count >= 0
+  requires chip.w >= 8.0
+  requires chip.h >= 8.0
+  requires glyph_count >= 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_chip_cmds()
+  ensures frame.last_kind == paint_op_draw_glyphs()
+  decreases glyph_count
+=
+  studio_paint_viewport_hud_chip(frame, chip, accent)
+  studio_paint_glyph_text(frame, chip, first_codepoint, glyph_count, text_color)
+
 def studio_compose_viewport_menu(vp: Rect, profile_id: int) -> StudioViewportMenuCompose
   requires vp.w >= 0.0
   requires vp.h >= 0.0
@@ -3238,10 +3398,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 47
+  ensures result == 48
   decreases 0
 =
-  return 47
+  return 48
 
 def studio_shell_widget_tree_version() -> int
   requires true
@@ -7505,51 +7665,66 @@ def studio_paint_inspector_cmds(has_selection: int) -> int
     return studio_paint_inspector_empty_cmds()
   return studio_paint_inspector_selected_cmds()
 
+def studio_viewport_error_message_first_codepoint(error_kind: int) -> int
+  requires error_kind >= studio_viewport_error_none()
+  requires error_kind <= studio_err_missing_asset()
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases error_kind
+=
+  if error_kind == studio_err_gpu():
+    return 71
+  return 77
+
+def studio_viewport_error_message_glyph_count(error_kind: int) -> int
+  requires error_kind >= studio_viewport_error_none()
+  requires error_kind <= studio_err_missing_asset()
+  ensures result >= 10
+  decreases error_kind
+=
+  if error_kind == studio_err_gpu():
+    return 14
+  return 13
+
 def studio_paint_viewport_error_cmds() -> int
   requires true
-  ensures result == 2
+  ensures result == 1 + studio_paint_elevated_panel_shadow_cmds() + studio_paint_glyph_run_cmds() + studio_paint_viewport_chip_cmds()
   decreases 0
 =
-  return 2
+  return 1 + studio_paint_elevated_panel_shadow_cmds() + studio_paint_glyph_run_cmds() + studio_paint_viewport_chip_cmds()
 
 def studio_paint_viewport_error(frame: var PaintFrame, overlay: StudioViewportErrorOverlay) -> unit
   requires frame.cmd_count >= 0
   requires overlay.visible == 1
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_error_cmds()
-  ensures frame.last_kind == paint_op_stroke_rect()
+  ensures frame.last_kind == paint_op_draw_glyphs()
   decreases overlay.error_kind
 =
-  frame.cmd_count = frame.cmd_count + studio_paint_viewport_error_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = overlay.message_rect
-  frame.last_color = studio_color_agent_error()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = overlay.retry_rect
-  frame.last_color = studio_color_accent_cyan()
+  paint_frame_push(frame, paint_cmd_fill(overlay.frame_rect, studio_viewport_overlay_scrim_color()))
+  studio_paint_elevated_panel_with_shadow(frame, overlay.message_rect)
+  var msg_cp: int = studio_viewport_error_message_first_codepoint(overlay.error_kind)
+  var msg_cnt: int = studio_viewport_error_message_glyph_count(overlay.error_kind)
+  studio_paint_glyph_text(frame, overlay.message_rect, msg_cp, msg_cnt, studio_color_text_primary())
+  studio_paint_viewport_chip(frame, overlay.retry_rect, studio_color_accent_cyan(), studio_viewport_error_retry_label_first_codepoint(), studio_viewport_error_retry_label_glyph_count(), studio_color_text_primary())
 
 def studio_paint_viewport_empty(frame: var PaintFrame, viewport_empty: StudioViewportEmptyCompose) -> unit
   requires frame.cmd_count >= 0
   requires viewport_empty.empty_visible == 1
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_empty_cmds()
+  ensures frame.last_kind == paint_op_draw_glyphs()
   decreases 0
 =
-  frame.cmd_count = frame.cmd_count + studio_paint_viewport_empty_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = viewport_empty.frame_rect
-  frame.last_color = studio_color_border()
-  frame.last_kind = paint_op_fill_rect()
-  frame.last_rect = viewport_empty.title_rect
-  frame.last_color = studio_color_border()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = viewport_empty.cta_rect
-  frame.last_color = studio_color_border()
+  paint_frame_push(frame, paint_cmd_fill(viewport_empty.frame_rect, studio_viewport_overlay_scrim_color()))
+  var card: Rect = studio_viewport_empty_card_rect(viewport_empty.title_rect, viewport_empty.cta_rect)
+  studio_paint_elevated_panel_with_shadow(frame, card)
+  studio_paint_glyph_text(frame, viewport_empty.title_rect, studio_viewport_empty_title_first_codepoint(), studio_viewport_empty_title_glyph_count(), studio_color_text_primary())
+  studio_paint_viewport_chip(frame, viewport_empty.cta_rect, studio_color_accent_cyan(), studio_viewport_empty_cta_first_codepoint(), studio_viewport_empty_cta_glyph_count(), studio_color_text_primary())
 
 def studio_paint_viewport_empty_cmds() -> int
   requires true
-  ensures result == 3
+  ensures result == 1 + studio_paint_elevated_panel_shadow_cmds() + studio_paint_glyph_run_cmds() + studio_paint_viewport_chip_cmds()
   decreases 0
 =
-  return 3
+  return 1 + studio_paint_elevated_panel_shadow_cmds() + studio_paint_glyph_run_cmds() + studio_paint_viewport_chip_cmds()
 
 def studio_viewport_game_entity_preview_count() -> int
   requires true
@@ -7794,17 +7969,17 @@ def studio_paint_viewport_display_cmds(display: StudioViewportDisplayCompose) ->
   if display.particle_dots_visible == 1:
     n = n + studio_viewport_display_particle_dot_count()
   if display.tier_particles > 0:
-    n = n + 1
-  n = n + 1
+    n = n + studio_paint_viewport_chip_cmds()
+  n = n + studio_paint_viewport_chip_cmds()
   n = n + studio_paint_viewport_hud_cmds()
   return n
 
 def studio_paint_viewport_menu_btn_cmds() -> int
   requires true
-  ensures result == 1 + studio_paint_glyph_run_cmds()
+  ensures result == studio_paint_viewport_chip_cmds()
   decreases 0
 =
-  return 1 + studio_paint_glyph_run_cmds()
+  return studio_paint_viewport_chip_cmds()
 
 def studio_paint_viewport_menu_cmds(menu: StudioViewportMenuCompose) -> int
   requires true
@@ -7845,13 +8020,11 @@ def studio_paint_viewport_display_dot(frame: var PaintFrame, vp: Rect, index: in
   requires index >= 0
   requires index < studio_viewport_display_particle_dot_count()
   ensures frame.cmd_count == old(frame.cmd_count) + 1
+  ensures frame.last_kind == paint_op_fill_round_rect()
   decreases index
 =
   var dot: Rect = studio_viewport_display_particle_dot_rect_at(vp, index)
-  frame.cmd_count = frame.cmd_count + 1
-  frame.last_kind = paint_op_fill_rect()
-  frame.last_rect = dot
-  frame.last_color = studio_color_accent_amber()
+  paint_frame_push(frame, paint_cmd_fill_round(dot, studio_color_accent_amber(), 3.0))
 
 def studio_paint_viewport_display(frame: var PaintFrame, vp: Rect, display: StudioViewportDisplayCompose) -> unit
   requires frame.cmd_count >= 0
@@ -7862,16 +8035,10 @@ def studio_paint_viewport_display(frame: var PaintFrame, vp: Rect, display: Stud
 =
   var bg_n: int = studio_paint_viewport_display_bg_cmds(display.background)
   if bg_n >= 1:
-    frame.cmd_count = frame.cmd_count + 1
-    frame.last_kind = paint_op_fill_rect()
-    frame.last_rect = vp
-    frame.last_color = studio_viewport_display_bg_color(display.background)
+    paint_frame_push(frame, paint_cmd_fill(vp, studio_viewport_display_bg_color(display.background)))
   if display.background == studio_viewport_bg_gradient():
-    frame.cmd_count = frame.cmd_count + 1
-    frame.last_kind = paint_op_fill_rect()
     var band: Rect = rect_make(vp.x, vp.y, vp.w, vp.h * 0.35)
-    frame.last_rect = band
-    frame.last_color = color_rgb(0.08, 0.10, 0.18, 1.0)
+    paint_frame_push(frame, paint_cmd_fill(band, color_rgb(0.08, 0.10, 0.18, 1.0)))
   if display.particle_dots_visible == 1:
     studio_paint_viewport_display_dot(frame, vp, 0)
     studio_paint_viewport_display_dot(frame, vp, 1)
@@ -7882,29 +8049,24 @@ def studio_paint_viewport_display(frame: var PaintFrame, vp: Rect, display: Stud
     studio_paint_viewport_display_dot(frame, vp, 6)
     studio_paint_viewport_display_dot(frame, vp, 7)
   if display.tier_particles > 0:
-    frame.cmd_count = frame.cmd_count + 1
-    frame.last_kind = paint_op_fill_rect()
-    frame.last_rect = display.tier_label_rect
-    frame.last_color = studio_color_border()
-  frame.cmd_count = frame.cmd_count + 1
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = display.biomol_chip_rect
-  frame.last_color = studio_viewport_display_biomol_color(display.biomol_style)
+    studio_paint_viewport_chip(frame, display.tier_label_rect, studio_color_accent_amber(), studio_viewport_display_tier_label_first_codepoint(), studio_viewport_display_tier_label_glyph_count(), studio_color_text_primary())
+  var biomol_cp: int = studio_viewport_display_biomol_label_first_codepoint(display.biomol_style)
+  var biomol_cnt: int = studio_viewport_display_biomol_label_glyph_count(display.biomol_style)
+  var biomol_accent: Color = studio_viewport_display_biomol_color(display.biomol_style)
+  studio_paint_viewport_chip(frame, display.biomol_chip_rect, biomol_accent, biomol_cp, biomol_cnt, studio_color_text_primary())
   studio_paint_viewport_hud(frame, display)
 
 def studio_paint_viewport_menu(frame: var PaintFrame, menu: StudioViewportMenuCompose) -> unit
   requires frame.cmd_count >= 0
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_menu_cmds(menu)
+  ensures frame.last_kind == paint_op_draw_glyphs()
   decreases menu.menu_visible
 =
   if menu.menu_visible != 1:
     return
-  paint_frame_push(frame, paint_cmd_stroke_round(menu.bg_btn, studio_color_accent_cyan(), 1.0, studio_radius_sm_px()))
-  studio_paint_glyph_text(frame, menu.bg_btn, studio_viewport_menu_bg_label_first_codepoint(), studio_viewport_menu_bg_label_glyph_count(), studio_color_text_primary())
-  paint_frame_push(frame, paint_cmd_stroke_round(menu.particle_btn, studio_color_accent_amber(), 1.0, studio_radius_sm_px()))
-  studio_paint_glyph_text(frame, menu.particle_btn, studio_viewport_menu_particle_label_first_codepoint(), studio_viewport_menu_particle_label_glyph_count(), studio_color_text_primary())
-  paint_frame_push(frame, paint_cmd_stroke_round(menu.biomol_btn, studio_color_accent_violet(), 1.0, studio_radius_sm_px()))
-  studio_paint_glyph_text(frame, menu.biomol_btn, studio_viewport_menu_biomol_label_first_codepoint(), studio_viewport_menu_biomol_label_glyph_count(), studio_color_text_primary())
+  studio_paint_viewport_chip(frame, menu.bg_btn, studio_color_accent_cyan(), studio_viewport_menu_bg_label_first_codepoint(), studio_viewport_menu_bg_label_glyph_count(), studio_color_text_primary())
+  studio_paint_viewport_chip(frame, menu.particle_btn, studio_color_accent_amber(), studio_viewport_menu_particle_label_first_codepoint(), studio_viewport_menu_particle_label_glyph_count(), studio_color_text_primary())
+  studio_paint_viewport_chip(frame, menu.biomol_btn, studio_color_accent_violet(), studio_viewport_menu_biomol_label_first_codepoint(), studio_viewport_menu_biomol_label_glyph_count(), studio_color_text_primary())
 
 def studio_paint_dock_slot(frame: var PaintFrame, dock: StudioDockCompose, slot: int, hovered: int) -> unit
   requires frame.cmd_count >= 0

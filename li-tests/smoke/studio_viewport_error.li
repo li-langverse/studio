@@ -40,7 +40,7 @@ def main() -> int raises IO
   var overlay_kind: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout0, studio_err_gpu())
   if overlay_kind.error_kind != studio_err_gpu():
     return 8
-  if studio_paint_viewport_error_cmds() != 2:
+  if studio_paint_viewport_error_cmds() != 10:
     return 9
   var shell0: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 0, 1)
   if shell0.viewport_error.error_kind != studio_err_gpu():
@@ -50,6 +50,8 @@ def main() -> int raises IO
   var frame: PaintFrame = paint_frame_new()
   var overlay_paint: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout0, studio_err_gpu())
   studio_paint_viewport_error(frame, overlay_paint)
+  if frame.last_kind != paint_op_draw_glyphs():
+    return 23
   var shell_ptr: StudioShellCompose = shell0
   var inp: InputState = input_default()
   inp.pointer_down = 1
