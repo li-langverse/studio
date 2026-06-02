@@ -1,0 +1,40 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 45:
+    return 1
+  if studio_color_hover_surface().r <= 0.0:
+    return 2
+  var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 1)
+  if shell.hover.dock_slot != studio_hover_dock_none():
+    return 3
+  var input: InputState = input_default()
+  input.pointer_x = shell.outliner.row1_rect.x + shell.outliner.row1_rect.w / 2.0
+  input.pointer_y = shell.outliner.row1_rect.y + shell.outliner.row1_rect.h / 2.0
+  studio_shell_sync_hover(shell, input)
+  if shell.hover.outliner_row != 1:
+    return 4
+  var dock_input: InputState = input_default()
+  var dock_rect: Rect = studio_dock_slot_rect_at(shell.dock.rect.x, shell.dock.rect.y, shell.dock.rect.w, shell.dock.rect.h, 2)
+  dock_input.pointer_x = dock_rect.x + dock_rect.w / 2.0
+  dock_input.pointer_y = dock_rect.y + dock_rect.h / 2.0
+  studio_shell_sync_hover(shell, dock_input)
+  if shell.hover.dock_slot != 2:
+    return 5
+  shell.hover.timeline_play_btn = 1
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_timeline(frame, shell.timeline, shell.hover)
+  if frame.cmd_count != studio_paint_timeline_cmds():
+    return 6
+  var dock_frame: PaintFrame = paint_frame_new()
+  shell.hover = studio_shell_hover_new()
+  shell.hover.dock_slot = 1
+  studio_paint_dock(dock_frame, shell.dock, shell.hover)
+  if dock_frame.cmd_count != studio_paint_dock_cmds():
+    return 7
+  return 0

@@ -533,6 +533,110 @@ def studio_profile_color(profile_id: int) -> Color
     return studio_color_accent_violet()
   return studio_color_accent_amber()
 
+def studio_paint_topbar_profile_cmds() -> int
+  requires true
+  ensures result == studio_paint_topbar_profile_accent_cmds() + 2 + studio_paint_glyph_run_cmds()
+  decreases 0
+=
+  return studio_paint_topbar_profile_accent_cmds() + 2 + studio_paint_glyph_run_cmds()
+
+def studio_paint_topbar_profile(frame: var PaintFrame, topbar: Rect, profile_id: int) -> unit
+  requires frame.cmd_count >= 0
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_topbar_profile_cmds()
+  ensures frame.last_kind == paint_op_draw_glyphs()
+  decreases profile_id
+=
+  studio_paint_topbar_profile_accent(frame, topbar, profile_id)
+  var pid_chip: int = profile_id
+  var pid_color: int = profile_id
+  var top_copy: Rect = topbar
+  var top_x: float = top_copy.x
+  var top_y: float = top_copy.y
+  var top_w: float = top_copy.w
+  var top_h: float = top_copy.h
+  var chip_rect: Rect = studio_profile_chip_rect_at(top_x, top_y, top_w, top_h, pid_chip)
+  paint_frame_push_accent_chip(frame, chip_rect, studio_profile_color(pid_color))
+  var prof_cp: int = studio_profile_label_first_codepoint(pid_chip)
+  var prof_cnt: int = studio_profile_label_glyph_count(pid_chip)
+  studio_paint_glyph_text(frame, chip_rect, prof_cp, prof_cnt, studio_color_text_primary())
+
+# W0 — readable typography via bitmap atlas (body/caption token sizes).
+def studio_typography_glyph_line_height_px() -> float
+  requires true
+  ensures result == studio_typography_body_px() + 4.0
+  decreases 0
+=
+  return studio_typography_body_px() + 4.0
+
+def studio_typography_caption_line_height_px() -> float
+  requires true
+  ensures result == studio_typography_caption_px() + 3.0
+  decreases 0
+=
+  return studio_typography_caption_px() + 3.0
+
+def studio_paint_glyph_run_cmds() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_paint_glyph_text_rect(anchor: Rect, glyph_count: int) -> Rect
+  requires anchor.w >= 8.0
+  requires anchor.h >= studio_typography_glyph_line_height_px()
+  requires glyph_count >= 1
+  requires glyph_count <= 32
+  ensures result.w >= 8.0
+  ensures result.h == studio_typography_glyph_line_height_px()
+  decreases glyph_count
+=
+  var pad: float = studio_spacing_rhythm_px()
+  var lh: float = studio_typography_glyph_line_height_px()
+  var y: float = anchor.y + (anchor.h - lh) / 2.0
+  var w: float = anchor.w - pad - pad
+  if w < 8.0:
+    w = 8.0
+  return rect_make(anchor.x + pad, y, w, lh)
+
+def studio_paint_glyph_text(frame: var PaintFrame, anchor: Rect, first_codepoint: int, glyph_count: int, color: Color) -> unit
+  requires frame.cmd_count >= 0
+  requires glyph_count >= 1
+  requires glyph_count <= 32
+  requires font_atlas_codepoint_supported(first_codepoint) == 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_glyph_run_cmds()
+  ensures frame.last_kind == paint_op_draw_glyphs()
+  decreases glyph_count
+=
+  var dest: Rect = studio_paint_glyph_text_rect(anchor, glyph_count)
+  paint_frame_push(frame, paint_cmd_draw_glyphs_run(dest, font_face_inter(), color, first_codepoint, glyph_count))
+
+def studio_outliner_label_first_codepoint(label_id: int) -> int
+  requires label_id >= studio_outliner_label_root()
+  requires label_id <= studio_outliner_label_mesh()
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases label_id
+=
+  if label_id == studio_outliner_label_root():
+    return 87
+  if label_id == studio_outliner_label_camera():
+    return 67
+  return 77
+
+def studio_outliner_label_glyph_count(label_id: int) -> int
+  requires label_id >= studio_outliner_label_root()
+  requires label_id <= studio_outliner_label_mesh()
+  ensures result >= 4
+  ensures result <= 6
+  decreases label_id
+=
+  if label_id == studio_outliner_label_root():
+    return 5
+  if label_id == studio_outliner_label_camera():
+    return 6
+  return 4
+
 def studio_profile_label_first_codepoint(profile_id: int) -> int
   requires studio_profile_id_valid(profile_id) == 1
   ensures font_atlas_codepoint_supported(result) == 1
@@ -544,50 +648,685 @@ def studio_profile_label_first_codepoint(profile_id: int) -> int
     return 82
   if profile_id == studio_profile_sim_drug_design():
     return 68
+  if profile_id == studio_profile_sim_scientific():
+    return 83
   return 83
 
-def studio_profile_chip_glyph_rect(chip: Rect) -> Rect
-  requires chip.w >= 8.0
-  requires chip.h >= studio_typography_glyph_line_height_px()
-  ensures result.w >= 8.0
-  ensures result.h == studio_typography_glyph_line_height_px()
+def studio_profile_label_glyph_count(profile_id: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures result >= 2
+  ensures result <= 6
+  decreases profile_id
+=
+  if profile_id == studio_profile_game():
+    return 4
+  if profile_id == studio_profile_sim_rl():
+    return 2
+  if profile_id == studio_profile_sim_drug_design():
+    return 4
+  if profile_id == studio_profile_sim_scientific():
+    return 3
+  return 6
+
+def studio_agent_status_label_first_codepoint(task_state: int) -> int
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases task_state
+=
+  if task_state == studio_agent_task_running():
+    return 82
+  if task_state == studio_agent_task_failed():
+    return 70
+  if task_state == studio_agent_task_done():
+    return 68
+  if task_state == studio_agent_task_blocked():
+    return 66
+  return 73
+
+def studio_agent_status_label_glyph_count(task_state: int) -> int
+  requires task_state >= studio_agent_task_idle()
+  requires task_state <= studio_agent_task_done()
+  ensures result >= 3
+  ensures result <= 7
+  decreases task_state
+=
+  if task_state == studio_agent_task_running():
+    return 7
+  if task_state == studio_agent_task_failed():
+    return 6
+  if task_state == studio_agent_task_done():
+    return 4
+  if task_state == studio_agent_task_blocked():
+    return 7
+  return 4
+
+def studio_inspector_empty_hint1_first_codepoint() -> int
+  requires true
+  ensures result == 83
   decreases 0
 =
-  var pad_x: float = 10.0
-  var glyph_w: float = chip.w - pad_x * 2.0
-  if glyph_w < 8.0:
-    glyph_w = 8.0
-  var glyph_h: float = studio_typography_glyph_line_height_px()
-  var y: float = chip.y + (chip.h - glyph_h) / 2.0
-  return rect_make(chip.x + pad_x, y, glyph_w, glyph_h)
+  return 83
 
-def studio_paint_topbar_profile_cmds() -> int
+def studio_inspector_empty_hint1_glyph_count() -> int
+  requires true
+  ensures result == 6
+  decreases 0
+=
+  return 6
+
+def studio_inspector_empty_hint2_first_codepoint() -> int
+  requires true
+  ensures result == 111
+  decreases 0
+=
+  return 111
+
+def studio_inspector_empty_hint2_glyph_count() -> int
+  requires true
+  ensures result == 6
+  decreases 0
+=
+  return 6
+
+# W2 — command palette / shortcut hints (UX-04, studio-design-tokens command_palette_hint).
+def studio_palette_topbar_hint_rect(topbar: Rect) -> Rect
+  requires topbar.w >= 200.0
+  requires topbar.h >= studio_typography_glyph_line_height_px()
+  ensures result.w >= 160.0
+  decreases 0
+=
+  var pad: float = 16.0
+  var w: float = topbar.w * 0.42
+  if w > 320.0:
+    w = 320.0
+  if w < 160.0:
+    w = 160.0
+  var lh: float = studio_typography_glyph_line_height_px()
+  var y: float = topbar.y + (topbar.h - lh) / 2.0
+  return rect_make(topbar.x + pad, y, w, lh)
+
+def studio_palette_topbar_hint_first_codepoint() -> int
+  requires true
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases 0
+=
+  return 67
+
+def studio_palette_topbar_hint_glyph_count() -> int
+  requires true
+  ensures result == studio_command_palette_hint_len()
+  decreases 0
+=
+  return studio_command_palette_hint_len()
+
+def studio_palette_result_row_rect(panel: Rect, slot: int) -> Rect
+  requires panel.w >= studio_palette_panel_width_px()
+  requires panel.h >= studio_palette_panel_height_px()
+  requires slot >= 1
+  requires slot <= studio_palette_result_count_stub()
+  ensures result.w >= 80.0
+  decreases slot
+=
+  var pad: float = 16.0
+  var row_h: float = studio_typography_glyph_line_height_px() + 10.0
+  var y: float = panel.y + pad + studio_palette_search_bar_height_px() + pad + (studio_int_as_float(slot - 1) * row_h)
+  var w: float = panel.w - (pad * 2.0)
+  return rect_make(panel.x + pad, y, w, row_h)
+
+def studio_palette_slot_digit_codepoint(slot: int) -> int
+  requires slot >= 1
+  requires slot <= studio_palette_result_count_stub()
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases slot
+=
+  return 48 + slot
+
+def studio_palette_action_label_first_codepoint(slot: int) -> int
+  requires slot >= 1
+  requires slot <= studio_palette_result_count_stub()
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases slot
+=
+  if slot == 1:
+    return 73
+  if slot == 2:
+    return 84
+  return 65
+
+def studio_palette_action_label_glyph_count(slot: int) -> int
+  requires slot >= 1
+  requires slot <= studio_palette_result_count_stub()
+  ensures result >= 5
+  ensures result <= 9
+  decreases slot
+=
+  if slot == 1:
+    return 9
+  if slot == 2:
+    return 8
+  return 5
+
+def studio_paint_palette_shortcut_hints_cmds(palette_open: int) -> int
+  requires palette_open >= studio_palette_closed_flag()
+  requires palette_open <= studio_palette_open_flag()
+  ensures result >= studio_paint_glyph_run_cmds()
+  decreases palette_open
+=
+  if palette_open == studio_palette_closed_flag():
+    return studio_paint_glyph_run_cmds()
+  return studio_palette_result_count_stub() * (2 * studio_paint_glyph_run_cmds())
+
+def studio_paint_palette_shortcut_hints(frame: var PaintFrame, topbar: Rect, palette: StudioCommandPaletteCompose) -> unit
+  requires frame.cmd_count >= 0
+  requires palette.is_open >= studio_palette_closed_flag()
+  requires palette.is_open <= studio_palette_open_flag()
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_palette_shortcut_hints_cmds(palette.is_open)
+  decreases palette.is_open
+=
+  if palette.is_open == studio_palette_closed_flag():
+    var hint_rect: Rect = studio_palette_topbar_hint_rect(topbar)
+    studio_paint_glyph_text(frame, hint_rect, studio_palette_topbar_hint_first_codepoint(), studio_palette_topbar_hint_glyph_count(), studio_color_text_muted())
+    return
+  var slot: int = 1
+  while slot <= studio_palette_result_count_stub():
+    var row_rect: Rect = studio_palette_result_row_rect(palette.panel_rect, slot)
+    var digit_rect: Rect = rect_make(row_rect.x, row_rect.y, 28.0, row_rect.h)
+    var label_rect: Rect = rect_make(row_rect.x + 32.0, row_rect.y, row_rect.w - 32.0, row_rect.h)
+    studio_paint_glyph_text(frame, digit_rect, studio_palette_slot_digit_codepoint(slot), 1, studio_color_accent_cyan())
+    studio_paint_glyph_text(frame, label_rect, studio_palette_action_label_first_codepoint(slot), studio_palette_action_label_glyph_count(slot), studio_color_text_primary())
+    slot = slot + 1
+
+# W2 — pointer hover targets (dock slots, outliner rows, timeline controls).
+def studio_hover_dock_none() -> int
+  requires true
+  ensures result == -1
+  decreases 0
+=
+  return -1
+
+def studio_hover_outliner_none() -> int
+  requires true
+  ensures result == -1
+  decreases 0
+=
+  return -1
+
+def studio_color_hover_surface() -> Color
+  requires true
+  ensures result.r >= 0.0
+  decreases 0
+=
+  return color_rgb(0.133, 0.157, 0.212, 1.0)
+
+# W4 — 4/8px spacing rhythm (design tokens).
+def studio_spacing_unit_px() -> float
+  requires true
+  ensures result == 4.0
+  decreases 0
+=
+  return 4.0
+
+def studio_spacing_rhythm_px() -> float
+  requires true
+  ensures result == studio_spacing_unit_px() * 2.0
+  decreases 0
+=
+  return studio_spacing_unit_px() * 2.0
+
+def studio_color_panel_shadow() -> Color
+  requires true
+  ensures result.a >= 0.2
+  ensures result.a <= 0.5
+  decreases 0
+=
+  return color_rgb(0.0, 0.0, 0.0, 0.32)
+
+def studio_paint_panel_shadow_offset_px() -> float
+  requires true
+  ensures result == studio_spacing_unit_px() / 2.0
+  decreases 0
+=
+  return studio_spacing_unit_px() / 2.0
+
+def studio_paint_panel_shadow_rect(panel: Rect) -> Rect
+  requires panel.w >= 0.0
+  requires panel.h >= 0.0
+  ensures result.w == panel.w
+  ensures result.h == panel.h
+  decreases 0
+=
+  var off: float = studio_paint_panel_shadow_offset_px()
+  return rect_make(panel.x + off, panel.y + off, panel.w, panel.h)
+
+def studio_paint_panel_shadow_cmds() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_paint_panel_shadow(frame: var PaintFrame, panel: Rect) -> unit
+  requires frame.cmd_count >= 0
+  requires panel.w >= 0.0
+  requires panel.h >= 0.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_panel_shadow_cmds()
+  ensures frame.last_kind == paint_op_fill_round_rect()
+  decreases 0
+=
+  var shadow_rect: Rect = studio_paint_panel_shadow_rect(panel)
+  paint_frame_push(frame, paint_cmd_fill_round(shadow_rect, studio_color_panel_shadow(), studio_default_panel_radius_px()))
+
+def studio_paint_elevated_panel_shadow_cmds() -> int
+  requires true
+  ensures result == studio_paint_panel_shadow_cmds() + 2
+  decreases 0
+=
+  return studio_paint_panel_shadow_cmds() + 2
+
+def studio_paint_elevated_panel_with_shadow(frame: var PaintFrame, rect: Rect) -> unit
+  requires frame.cmd_count >= 0
+  requires rect.w >= 0.0
+  requires rect.h >= 0.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_elevated_panel_shadow_cmds()
+  ensures frame.last_kind == paint_op_stroke_round_rect()
+  decreases 0
+=
+  studio_paint_panel_shadow(frame, rect)
+  paint_frame_push_elevated_panel(frame, rect)
+
+def studio_topbar_profile_accent_rect(topbar: Rect) -> Rect
+  requires topbar.w >= studio_spacing_rhythm_px()
+  requires topbar.h >= studio_spacing_rhythm_px()
+  ensures result.w == studio_spacing_unit_px()
+  ensures result.h == topbar.h
+  decreases 0
+=
+  return rect_make(topbar.x, topbar.y, studio_spacing_unit_px(), topbar.h)
+
+def studio_paint_topbar_profile_accent_cmds() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_paint_topbar_profile_accent(frame: var PaintFrame, topbar: Rect, profile_id: int) -> unit
+  requires frame.cmd_count >= 0
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_topbar_profile_accent_cmds()
+  ensures frame.last_kind == paint_op_fill_rect()
+  decreases profile_id
+=
+  var strip: Rect = studio_topbar_profile_accent_rect(topbar)
+  paint_frame_push(frame, paint_cmd_fill(strip, studio_profile_color(profile_id)))
+
+type StudioShellHoverState = object
+  public dock_slot: int
+  public outliner_row: int
+  public timeline_play_btn: int
+  public timeline_playhead: int
+
+def studio_shell_hover_new() -> StudioShellHoverState
+  requires true
+  ensures result.dock_slot == studio_hover_dock_none()
+  ensures result.outliner_row == studio_hover_outliner_none()
+  ensures result.timeline_play_btn == 0
+  ensures result.timeline_playhead == 0
+  decreases 0
+=
+  var h: StudioShellHoverState
+  h.dock_slot = studio_hover_dock_none()
+  h.outliner_row = studio_hover_outliner_none()
+  h.timeline_play_btn = 0
+  h.timeline_playhead = 0
+  return h
+
+def studio_shell_hover_dock_slot_is(hover: StudioShellHoverState, slot: int) -> int
+  requires slot >= 0
+  requires slot < studio_dock_slot_count()
+  ensures result >= 0
+  ensures result <= 1
+  decreases slot
+=
+  if hover.dock_slot == slot:
+    return 1
+  return 0
+
+def studio_shell_hover_outliner_row_is(hover: StudioShellHoverState, row: int) -> int
+  requires row >= 0
+  requires row <= 2
+  ensures result >= 0
+  ensures result <= 1
+  decreases row
+=
+  if hover.outliner_row == row:
+    return 1
+  return 0
+
+def studio_shell_sync_hover(compose: var StudioShellCompose, input: InputState) -> unit
+  requires true
+  ensures compose.hover.dock_slot >= studio_hover_dock_none()
+  decreases 0
+=
+  var h: StudioShellHoverState = studio_shell_hover_new()
+  var px: float = input.pointer_x
+  var py: float = input.pointer_y
+  var slot: int = 0
+  while slot < compose.dock.slot_count:
+    var sr: Rect = studio_dock_slot_rect_at(compose.dock.rect.x, compose.dock.rect.y, compose.dock.rect.w, compose.dock.rect.h, slot)
+    if rect_contains(sr, px, py) == 1:
+      h.dock_slot = slot
+    slot = slot + 1
+  if compose.outliner.node_count > 0:
+    if rect_contains(compose.outliner.row0_rect, px, py) == 1:
+      h.outliner_row = 0
+  if compose.outliner.node_count > 1:
+    if rect_contains(compose.outliner.row1_rect, px, py) == 1:
+      h.outliner_row = 1
+  if compose.outliner.node_count > 2:
+    if rect_contains(compose.outliner.row2_rect, px, py) == 1:
+      h.outliner_row = 2
+  if rect_contains(compose.timeline.play_btn_rect, px, py) == 1:
+    h.timeline_play_btn = 1
+  if rect_contains(compose.timeline.playhead_rect, px, py) == 1:
+    h.timeline_playhead = 1
+  compose.hover = h
+
+# W1 — glyph pipeline entry (bitmap atlas + paint_cmd_draw_glyphs_run).
+def studio_paint_glyph_pipeline_ok() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+=
+  if font_atlas_codepoint_supported(65) != 1:
+    return 0
+  if paint_op_draw_glyphs() < 0:
+    return 0
+  return 1
+
+def studio_inspector_uses_drug_litl_labels(field_rows: int) -> int
+  requires field_rows >= 0
+  ensures result >= 0
+  ensures result <= 1
+  decreases field_rows
+=
+  if field_rows >= 2:
+    if field_rows <= 4:
+      return 1
+  return 0
+
+def studio_inspector_field_label_first_codepoint(row: int, field_rows: int) -> int
+  requires row >= 0
+  requires row <= 1
+  requires field_rows >= 0
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases row
+=
+  if studio_inspector_uses_drug_litl_labels(field_rows) == 1:
+    if row == 0:
+      return 67
+    return 83
+  if row == 0:
+    return 78
+  return 84
+
+def studio_inspector_field_label_glyph_count(row: int, field_rows: int) -> int
+  requires row >= 0
+  requires row <= 1
+  requires field_rows >= 0
+  ensures result >= 4
+  ensures result <= 8
+  decreases row
+=
+  if studio_inspector_uses_drug_litl_labels(field_rows) == 1:
+    if row == 0:
+      return 8
+    return 5
+  if row == 0:
+    return 4
+  return 4
+
+def studio_inspector_field_value_first_codepoint(row: int, field_rows: int) -> int
+  requires row >= 0
+  requires row <= 1
+  requires field_rows >= 0
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases row
+=
+  if studio_inspector_uses_drug_litl_labels(field_rows) == 1:
+    if row == 0:
+      return 80
+    return 68
+  if row == 0:
+    return 77
+  return 77
+
+def studio_inspector_field_value_glyph_count(row: int, field_rows: int) -> int
+  requires row >= 0
+  requires row <= 1
+  requires field_rows >= 0
+  ensures result >= 3
+  ensures result <= 5
+  decreases row
+=
+  if studio_inspector_uses_drug_litl_labels(field_rows) == 1:
+    if row == 0:
+      return 5
+    return 3
+  if row == 0:
+    return 4
+  return 4
+
+def studio_paint_inspector_field_glyph_cmds() -> int
+  requires true
+  ensures result == 4 * studio_paint_glyph_run_cmds()
+  decreases 0
+=
+  return 4 * studio_paint_glyph_run_cmds()
+
+def studio_paint_inspector_field_glyphs(frame: var PaintFrame, inspector: StudioInspectorCompose) -> unit
+  requires frame.cmd_count >= 0
+  requires inspector.has_selection == 1
+  requires inspector.widget_pilot == 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_inspector_field_glyph_cmds()
+  decreases inspector.field_rows
+=
+  var rows: int = inspector.field_rows
+  var cp0: int = studio_inspector_field_label_first_codepoint(0, rows)
+  var n0: int = studio_inspector_field_label_glyph_count(0, rows)
+  studio_paint_glyph_text(frame, inspector.field0.label_rect, cp0, n0, studio_color_text_muted())
+  var vp0: int = studio_inspector_field_value_first_codepoint(0, rows)
+  var nv0: int = studio_inspector_field_value_glyph_count(0, rows)
+  studio_paint_glyph_text(frame, inspector.field0.value_rect, vp0, nv0, studio_color_text_primary())
+  var cp1: int = studio_inspector_field_label_first_codepoint(1, rows)
+  var n1: int = studio_inspector_field_label_glyph_count(1, rows)
+  studio_paint_glyph_text(frame, inspector.field1.label_rect, cp1, n1, studio_color_text_muted())
+  var vp1: int = studio_inspector_field_value_first_codepoint(1, rows)
+  var nv1: int = studio_inspector_field_value_glyph_count(1, rows)
+  studio_paint_glyph_text(frame, inspector.field1.value_rect, vp1, nv1, studio_color_text_primary())
+
+def studio_viewport_hud_fps_label_first_codepoint() -> int
+  requires true
+  ensures result == 54
+  decreases 0
+=
+  return 54
+
+def studio_viewport_hud_fps_label_glyph_count() -> int
+  requires true
+  ensures result == 6
+  decreases 0
+=
+  return 6
+
+def studio_viewport_hud_particle_label_first_codepoint() -> int
+  requires true
+  ensures result == 49
+  decreases 0
+=
+  return 49
+
+def studio_viewport_hud_particle_label_glyph_count() -> int
+  requires true
+  ensures result == 4
+  decreases 0
+=
+  return 4
+
+def studio_viewport_hud_native_label_first_codepoint() -> int
+  requires true
+  ensures result == 78
+  decreases 0
+=
+  return 78
+
+def studio_viewport_hud_native_label_glyph_count() -> int
+  requires true
+  ensures result == 6
+  decreases 0
+=
+  return 6
+
+def studio_viewport_grid_major_spacing_px() -> float
+  requires true
+  ensures result == 64.0
+  decreases 0
+=
+  return 64.0
+
+def studio_viewport_grid_axis_x_rect(vp: Rect) -> Rect
+  requires vp.h >= 4.0
+  ensures result.h == 1.0
+  decreases 0
+=
+  var cy: float = vp.y + vp.h * 0.5
+  return rect_make(vp.x, cy - 1.0, vp.w, 1.0)
+
+def studio_viewport_grid_axis_y_rect(vp: Rect) -> Rect
+  requires vp.w >= 4.0
+  ensures result.w == 1.0
+  decreases 0
+=
+  var cx: float = vp.x + vp.w * 0.5
+  return rect_make(cx - 1.0, vp.y, 1.0, vp.h)
+
+def studio_viewport_grid_origin_rect(vp: Rect) -> Rect
+  requires vp.w >= 12.0
+  requires vp.h >= 12.0
+  ensures result.w == 8.0
+  ensures result.h == 8.0
+  decreases 0
+=
+  var cx: float = vp.x + vp.w * 0.5
+  var cy: float = vp.y + vp.h * 0.5
+  return rect_make(cx - 4.0, cy - 4.0, 8.0, 8.0)
+
+def studio_viewport_hud_grid_legend_rect(vp: Rect) -> Rect
+  requires vp.h >= 28.0
+  ensures result.w == 56.0
+  ensures result.h == 14.0
+  decreases 0
+=
+  return rect_make(vp.x + 8.0, vp.y + vp.h - 22.0, 56.0, 14.0)
+
+def studio_viewport_hud_grid_label_first_codepoint() -> int
+  requires true
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases 0
+=
+  return 49
+
+def studio_viewport_hud_grid_label_glyph_count() -> int
   requires true
   ensures result == 3
   decreases 0
 =
   return 3
 
-def studio_paint_topbar_profile(frame: var PaintFrame, topbar: Rect, profile_id: int) -> unit
-  requires frame.cmd_count >= 0
-  requires studio_profile_id_valid(profile_id) == 1
-  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_topbar_profile_cmds()
-  ensures frame.last_kind == paint_op_draw_glyphs()
-  decreases profile_id
+def studio_viewport_menu_bg_label_first_codepoint() -> int
+  requires true
+  ensures result == 66
+  decreases 0
 =
-  var pid_chip: int = profile_id
-  var pid_color: int = profile_id
-  var top_copy: Rect = topbar
-  var top_x: float = top_copy.x
-  var top_y: float = top_copy.y
-  var top_w: float = top_copy.w
-  var top_h: float = top_copy.h
-  var chip_rect: Rect = studio_profile_chip_rect_at(top_x, top_y, top_w, top_h, pid_chip)
-  paint_frame_push_accent_chip(frame, chip_rect, studio_profile_color(pid_color))
-  var glyph_rect: Rect = studio_profile_chip_glyph_rect(chip_rect)
-  var cp: int = studio_profile_label_first_codepoint(pid_chip)
-  paint_frame_push(frame, paint_cmd_draw_glyph(glyph_rect, font_face_inter(), cp, studio_color_text_primary()))
+  return 66
 
+def studio_viewport_menu_bg_label_glyph_count() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_viewport_menu_particle_label_first_codepoint() -> int
+  requires true
+  ensures result == 77
+  decreases 0
+=
+  return 77
+
+def studio_viewport_menu_particle_label_glyph_count() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_viewport_menu_biomol_label_first_codepoint() -> int
+  requires true
+  ensures result == 51
+  decreases 0
+=
+  return 51
+
+def studio_viewport_menu_biomol_label_glyph_count() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_dock_slot_caption_first_codepoint(slot: int) -> int
+  requires slot >= 0
+  requires slot < studio_dock_slot_count()
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases slot
+=
+  if slot == 0:
+    return 83
+  if slot == 1:
+    return 65
+  if slot == 2:
+    return 83
+  if slot == 3:
+    return 84
+  return 83
+
+def studio_dock_slot_caption_glyph_count(slot: int) -> int
+  requires slot >= 0
+  requires slot < studio_dock_slot_count()
+  ensures result >= 3
+  ensures result <= 8
+  decreases slot
+=
+  if slot == 0:
+    return 5
+  if slot == 1:
+    return 6
+  if slot == 2:
+    return 3
+  if slot == 3:
+    return 8
+  return 8
+
+def studio_paint_dock_slot_cmds(is_active: int) -> int
+  requires is_active >= 0
+  requires is_active <= 1
+  ensures result == 3
+  decreases is_active
+=
+  return 3
 
 
 def studio_mcp_tool_unknown() -> int
@@ -1737,12 +2476,39 @@ def studio_viewport_display_reset_for_profile(profile_id: int) raises IO -> unit
 =
   var _ok: int = li_rt_studio_viewport_display_reset_defaults(profile_id)
 
+def studio_viewport_display_prepare_for_profile(profile_id: int) raises IO -> unit
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures studio_viewport_display_read_bg() >= studio_viewport_bg_solid()
+  decreases profile_id
+=
+  studio_viewport_display_reset_for_profile(profile_id)
+  if profile_id == studio_profile_game():
+    var _bg_game: int = li_rt_studio_viewport_display_set_bg(studio_viewport_bg_grid())
+    var _pt_game: int = li_rt_studio_viewport_display_set_particle_tier(studio_particle_display_off())
+    return
+  if profile_id == studio_profile_sim_rl():
+    var _bg_rl: int = li_rt_studio_viewport_display_set_bg(studio_viewport_bg_grid())
+    var _pt_rl: int = li_rt_studio_viewport_display_set_particle_tier(scene_md_tier_1k())
+    return
+  if profile_id == studio_profile_sim_drug_design():
+    var _bg_drug: int = li_rt_studio_viewport_display_set_bg(studio_viewport_bg_grid())
+    var _bm_drug: int = li_rt_studio_viewport_display_set_biomol_style(studio_biomol_style_sticks())
+    var _pt_drug: int = li_rt_studio_viewport_display_set_particle_tier(scene_md_tier_1k())
+    return
+  if profile_id == studio_profile_sim_scientific():
+    var _bg_sci: int = li_rt_studio_viewport_display_set_bg(studio_viewport_bg_grid())
+    return
+
 def studio_viewport_display_profile_wants_scene(profile_id: int) -> int
   requires studio_profile_id_valid(profile_id) == 1
   ensures result >= 0
   ensures result <= 1
   decreases profile_id
 =
+  if profile_id == studio_profile_game():
+    return 1
+  if profile_id == studio_profile_sim_rl():
+    return 1
   if profile_id == studio_profile_sim_scientific():
     return 1
   if profile_id == studio_profile_sim_drug_design():
@@ -1879,6 +2645,7 @@ type StudioViewportDisplayCompose = object
   public fps_hud_rect: Rect
   public particle_hud_rect: Rect
   public native_badge_rect: Rect
+  public grid_legend_rect: Rect
 
 type StudioViewportMenuCompose = object
   public menu_visible: int
@@ -1907,6 +2674,7 @@ def studio_viewport_display_compose_new() -> StudioViewportDisplayCompose
   d.fps_hud_rect = rect_make(0.0, 0.0, 0.0, 0.0)
   d.particle_hud_rect = rect_make(0.0, 0.0, 0.0, 0.0)
   d.native_badge_rect = rect_make(0.0, 0.0, 0.0, 0.0)
+  d.grid_legend_rect = rect_make(0.0, 0.0, 0.0, 0.0)
   return d
 
 def studio_viewport_menu_compose_new() -> StudioViewportMenuCompose
@@ -1952,6 +2720,27 @@ def studio_compose_viewport_display(vp: Rect, profile_id: int) raises IO -> Stud
   out.fps_hud_rect = studio_viewport_hud_fps_rect(vp)
   out.particle_hud_rect = studio_viewport_hud_particle_rect(vp)
   out.native_badge_rect = studio_viewport_hud_native_badge_rect(vp)
+  out.grid_legend_rect = studio_viewport_hud_grid_legend_rect(vp)
+  if profile_id == studio_profile_sim_rl():
+    out.background = studio_viewport_bg_grid()
+    out.particle_tier_id = scene_md_tier_1k()
+    out.tier_particles = 1000
+    out.particle_dots_visible = 1
+  if profile_id == studio_profile_sim_drug_design():
+    out.background = studio_viewport_bg_grid()
+    if out.biomol_style == studio_biomol_style_cartoon():
+      out.biomol_style = studio_biomol_style_sticks()
+    if out.particle_tier_id < scene_md_tier_1k():
+      out.particle_tier_id = scene_md_tier_1k()
+    if out.particle_tier_id >= scene_md_tier_1k():
+      var drug_tier: SceneMdParticleTier = scene_md_particle_tier_by_id(out.particle_tier_id)
+      out.tier_particles = drug_tier.particles
+      out.particle_dots_visible = 1
+  if profile_id == studio_profile_game():
+    out.background = studio_viewport_bg_grid()
+    out.particle_tier_id = studio_particle_display_off()
+    out.particle_dots_visible = 0
+    out.tier_particles = 0
   if profile_id == studio_profile_sim_scientific():
     if out.particle_tier_id >= scene_md_tier_1k():
       var viz_tick: int = studio_viz_tick_for_particle_tier(out.particle_tier_id)
@@ -2031,12 +2820,47 @@ def studio_viewport_hud_color_native_badge(native_pixels: int) -> Color
     return studio_color_accent_cyan()
   return studio_color_border()
 
-def studio_paint_viewport_hud_cmds() -> int
+def studio_paint_viewport_hud_chip_cmds() -> int
   requires true
-  ensures result == 3
+  ensures result == 2
   decreases 0
 =
-  return 3
+  return 2
+
+def studio_paint_viewport_hud_cmds() -> int
+  requires true
+  ensures result == 4 * studio_paint_viewport_hud_chip_cmds() + 4 * studio_paint_glyph_run_cmds()
+  decreases 0
+=
+  return 4 * studio_paint_viewport_hud_chip_cmds() + 4 * studio_paint_glyph_run_cmds()
+
+def studio_paint_viewport_hud_chip(frame: var PaintFrame, chip: Rect, color: Color) -> unit
+  requires frame.cmd_count >= 0
+  requires chip.w >= 8.0
+  requires chip.h >= 8.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_hud_chip_cmds()
+  decreases 0
+=
+  paint_frame_push(frame, paint_cmd_fill_round(chip, studio_color_bg_elevated(), studio_radius_sm_px()))
+  paint_frame_push(frame, paint_cmd_stroke_round(chip, color, 1.0, studio_radius_sm_px()))
+
+def studio_paint_viewport_hud(frame: var PaintFrame, display: StudioViewportDisplayCompose) -> unit
+  requires frame.cmd_count >= 0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_hud_cmds()
+  decreases display.fps_display
+=
+  var fps_color: Color = studio_viewport_hud_color_fps(display.fps_meets_target, display.hud_native_pixels)
+  studio_paint_viewport_hud_chip(frame, display.fps_hud_rect, fps_color)
+  studio_paint_glyph_text(frame, display.fps_hud_rect, studio_viewport_hud_fps_label_first_codepoint(), studio_viewport_hud_fps_label_glyph_count(), studio_color_text_primary())
+  var part_color: Color = studio_viewport_hud_color_particle(display.tier_particles)
+  studio_paint_viewport_hud_chip(frame, display.particle_hud_rect, part_color)
+  studio_paint_glyph_text(frame, display.particle_hud_rect, studio_viewport_hud_particle_label_first_codepoint(), studio_viewport_hud_particle_label_glyph_count(), studio_color_text_primary())
+  var native_color: Color = studio_viewport_hud_color_native_badge(display.hud_native_pixels)
+  studio_paint_viewport_hud_chip(frame, display.native_badge_rect, native_color)
+  studio_paint_glyph_text(frame, display.native_badge_rect, studio_viewport_hud_native_label_first_codepoint(), studio_viewport_hud_native_label_glyph_count(), studio_color_text_muted())
+  var grid_color: Color = studio_color_viewport_grid()
+  studio_paint_viewport_hud_chip(frame, display.grid_legend_rect, grid_color)
+  studio_paint_glyph_text(frame, display.grid_legend_rect, studio_viewport_hud_grid_label_first_codepoint(), studio_viewport_hud_grid_label_glyph_count(), studio_color_text_muted())
 
 def studio_compose_viewport_menu(vp: Rect, profile_id: int) -> StudioViewportMenuCompose
   requires vp.w >= 0.0
@@ -2163,7 +2987,7 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
   var out: StudioShellCompose = studio_compose_shell_profile(w, h, 0, has_selection, studio_profile_sim_drug_design())
   out.layout = layout
   studio_shell_apply_adaptive_panel_set(out, stage)
-  studio_viewport_display_reset_for_profile(studio_profile_sim_drug_design())
+  studio_viewport_display_prepare_for_profile(studio_profile_sim_drug_design())
   out.scene_entity_count = 1
   out.viewport_empty.empty_visible = 0
   studio_attach_viewport_shell(out)
@@ -2171,10 +2995,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 40
+  ensures result == 45
   decreases 0
 =
-  return 40
+  return 45
 
 def studio_shell_widget_tree_version() -> int
   requires true
@@ -2230,8 +3054,10 @@ def studio_shell_attach_widget_tree(compose: var StudioShellCompose) -> unit
   requires compose.layout.viewport_w > 0.0
   ensures compose.widget_tree_active == 1
   ensures shell_widget_tree_all_regions_laid_out(compose.widget_tree_layout) == 1
+  ensures compose.hover.dock_slot == studio_hover_dock_none()
   decreases compose.dock.active_slot
 =
+  compose.hover = studio_shell_hover_new()
   studio_shell_layout_widget_tree(compose)
 
 def studio_shell_sync_widget_tree_from_reactive(compose: var StudioShellCompose) -> unit
@@ -2361,17 +3187,17 @@ def studio_outliner_row_height_px() -> float
 
 def studio_outliner_row_gap_px() -> float
   requires true
-  ensures result == 2.0
+  ensures result == studio_spacing_unit_px()
   decreases 0
 =
-  return 2.0
+  return studio_spacing_unit_px()
 
 def studio_outliner_below_slots_gap_px() -> float
   requires true
-  ensures result == 8.0
+  ensures result == studio_spacing_rhythm_px()
   decreases 0
 =
-  return 8.0
+  return studio_spacing_rhythm_px()
 
 def studio_outliner_label_root() -> int
   requires true
@@ -3233,6 +4059,7 @@ type StudioShellCompose = object
   public widget_tree: ShellWidgetTree
   public widget_tree_layout: ShellWidgetTreeLayout
   public widget_tree_active: int
+  public hover: StudioShellHoverState
 
 
 def studio_reactive_shell_new(task_state: int, palette_open: int, mode: int, playhead_pct: float) -> StudioReactiveShell
@@ -6118,7 +6945,7 @@ def studio_paint_agent_cmds(task_state: int, agent_context_label: int, invoke_vi
   var ts_progress: int = task_state
   var ts_error: int = task_state
   var ts_retry: int = task_state
-  var n: int = 2
+  var n: int = studio_paint_panel_shadow_cmds() + 2
   if studio_agent_context_visible(ctx0) == 1:
     n = n + 1
   if studio_agent_cancel_visible(ts_cancel) == 1:
@@ -6351,44 +7178,51 @@ def studio_compose_shell_agent(w: float, h: float, active_dock_slot: int, has_se
   return out
 
 
-def studio_paint_outliner_panel_cmds() -> int
-  requires true
-  ensures result == 2
-  decreases 0
-=
-  return 2
-
 def studio_paint_outliner_row_cmds() -> int
   requires true
-  ensures result == 2
+  ensures result == 2 + studio_paint_glyph_run_cmds()
   decreases 0
 =
-  return 2
+  return 2 + studio_paint_glyph_run_cmds()
 
 def studio_paint_outliner_cmds(node_count: int) -> int
   requires node_count >= 0
   requires node_count <= studio_outliner_max_nodes()
-  ensures result == studio_paint_outliner_panel_cmds() + node_count * studio_paint_outliner_row_cmds()
+  ensures result == studio_paint_elevated_panel_shadow_cmds() + node_count * studio_paint_outliner_row_cmds()
   decreases node_count
 =
-  return studio_paint_outliner_panel_cmds() + node_count * studio_paint_outliner_row_cmds()
+  return studio_paint_elevated_panel_shadow_cmds() + node_count * studio_paint_outliner_row_cmds()
 
-def studio_paint_outliner_row(frame: var PaintFrame, row: Rect, node: StudioOutlinerNode, selected_node: int) -> unit
+def studio_paint_outliner_row(frame: var PaintFrame, row: Rect, selected: int, label_id: int, hovered: int) -> unit
   requires frame.cmd_count >= 0
-  requires font_atlas_codepoint_supported(studio_outliner_label_first_codepoint(node.label_id)) == 1
+  requires selected >= 0
+  requires selected <= 1
+  requires hovered >= 0
+  requires hovered <= 1
+  requires label_id >= studio_outliner_label_root()
+  requires label_id <= studio_outliner_label_mesh()
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_outliner_row_cmds()
-  ensures frame.last_kind == paint_op_draw_glyphs()
-  decreases node.label_id
+  decreases label_id
 =
-  if node.id == selected_node:
+  if selected == 1:
     paint_frame_push(frame, paint_cmd_fill_round(row, studio_color_accent_mint(), studio_radius_sm_px()))
-  if node.id != selected_node:
-    paint_frame_push(frame, paint_cmd_stroke_round(row, studio_color_border(), 1.0, studio_radius_sm_px()))
-  var label_rect: Rect = studio_outliner_row_label_rect(row)
-  var cp: int = studio_outliner_label_first_codepoint(node.label_id)
-  paint_frame_push(frame, paint_cmd_draw_glyph(label_rect, font_face_inter(), cp, studio_color_text_primary()))
+    var cp_sel: int = studio_outliner_label_first_codepoint(label_id)
+    var cnt_sel: int = studio_outliner_label_glyph_count(label_id)
+    studio_paint_glyph_text(frame, row, cp_sel, cnt_sel, studio_color_text_primary())
+    return
+  var row_fill: Color = studio_color_bg_elevated()
+  if hovered == 1:
+    row_fill = studio_color_hover_surface()
+  paint_frame_push(frame, paint_cmd_fill_round(row, row_fill, studio_radius_sm_px()))
+  paint_frame_push(frame, paint_cmd_stroke_round(row, studio_color_border(), 1.0, studio_radius_sm_px()))
+  var cp0: int = studio_outliner_label_first_codepoint(label_id)
+  var cnt0: int = studio_outliner_label_glyph_count(label_id)
+  var label_color: Color = studio_color_text_muted()
+  if hovered == 1:
+    label_color = studio_color_text_primary()
+  studio_paint_glyph_text(frame, row, cp0, cnt0, label_color)
 
-def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose) -> unit
+def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose, hover: StudioShellHoverState) -> unit
   requires frame.cmd_count >= 0
   requires outliner.node_count >= 0
   requires outliner.node_count <= studio_outliner_max_nodes()
@@ -6396,27 +7230,36 @@ def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose
   ensures frame.last_kind == paint_op_draw_glyphs()
   decreases outliner.node_count
 =
-  paint_frame_push_elevated_panel(frame, outliner.rect)
+  studio_paint_elevated_panel_with_shadow(frame, outliner.rect)
   if outliner.node_count > 0:
-    studio_paint_outliner_row(frame, outliner.row0_rect, outliner.node0, outliner.selected_node)
+    var sel0: int = 0
+    if outliner.selected_node == outliner.node0.id:
+      sel0 = 1
+    studio_paint_outliner_row(frame, outliner.row0_rect, sel0, outliner.node0.label_id, studio_shell_hover_outliner_row_is(hover, 0))
   if outliner.node_count > 1:
-    studio_paint_outliner_row(frame, outliner.row1_rect, outliner.node1, outliner.selected_node)
+    var sel1: int = 0
+    if outliner.selected_node == outliner.node1.id:
+      sel1 = 1
+    studio_paint_outliner_row(frame, outliner.row1_rect, sel1, outliner.node1.label_id, studio_shell_hover_outliner_row_is(hover, 1))
   if outliner.node_count > 2:
-    studio_paint_outliner_row(frame, outliner.row2_rect, outliner.node2, outliner.selected_node)
+    var sel2: int = 0
+    if outliner.selected_node == outliner.node2.id:
+      sel2 = 1
+    studio_paint_outliner_row(frame, outliner.row2_rect, sel2, outliner.node2.label_id, studio_shell_hover_outliner_row_is(hover, 2))
 
 def studio_paint_dock_cmds() -> int
   requires true
-  ensures result == 4
+  ensures result == studio_paint_panel_shadow_cmds() + 1 + studio_dock_slot_count() * studio_paint_dock_slot_cmds(0) + studio_paint_glyph_run_cmds()
   decreases 0
 =
-  return 4
+  return studio_paint_panel_shadow_cmds() + 1 + studio_dock_slot_count() * studio_paint_dock_slot_cmds(0) + studio_paint_glyph_run_cmds()
 
 def studio_paint_timeline_cmds() -> int
   requires true
-  ensures result == 4
+  ensures result == studio_paint_panel_shadow_cmds() + 6
   decreases 0
 =
-  return 4
+  return studio_paint_panel_shadow_cmds() + 6
 
 def studio_paint_inspector_empty_cmds() -> int
   requires true
@@ -6427,16 +7270,16 @@ def studio_paint_inspector_empty_cmds() -> int
 
 def studio_paint_inspector_selected_cmds() -> int
   requires true
-  ensures result == inspector_pilot_paint_cmds(1)
+  ensures result == inspector_pilot_paint_cmds(1) + studio_paint_inspector_field_glyph_cmds()
   decreases 0
 =
-  return inspector_pilot_paint_cmds(1)
+  return inspector_pilot_paint_cmds(1) + studio_paint_inspector_field_glyph_cmds()
 
 def studio_paint_inspector_cmds(has_selection: int) -> int
   requires has_selection >= 0
   requires has_selection <= 1
-  ensures result >= 3
-  ensures result <= 4
+  ensures result >= inspector_pilot_paint_cmds(0)
+  ensures result <= inspector_pilot_paint_cmds(1) + studio_paint_inspector_field_glyph_cmds()
   decreases has_selection
 =
   if has_selection == 0:
@@ -6484,13 +7327,225 @@ def studio_paint_viewport_empty_cmds() -> int
 =
   return 4
 
-def studio_paint_viewport_scene_cmds() -> int
+def studio_viewport_game_entity_preview_count() -> int
   requires true
-  ensures result == 1
+  ensures result == 3
   decreases 0
 =
-  return 1
+  return 3
 
+def studio_viewport_game_entity_rect_at(vp: Rect, index: int) -> Rect
+  requires vp.w >= 120.0
+  requires vp.h >= 80.0
+  requires index >= 0
+  requires index < studio_viewport_game_entity_preview_count()
+  ensures result.w >= 24.0
+  decreases index
+=
+  var cx: float = vp.x + vp.w * 0.5 - 48.0
+  var cy: float = vp.y + vp.h * 0.5 - 20.0
+  var x: float = cx
+  if index == 1:
+    x = cx + 36.0
+  if index == 2:
+    x = cx + 72.0
+  return rect_make(x, cy, 28.0, 40.0)
+
+def studio_viewport_game_entity_color(index: int) -> Color
+  requires index >= 0
+  requires index < studio_viewport_game_entity_preview_count()
+  ensures result.a == 1.0
+  decreases index
+=
+  if index == 1:
+    return studio_color_accent_violet()
+  if index == 2:
+    return studio_color_accent_mint()
+  return studio_color_accent_cyan()
+
+def studio_paint_viewport_game_preview_cmds() -> int
+  requires true
+  ensures result == studio_viewport_game_entity_preview_count() * 2
+  decreases 0
+=
+  return studio_viewport_game_entity_preview_count() * 2
+
+def studio_paint_viewport_game_preview(frame: var PaintFrame, vp: Rect) -> unit
+  requires frame.cmd_count >= 0
+  requires vp.w >= 120.0
+  requires vp.h >= 80.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_game_preview_cmds()
+  decreases 0
+=
+  var idx: int = 0
+  while idx < studio_viewport_game_entity_preview_count():
+    var ent: Rect = studio_viewport_game_entity_rect_at(vp, idx)
+    var ent_color: Color = studio_viewport_game_entity_color(idx)
+    paint_frame_push(frame, paint_cmd_fill_round(ent, ent_color, studio_radius_md_px()))
+    paint_frame_push(frame, paint_cmd_stroke_round(ent, studio_color_text_primary(), 1.0, studio_radius_md_px()))
+    idx = idx + 1
+
+def studio_viewport_rl_reward_dot_count() -> int
+  requires true
+  ensures result == 6
+  decreases 0
+=
+  return 6
+
+def studio_viewport_rl_reward_dot_rect_at(vp: Rect, index: int) -> Rect
+  requires vp.w >= 80.0
+  requires vp.h >= 48.0
+  requires index >= 0
+  requires index < studio_viewport_rl_reward_dot_count()
+  ensures result.w == 5.0
+  ensures result.h == 5.0
+  decreases index
+=
+  var base_x: float = vp.x + vp.w * 0.22
+  var base_y: float = vp.y + vp.h * 0.62
+  var x: float = base_x
+  var y: float = base_y
+  if index == 1:
+    x = base_x + 18.0
+  if index == 2:
+    x = base_x + 36.0
+    y = base_y - 6.0
+  if index == 3:
+    x = base_x + 54.0
+  if index == 4:
+    x = base_x + 72.0
+    y = base_y - 6.0
+  if index == 5:
+    x = base_x + 90.0
+    y = base_y - 12.0
+  return rect_make(x, y, 5.0, 5.0)
+
+def studio_paint_viewport_rl_preview_cmds() -> int
+  requires true
+  ensures result == studio_viewport_rl_reward_dot_count()
+  decreases 0
+=
+  return studio_viewport_rl_reward_dot_count()
+
+def studio_paint_viewport_rl_preview(frame: var PaintFrame, vp: Rect) -> unit
+  requires frame.cmd_count >= 0
+  requires vp.w >= 80.0
+  requires vp.h >= 48.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_rl_preview_cmds()
+  decreases 0
+=
+  var idx: int = 0
+  while idx < studio_viewport_rl_reward_dot_count():
+    var dot: Rect = studio_viewport_rl_reward_dot_rect_at(vp, idx)
+    paint_frame_push(frame, paint_cmd_fill_round(dot, studio_color_accent_amber(), 2.0))
+    idx = idx + 1
+
+def studio_viewport_drug_stick_count() -> int
+  requires true
+  ensures result == 3
+  decreases 0
+=
+  return 3
+
+def studio_viewport_drug_stick_rect_at(vp: Rect, index: int) -> Rect
+  requires vp.w >= 120.0
+  requires vp.h >= 80.0
+  requires index >= 0
+  requires index < studio_viewport_drug_stick_count()
+  ensures result.w == 4.0
+  ensures result.h >= 24.0
+  decreases index
+=
+  var cx: float = vp.x + vp.w * 0.42
+  var cy: float = vp.y + vp.h * 0.4
+  var x: float = cx
+  var y: float = cy
+  if index == 1:
+    x = cx + studio_spacing_rhythm_px() * 3.5
+    y = cy - studio_spacing_rhythm_px()
+  if index == 2:
+    x = cx + studio_spacing_rhythm_px() * 1.75
+    y = cy + studio_spacing_rhythm_px() * 2.25
+  return rect_make(x, y, 4.0, 36.0)
+
+def studio_paint_viewport_drug_preview_cmds() -> int
+  requires true
+  ensures result == studio_viewport_drug_stick_count() * 2
+  decreases 0
+=
+  return studio_viewport_drug_stick_count() * 2
+
+def studio_paint_viewport_drug_preview(frame: var PaintFrame, vp: Rect) -> unit
+  requires frame.cmd_count >= 0
+  requires vp.w >= 120.0
+  requires vp.h >= 80.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_drug_preview_cmds()
+  decreases 0
+=
+  var idx: int = 0
+  while idx < studio_viewport_drug_stick_count():
+    var stick: Rect = studio_viewport_drug_stick_rect_at(vp, idx)
+    paint_frame_push(frame, paint_cmd_fill_round(stick, studio_color_accent_violet(), studio_radius_sm_px()))
+    paint_frame_push(frame, paint_cmd_stroke_round(stick, studio_color_text_primary(), 1.0, studio_radius_sm_px()))
+    idx = idx + 1
+
+def studio_paint_viewport_profile_preview_cmds(profile_id: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures result >= 0
+  decreases profile_id
+=
+  if profile_id == studio_profile_game():
+    return studio_paint_viewport_game_preview_cmds()
+  if profile_id == studio_profile_sim_rl():
+    return studio_paint_viewport_rl_preview_cmds()
+  if profile_id == studio_profile_sim_drug_design():
+    return studio_paint_viewport_drug_preview_cmds()
+  return 0
+
+def studio_paint_viewport_profile_preview(frame: var PaintFrame, vp: Rect, profile_id: int) -> unit
+  requires frame.cmd_count >= 0
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_profile_preview_cmds(profile_id)
+  decreases profile_id
+=
+  if profile_id == studio_profile_game():
+    studio_paint_viewport_game_preview(frame, vp)
+    return
+  if profile_id == studio_profile_sim_rl():
+    studio_paint_viewport_rl_preview(frame, vp)
+    return
+  if profile_id == studio_profile_sim_drug_design():
+    studio_paint_viewport_drug_preview(frame, vp)
+    return
+
+def studio_paint_viewport_grid_cmds() -> int
+  requires true
+  ensures result == 5
+  decreases 0
+=
+  return 5
+
+def studio_paint_viewport_grid(frame: var PaintFrame, vp: Rect) -> unit
+  requires frame.cmd_count >= 0
+  requires vp.w >= 12.0
+  requires vp.h >= 12.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_grid_cmds()
+  ensures frame.last_kind == paint_op_stroke_round_rect()
+  decreases 0
+=
+  paint_frame_push(frame, paint_cmd_viewport_grid(vp))
+  paint_frame_push(frame, paint_cmd_fill(studio_viewport_grid_axis_x_rect(vp), studio_color_accent_cyan()))
+  paint_frame_push(frame, paint_cmd_fill(studio_viewport_grid_axis_y_rect(vp), studio_color_accent_violet()))
+  var origin: Rect = studio_viewport_grid_origin_rect(vp)
+  paint_frame_push(frame, paint_cmd_fill_round(origin, studio_color_text_primary(), 2.0))
+  paint_frame_push(frame, paint_cmd_stroke_round(origin, studio_color_accent_cyan(), 1.0, 2.0))
+
+def studio_paint_viewport_scene_cmds() -> int
+  requires true
+  ensures result == studio_paint_viewport_grid_cmds()
+  decreases 0
+=
+  return studio_paint_viewport_grid_cmds()
 
 def studio_paint_viewport_display_bg_cmds(background: int) -> int
   requires background >= studio_viewport_bg_solid()
@@ -6520,15 +7575,22 @@ def studio_paint_viewport_display_cmds(display: StudioViewportDisplayCompose) ->
   n = n + studio_paint_viewport_hud_cmds()
   return n
 
+def studio_paint_viewport_menu_btn_cmds() -> int
+  requires true
+  ensures result == 1 + studio_paint_glyph_run_cmds()
+  decreases 0
+=
+  return 1 + studio_paint_glyph_run_cmds()
+
 def studio_paint_viewport_menu_cmds(menu: StudioViewportMenuCompose) -> int
   requires true
   ensures result >= 0
-  ensures result <= 3
+  ensures result <= 3 * studio_paint_viewport_menu_btn_cmds()
   decreases menu.menu_visible
 =
   if menu.menu_visible != 1:
     return 0
-  return 3
+  return 3 * studio_paint_viewport_menu_btn_cmds()
 
 def studio_viewport_display_bg_color(background: int) -> Color
   requires background >= studio_viewport_bg_solid()
@@ -6604,18 +7666,7 @@ def studio_paint_viewport_display(frame: var PaintFrame, vp: Rect, display: Stud
   frame.last_kind = paint_op_stroke_rect()
   frame.last_rect = display.biomol_chip_rect
   frame.last_color = studio_viewport_display_biomol_color(display.biomol_style)
-  frame.cmd_count = frame.cmd_count + 1
-  frame.last_kind = paint_op_fill_rect()
-  frame.last_rect = display.fps_hud_rect
-  frame.last_color = studio_viewport_hud_color_fps(display.fps_meets_target, display.hud_native_pixels)
-  frame.cmd_count = frame.cmd_count + 1
-  frame.last_kind = paint_op_fill_rect()
-  frame.last_rect = display.particle_hud_rect
-  frame.last_color = studio_viewport_hud_color_particle(display.tier_particles)
-  frame.cmd_count = frame.cmd_count + 1
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = display.native_badge_rect
-  frame.last_color = studio_viewport_hud_color_native_badge(display.hud_native_pixels)
+  studio_paint_viewport_hud(frame, display)
 
 def studio_paint_viewport_menu(frame: var PaintFrame, menu: StudioViewportMenuCompose) -> unit
   requires frame.cmd_count >= 0
@@ -6624,44 +7675,88 @@ def studio_paint_viewport_menu(frame: var PaintFrame, menu: StudioViewportMenuCo
 =
   if menu.menu_visible != 1:
     return
-  frame.cmd_count = frame.cmd_count + 1
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = menu.bg_btn
-  frame.last_color = studio_color_accent_cyan()
-  frame.cmd_count = frame.cmd_count + 1
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = menu.particle_btn
-  frame.last_color = studio_color_accent_amber()
-  frame.cmd_count = frame.cmd_count + 1
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = menu.biomol_btn
-  frame.last_color = studio_color_accent_violet()
+  paint_frame_push(frame, paint_cmd_stroke_round(menu.bg_btn, studio_color_accent_cyan(), 1.0, studio_radius_sm_px()))
+  studio_paint_glyph_text(frame, menu.bg_btn, studio_viewport_menu_bg_label_first_codepoint(), studio_viewport_menu_bg_label_glyph_count(), studio_color_text_primary())
+  paint_frame_push(frame, paint_cmd_stroke_round(menu.particle_btn, studio_color_accent_amber(), 1.0, studio_radius_sm_px()))
+  studio_paint_glyph_text(frame, menu.particle_btn, studio_viewport_menu_particle_label_first_codepoint(), studio_viewport_menu_particle_label_glyph_count(), studio_color_text_primary())
+  paint_frame_push(frame, paint_cmd_stroke_round(menu.biomol_btn, studio_color_accent_violet(), 1.0, studio_radius_sm_px()))
+  studio_paint_glyph_text(frame, menu.biomol_btn, studio_viewport_menu_biomol_label_first_codepoint(), studio_viewport_menu_biomol_label_glyph_count(), studio_color_text_primary())
 
-def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose) -> unit
+def studio_paint_dock_slot(frame: var PaintFrame, dock: StudioDockCompose, slot: int, hovered: int) -> unit
+  requires frame.cmd_count >= 0
+  requires slot >= 0
+  requires slot < studio_dock_slot_count()
+  requires dock.active_slot >= 0
+  requires dock.active_slot < studio_dock_slot_count()
+  requires hovered >= 0
+  requires hovered <= 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_dock_slot_cmds(0)
+  decreases slot
+=
+  var slot_rect: Rect = studio_dock_slot_rect_at(dock.rect.x, dock.rect.y, dock.rect.w, dock.rect.h, slot)
+  var is_active: int = 0
+  if slot == dock.active_slot:
+    is_active = 1
+  if is_active == 1:
+    paint_frame_push(frame, paint_cmd_fill_round(slot_rect, studio_color_accent_cyan(), studio_radius_sm_px()))
+    paint_frame_push(frame, paint_cmd_stroke_round(slot_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
+  if is_active == 0:
+    var slot_fill: Color = studio_color_bg_elevated()
+    if hovered == 1:
+      slot_fill = studio_color_hover_surface()
+    paint_frame_push(frame, paint_cmd_fill_round(slot_rect, slot_fill, studio_radius_sm_px()))
+    paint_frame_push(frame, paint_cmd_stroke_round(slot_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
+  var icon_id: int = icon_atlas_image_for_dock_slot(slot)
+  var icon_src: Rect = icon_atlas_src_rect(icon_id)
+  var icon_tint: Color = studio_color_text_muted()
+  if is_active == 1:
+    icon_tint = studio_color_text_primary()
+  if hovered == 1:
+    icon_tint = studio_color_text_primary()
+  paint_frame_push(frame, paint_cmd_draw_image(slot_rect, icon_id, icon_src, icon_tint))
+
+def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose, hover: StudioShellHoverState) -> unit
   requires frame.cmd_count >= 0
   requires dock.active_slot >= 0
   requires dock.active_slot < icon_atlas_slot_count()
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_dock_cmds()
-  ensures frame.last_kind == paint_op_draw_image()
-  ensures frame.last_rect.w == dock.active_slot_rect.w
+  ensures frame.last_kind == paint_op_draw_glyphs()
   decreases dock.active_slot
 =
+  studio_paint_panel_shadow(frame, dock.rect)
   paint_frame_push(frame, paint_cmd_fill_gradient(dock.rect, studio_color_bg_primary(), studio_color_bg_elevated()))
-  paint_frame_push(frame, paint_cmd_fill_round(dock.active_slot_rect, studio_color_accent_cyan(), studio_radius_sm_px()))
-  paint_frame_push(frame, paint_cmd_stroke_round(dock.active_slot_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
-  var icon_id: int = icon_atlas_image_for_dock_slot(dock.active_slot)
-  var icon_src: Rect = icon_atlas_src_rect(icon_id)
-  paint_frame_push(frame, paint_cmd_draw_image(dock.active_slot_rect, icon_id, icon_src, studio_color_text_primary()))
+  studio_paint_dock_slot(frame, dock, 0, studio_shell_hover_dock_slot_is(hover, 0))
+  studio_paint_dock_slot(frame, dock, 1, studio_shell_hover_dock_slot_is(hover, 1))
+  studio_paint_dock_slot(frame, dock, 2, studio_shell_hover_dock_slot_is(hover, 2))
+  studio_paint_dock_slot(frame, dock, 3, studio_shell_hover_dock_slot_is(hover, 3))
+  studio_paint_dock_slot(frame, dock, 4, studio_shell_hover_dock_slot_is(hover, 4))
+  var active_rect: Rect = studio_dock_slot_rect_at(dock.rect.x, dock.rect.y, dock.rect.w, dock.rect.h, dock.active_slot)
+  var dock_label_rect: Rect = rect_make(dock.rect.x, active_rect.y + active_rect.h + 2.0, dock.rect.w, studio_typography_caption_line_height_px())
+  var cap_cp: int = studio_dock_slot_caption_first_codepoint(dock.active_slot)
+  var cap_cnt: int = studio_dock_slot_caption_glyph_count(dock.active_slot)
+  studio_paint_glyph_text(frame, dock_label_rect, cap_cp, cap_cnt, studio_color_text_muted())
 
-def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose) -> unit
+def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose, hover: StudioShellHoverState) -> unit
   requires frame.cmd_count >= 0
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_timeline_cmds()
   ensures frame.last_kind == paint_op_stroke_round_rect()
   decreases 0
 =
+  studio_paint_panel_shadow(frame, timeline.track_rect)
   paint_frame_push(frame, paint_cmd_fill_gradient(timeline.track_rect, studio_color_bg_primary(), studio_color_bg_elevated()))
   paint_frame_push(frame, paint_cmd_stroke_round(timeline.track_rect, studio_color_border(), 1.0, studio_default_panel_radius_px()))
-  paint_frame_push(frame, paint_cmd_fill_round(timeline.playhead_rect, studio_color_accent_amber(), studio_radius_sm_px()))
+  var playhead_color: Color = studio_color_accent_amber()
+  if hover.timeline_playhead == 1:
+    playhead_color = studio_color_accent_cyan()
+  paint_frame_push(frame, paint_cmd_fill_round(timeline.playhead_rect, playhead_color, studio_radius_sm_px()))
+  var playhead_ring: Color = studio_color_border()
+  if hover.timeline_playhead == 1:
+    playhead_ring = studio_color_focus_ring()
+  paint_frame_push(frame, paint_cmd_stroke_round(timeline.playhead_rect, playhead_ring, 1.0, studio_radius_sm_px()))
+  var play_fill: Color = studio_color_bg_elevated()
+  if hover.timeline_play_btn == 1:
+    play_fill = studio_color_hover_surface()
+  paint_frame_push(frame, paint_cmd_fill_round(timeline.play_btn_rect, play_fill, studio_radius_sm_px()))
   paint_frame_push(frame, paint_cmd_stroke_round(timeline.play_btn_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
 
 def studio_paint_agent(frame: var PaintFrame, agent: StudioAgentChromeCompose) -> unit
@@ -6671,6 +7766,7 @@ def studio_paint_agent(frame: var PaintFrame, agent: StudioAgentChromeCompose) -
   decreases agent.task_state
 =
   frame.cmd_count = frame.cmd_count + studio_paint_agent_cmds(agent.task_state, agent.agent_context_label, agent.invoke_input_visible, agent.tool_trace_visible)
+  studio_paint_panel_shadow(frame, agent.rect)
   paint_frame_push(frame, paint_cmd_fill_round(agent.rect, studio_color_bg_elevated(), studio_default_panel_radius_px()))
   frame.last_kind = paint_op_fill_rect()
   frame.last_rect = agent.status_rect
@@ -6717,13 +7813,20 @@ def studio_paint_inspector(frame: var PaintFrame, inspector: StudioInspectorComp
 =
   if inspector.widget_pilot == 1:
     inspector_pilot_paint(inspector.pilot_spec, inspector.pilot_layout, frame)
+    if inspector.has_selection == 1:
+      studio_paint_inspector_field_glyphs(frame, inspector)
     return
   if inspector.has_selection == 0:
-    paint_frame_push_elevated_panel(frame, inspector.rect)
-    paint_frame_push(frame, paint_cmd_fill_round(inspector.hint_line1_rect, studio_color_bg_elevated(), studio_radius_sm_px()))
-    paint_frame_push(frame, paint_cmd_fill_round(inspector.hint_line2_rect, studio_color_bg_elevated(), studio_radius_sm_px()))
+    studio_paint_elevated_panel_with_shadow(frame, inspector.rect)
     paint_frame_push(frame, paint_cmd_stroke_round(inspector.hint_box_rect, studio_color_border(), 1.0, studio_default_panel_radius_px()))
+    var h1_cp: int = studio_inspector_empty_hint1_first_codepoint()
+    var h1_cnt: int = studio_inspector_empty_hint1_glyph_count()
+    studio_paint_glyph_text(frame, inspector.hint_line1_rect, h1_cp, h1_cnt, studio_color_text_primary())
+    var h2_cp: int = studio_inspector_empty_hint2_first_codepoint()
+    var h2_cnt: int = studio_inspector_empty_hint2_glyph_count()
+    studio_paint_glyph_text(frame, inspector.hint_line2_rect, h2_cp, h2_cnt, studio_color_text_muted())
   if inspector.has_selection == 1:
+    studio_paint_panel_shadow(frame, inspector.rect)
     paint_frame_push(frame, paint_cmd_fill_gradient(inspector.rect, studio_color_bg_primary(), studio_color_bg_elevated()))
     paint_frame_push(frame, paint_cmd_stroke_round(inspector.rect, studio_color_accent_violet(), 1.0, studio_default_panel_radius_px()))
     paint_frame_push(frame, paint_cmd_fill_round(inspector.header_rect, studio_color_accent_violet(), studio_radius_sm_px()))
@@ -6735,9 +7838,9 @@ def studio_paint_compose_panels(frame: var PaintFrame, dock: StudioDockCompose, 
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_compose_panels_count(inspector.has_selection)
   decreases 0
 =
-  studio_paint_dock(frame, dock)
-  studio_paint_outliner(frame, outliner)
-  studio_paint_timeline(frame, timeline)
+  studio_paint_dock(frame, dock, studio_shell_hover_new())
+  studio_paint_outliner(frame, outliner, studio_shell_hover_new())
+  studio_paint_timeline(frame, timeline, studio_shell_hover_new())
   studio_paint_inspector(frame, inspector)
 
 def studio_paint_compose_panels_count(has_selection: int) -> int
@@ -6748,10 +7851,11 @@ def studio_paint_compose_panels_count(has_selection: int) -> int
 =
   return studio_paint_dock_cmds() + studio_paint_outliner_cmds(studio_outliner_demo_node_count()) + studio_paint_timeline_cmds() + studio_paint_inspector_cmds(has_selection)
 
-def studio_shell_viewport_cmds(scene_entity_count: int, viewport_error_kind: int, display: StudioViewportDisplayCompose, menu: StudioViewportMenuCompose) -> int
+def studio_shell_viewport_cmds(scene_entity_count: int, viewport_error_kind: int, display: StudioViewportDisplayCompose, menu: StudioViewportMenuCompose, profile_id: int) -> int
   requires scene_entity_count >= 0
   requires viewport_error_kind >= studio_viewport_error_none()
   requires viewport_error_kind <= studio_err_missing_asset()
+  requires studio_profile_id_valid(profile_id) == 1
   ensures result >= 1
   decreases viewport_error_kind
 =
@@ -6759,7 +7863,7 @@ def studio_shell_viewport_cmds(scene_entity_count: int, viewport_error_kind: int
     return studio_paint_viewport_error_cmds()
   if scene_entity_count == 0:
     return studio_paint_viewport_empty_cmds()
-  return studio_paint_viewport_scene_cmds() + studio_paint_viewport_display_cmds(display) + studio_paint_viewport_menu_cmds(menu)
+  return studio_paint_viewport_scene_cmds() + studio_paint_viewport_display_cmds(display) + studio_paint_viewport_menu_cmds(menu) + studio_paint_viewport_profile_preview_cmds(profile_id)
 
 def studio_shell_chrome_count(has_selection: int, scene_entity_count: int, task_state: int) -> int
   requires has_selection >= 0
@@ -6778,9 +7882,9 @@ def studio_shell_chrome_count(has_selection: int, scene_entity_count: int, task_
   var menu0: StudioViewportMenuCompose = studio_viewport_menu_compose_new()
   var invoke0: int = studio_agent_invoke_input_visible(ts0)
   var trace0: int = studio_agent_tool_trace_visible_for(ts0, studio_mcp_tool_unknown())
-  return studio_shell_chrome_count_palette(sel_palette, scene0, ts0, studio_palette_closed_flag(), studio_agent_context_for_shell(sel_ctx, ts0), studio_viewport_error_none(), disp0, menu0, invoke0, trace0)
+  return studio_shell_chrome_count_palette(sel_palette, scene0, ts0, studio_palette_closed_flag(), studio_agent_context_for_shell(sel_ctx, ts0), studio_viewport_error_none(), disp0, menu0, invoke0, trace0, studio_profile_game())
 
-def studio_shell_chrome_count_palette(has_selection: int, scene_entity_count: int, task_state: int, palette_open: int, agent_context_label: int, viewport_error_kind: int, display: StudioViewportDisplayCompose, menu: StudioViewportMenuCompose, invoke_visible: int, tool_trace_visible: int) -> int
+def studio_shell_chrome_count_palette(has_selection: int, scene_entity_count: int, task_state: int, palette_open: int, agent_context_label: int, viewport_error_kind: int, display: StudioViewportDisplayCompose, menu: StudioViewportMenuCompose, invoke_visible: int, tool_trace_visible: int, profile_id: int) -> int
   requires has_selection >= 0
   requires has_selection <= 1
   requires scene_entity_count >= 0
@@ -6796,6 +7900,7 @@ def studio_shell_chrome_count_palette(has_selection: int, scene_entity_count: in
   requires invoke_visible <= 1
   requires tool_trace_visible >= 0
   requires tool_trace_visible <= 1
+  requires studio_profile_id_valid(profile_id) == 1
   ensures result >= studio_paint_compose_panels_count(has_selection)
   decreases task_state
 =
@@ -6804,35 +7909,44 @@ def studio_shell_chrome_count_palette(has_selection: int, scene_entity_count: in
   var ts0: int = task_state
   var pal0: int = palette_open
   var ctx0: int = agent_context_label
-  return studio_paint_compose_panels_count(sel0) + 1 + studio_paint_topbar_profile_cmds() + studio_shell_viewport_cmds(scene0, viewport_error_kind, display, menu) + studio_paint_agent_cmds(ts0, ctx0, invoke_visible, tool_trace_visible) + studio_paint_palette_cmds(pal0)
+  return studio_paint_compose_panels_count(sel0) + 1 + studio_paint_topbar_profile_cmds() + studio_paint_palette_shortcut_hints_cmds(pal0) + studio_shell_viewport_cmds(scene0, viewport_error_kind, display, menu, profile_id) + studio_paint_agent_cmds(ts0, ctx0, invoke_visible, tool_trace_visible) + studio_paint_palette_cmds(pal0)
+
+def studio_shell_chrome_count_for_compose(compose: StudioShellCompose) -> int
+  requires compose.panel.active_region >= studio_region_dock()
+  requires compose.panel.active_region <= studio_region_agent_strip()
+  ensures result >= studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible, compose.config.active_profile)
+  decreases compose.agent.task_state
+=
+  var base: int = studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible, compose.config.active_profile)
+  return base + studio_paint_focus_ring_cmds(compose.panel.active_region)
 
 
 def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose) -> unit
   requires frame.cmd_count >= 0
-  ensures frame.cmd_count == studio_shell_chrome_count_palette(compose.inspector.has_selection, compose.scene_entity_count, compose.agent.task_state, compose.palette.is_open, compose.agent.agent_context_label, compose.viewport_error.error_kind, compose.viewport_display, compose.viewport_menu, compose.agent.invoke_input_visible, compose.agent.tool_trace_visible)
+  ensures frame.cmd_count == studio_shell_chrome_count_for_compose(compose)
   decreases compose.agent.task_state
 =
-  studio_paint_dock(frame, compose.dock)
-  studio_paint_outliner(frame, compose.outliner)
-  studio_paint_timeline(frame, compose.timeline)
+  studio_paint_dock(frame, compose.dock, compose.hover)
+  studio_paint_outliner(frame, compose.outliner, compose.hover)
+  studio_paint_timeline(frame, compose.timeline, compose.hover)
   studio_paint_inspector(frame, compose.inspector)
   paint_frame_push(frame, paint_cmd_fill_gradient(compose.layout.topbar, studio_color_bg_primary(), studio_color_bg_elevated()))
   var prof0: int = compose.config.active_profile
   studio_paint_topbar_profile(frame, compose.layout.topbar, prof0)
+  studio_paint_palette_shortcut_hints(frame, compose.layout.topbar, compose.palette)
   if compose.viewport_error.visible == 1:
     studio_paint_viewport_error(frame, compose.viewport_error)
   if compose.viewport_error.visible == 0:
     if compose.scene_entity_count == 0:
       studio_paint_viewport_empty(frame, compose.viewport_empty)
     if compose.scene_entity_count > 0:
-      frame.cmd_count = frame.cmd_count + studio_paint_viewport_scene_cmds()
-      frame.last_kind = paint_op_viewport_grid()
-      frame.last_rect = compose.layout.viewport
-      frame.last_color = studio_color_accent_cyan()
+      studio_paint_viewport_grid(frame, compose.layout.viewport)
       studio_paint_viewport_display(frame, compose.layout.viewport, compose.viewport_display)
+      studio_paint_viewport_profile_preview(frame, compose.layout.viewport, prof0)
       studio_paint_viewport_menu(frame, compose.viewport_menu)
   studio_paint_agent(frame, compose.agent)
   paint_studio_palette(frame, compose.palette)
+  studio_paint_focus_ring_for_panel(frame, compose)
 
 def studio_paint_palette_overlay(frame: var PaintFrame, palette: StudioCommandPaletteCompose) -> unit
   requires frame.cmd_count >= 0
@@ -6846,7 +7960,7 @@ def studio_paint_palette_overlay(frame: var PaintFrame, palette: StudioCommandPa
 def studio_shell_frame(w: float, h: float) -> PaintFrame
   requires w > 0.0
   requires h > 0.0
-  ensures result.cmd_count == studio_shell_chrome_count(1, 1, studio_agent_task_running())
+  ensures result.cmd_count == studio_shell_chrome_count_for_compose(studio_compose_shell_agent(w, h, 0, 1, 1, studio_agent_task_running()))
   decreases 0
 =
   var compose: StudioShellCompose = studio_compose_shell_agent(w, h, 0, 1, 1, studio_agent_task_running())
@@ -7160,7 +8274,7 @@ def studio_vertical_demo_compose(profile_id: int, frame_id: int, key_compose: in
   var out: StudioShellCompose = studio_compose_shell_palette(1280.0, 720.0, 0, 1, palette_open)
   studio_shell_demo_apply_profile(out, profile_id)
   if studio_viewport_display_profile_wants_scene(profile_id) == 1:
-    studio_viewport_display_reset_for_profile(profile_id)
+    studio_viewport_display_prepare_for_profile(profile_id)
     out.scene_entity_count = 1
     out.viewport_empty.empty_visible = 0
     studio_attach_viewport_shell(out)
@@ -7416,6 +8530,7 @@ def studio_vertical_demo_frame(profile_id: int, frame_id: int) -> int raises IO
         if input.key_digit == 0:
           input.key_cmd_k = 1
   var _key_action: int = studio_shell_handle_host_key(compose, input)
+  studio_shell_sync_hover(compose, input)
   var has_sel: int = compose.inspector.has_selection
   var scene_n: int = compose.scene_entity_count
   var task_st: int = compose.agent.task_state
@@ -7593,6 +8708,7 @@ def studio_shell_host_frame(compose: var StudioShellCompose, frame_id: int) -> i
   var _action: int = studio_shell_handle_host_key(compose, input)
   studio_viewport_error_sync_render(compose)
   var _vp_err: int = studio_shell_handle_viewport_error_pointer(compose, input)
+  studio_shell_sync_hover(compose, input)
   var vp: ViewportRegion = gui_viewport_region_from_layout(compose.layout)
   var _presented: LigPresentFrame = studio_shell_host_present_loop_tick(vp.w, vp.h, frame_id)
   if _presented.presented != 1:
