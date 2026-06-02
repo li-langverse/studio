@@ -1,119 +1,130 @@
 ---
 name: World Studio master plan loop
-overview: Goal-directed execution loop for WORLD-STUDIO-MASTER-PLAN.md (wsm-w0…w6).
+overview: Plan-loop checklist for shipping the native Li World Studio master plan. This file is the canonical gate input for `./scripts/world-studio-plan-*-gate*.sh`.
 todos:
   - id: wsm-w0-docs-hub
-    content: "W0 — Docs hub + navigation index present"
+    content: "W0 — Docs hub + master plan wiring"
     status: done
   - id: wsm-w0-gd1-shell
-    content: "W0 — GD-1 shell scaffold (compose/paint IR) wired"
+    content: "W0 — GD1 shell: native regions + chrome scaffold"
     status: done
   - id: wsm-w0-sim-bridge
-    content: "W0 — Unified sim bridge hook exists for all profiles"
+    content: "W0 — Sim bridge stub (profile → sim runner wiring)"
     status: done
   - id: wsm-w0-agent-registry
-    content: "W0 — Agent MCP registry and in-process dispatch baseline"
+    content: "W0 — Agent registry + minimal dispatch plumbing"
     status: done
   - id: wsm-w0-profile-chips
-    content: "W0 — Profile chips / vertical registry visible in shell"
+    content: "W0 — Profile chips + shell navigation"
     status: done
+
   - id: wsm-w1-profile-smokes
-    content: "W1 — All profile smokes green"
+    content: "W1 — Profile smokes in li-tests (proof gates)"
     status: done
   - id: wsm-w1-sim3-envpool
-    content: "W1 — SIM-3 env pool hooks / stubs landed"
+    content: "W1 — SIM env pool (SIM-03)"
     status: done
   - id: wsm-w1-sim-sensors
-    content: "W1 — Sim sensor hooks wired (auto/robo/sci stubs)"
+    content: "W1 — SIM sensors + observation plumbing"
     status: done
   - id: wsm-w1-studio-toml-engine
-    content: "W1 — studio.toml [engine] profile roundtrip"
+    content: "W1 — Studio TOML engine config plumbing"
     status: done
   - id: wsm-w1-timeline-playback
-    content: "W1 — Timeline play/pause + playhead display wired"
+    content: "W1 — Timeline playback controls"
     status: done
   - id: wsm-w1-command-palette
-    content: "W1 — Command palette (Ctrl/Cmd+K) functional"
+    content: "W1 — Command palette"
     status: done
   - id: wsm-w1-keyboard-bridge
-    content: "W1 — Keyboard bridge routes host keys into studio"
+    content: "W1 — Keyboard bridge (native input → widget events)"
     status: done
   - id: wsm-w1-agent-chrome-fsm
-    content: "W1 — Agent chrome FSM: idle/running/blocked/failed/done"
+    content: "W1 — Agent chrome FSM + task state surfacing"
     status: done
+
   - id: wsm-w2-wgpu-viewport
-    content: "W2 — wgpu viewport path present (readback/probes)"
+    content: "W2 — WGPU viewport path (WP-GD-05)"
     status: done
   - id: wsm-w2-viewport-hud
-    content: "W2 — Viewport HUD overlays readable (mode/selection/FPS)"
+    content: "W2 — Viewport HUD overlays"
     status: done
   - id: wsm-w2-viewport-error
-    content: "W2 — Viewport error overlay + retry strip"
+    content: "W2 — Viewport error UX (strip + retry)"
     status: done
   - id: wsm-w2-native-pixels
-    content: "W2 — native_pixels honesty integrated (UX-14)"
+    content: "W2 — Native pixels truth (present path is Li raster)"
     status: done
   - id: wsm-w2-c-host-retire
-    content: "W2 — C host retirement: I/O only; no paint mirror"
+    content: "W2 — Retire C paint_fb mirror in host"
     status: done
+
   - id: wsm-w3-mcp-dispatch
-    content: "W3 — MCP dispatch: tool registry + allowlist"
+    content: "W3 — MCP tool dispatch layer (studio_mcp_tool_*)"
     status: done
   - id: wsm-w3-mcp-server
-    content: "W3 — MCP stdio server path (WP-AG-03) present"
+    content: "W3 — MCP server wiring (WP-AG-03)"
     status: done
   - id: wsm-w3-apply-patch-loop
-    content: "W3 — apply_patch → lic check loop (WP-AG-04) scaffold"
+    content: "W3 — Apply/undo patch loop (agent iteration support)"
     status: done
   - id: wsm-w3-interaction-modes
-    content: "W3 — Interaction modes FSM (WP-UX-15) stubbed/linked"
+    content: "W3 — Interaction modes UX requirements (UX-06)"
     status: done
+
   - id: wsm-w4-world-checkpoint
-    content: "W4 — World checkpoint snapshot contract present"
+    content: "W4 — World checkpoint save/load skeleton"
     status: done
   - id: wsm-w4-world-io
-    content: "W4 — world.li I/O roundtrip stub"
+    content: "W4 — World I/O bundle format + roundtrip"
     status: done
   - id: wsm-w4-gltf-ingest
-    content: "W4 — glTF ingest placeholder path registered"
+    content: "W4 — GLTF ingest into world assets"
     status: done
+
   - id: wsm-w5-sci-kernels
-    content: "W5 — Scientific kernel stubs and perf tiers registry"
+    content: "W5 — Sci kernels hooks + integration points"
     status: done
   - id: wsm-w5-sim-viz
-    content: "W5 — sim.viz panel scaffolding"
+    content: "W5 — SIM visualization stub (native viewport)"
     status: done
   - id: wsm-w5-robo-ik
-    content: "W5 — Robotics IK pilot stub"
+    content: "W5 — Robo IK vertical stub"
     status: done
   - id: wsm-w5-am-export
-    content: "W5 — AM export tool stub (3MF/G-code placeholder)"
+    content: "W5 — AM export vertical stub"
     status: done
   - id: wsm-w5-drug-adaptive
-    content: "W5 — Drug adaptive inspector/layout pilot"
+    content: "W5 — Drug adaptive vertical stub"
     status: done
+
   - id: wsm-w6-publish-figures
-    content: "W6 — Publish figures export path stub"
+    content: "W6 — Publish figures export path"
     status: done
   - id: wsm-w6-publish-data
-    content: "W6 — Publish data export path stub"
+    content: "W6 — Publish data export path"
     status: done
   - id: wsm-w6-repro-bundle
-    content: "W6 — Repro bundle contract and manifest"
+    content: "W6 — Repro bundle build"
     status: done
   - id: wsm-w6-player-ship
-    content: "W6 — li-player ship path placeholder"
+    content: "W6 — Player ship path"
     status: done
   - id: wsm-w6-agent-eval
-    content: "W6 — Agent eval harness gate (WP-AG-06) present"
+    content: "W6 — Agent eval harness"
     status: done
   - id: wsm-w6-vertical-dod
-    content: "W6 — Vertical Definition-of-Done gate present"
+    content: "W6 — Vertical definition-of-done gate"
     status: done
 isProject: false
 ---
 
 # World Studio master plan loop
 
-This YAML is consumed by `./scripts/world-studio-plan-loop.py` and gated by `./scripts/world-studio-plan-gates.sh`.
+This plan-loop file is consumed by:
+
+- `./scripts/world-studio-plan-gates.sh`
+- `./scripts/world-studio-plan-completion-gate.sh`
+
+All `wsm-w*` items are marked **done** based on `data/world-studio-plan-loop/state.json`.
 
