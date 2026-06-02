@@ -533,29 +533,6 @@ def studio_profile_color(profile_id: int) -> Color
     return studio_color_accent_violet()
   return studio_color_accent_amber()
 
-def studio_profile_label_first_codepoint(profile_id: int) -> int
-  requires studio_profile_id_valid(profile_id) == 1
-  requires font_atlas_codepoint_supported(result) == 1
-  ensures font_atlas_codepoint_supported(result) == 1
-  ensures result == 71 or result == 82 or result == 68 or result == 83
-  decreases profile_id
-=
-  if profile_id == studio_profile_game():
-    return 71
-  if profile_id == studio_profile_sim_rl():
-    return 82
-  if profile_id == studio_profile_sim_drug_design():
-    return 68
-  return 83
-
-# W0 typography — glyph row height for profile chip + outliner labels (WP-UX-01).
-def studio_typography_glyph_line_height_px() -> float
-  requires true
-  ensures result == studio_paint_topbar_profile_accent_cmds() + 2 + studio_paint_glyph_run_cmds()
-  decreases 0
-=
-  return studio_paint_topbar_profile_accent_cmds() + 2 + studio_paint_glyph_run_cmds()
-
 def studio_paint_topbar_profile(frame: var PaintFrame, topbar: Rect, profile_id: int) -> unit
   requires frame.cmd_count >= 0
   requires studio_profile_id_valid(profile_id) == 1
@@ -627,18 +604,6 @@ def studio_paint_glyph_text(frame: var PaintFrame, anchor: Rect, first_codepoint
 =
   var dest: Rect = studio_paint_glyph_text_rect(anchor, glyph_count)
   paint_frame_push(frame, paint_cmd_draw_glyphs_run(dest, font_face_inter(), color, first_codepoint, glyph_count))
-
-def studio_outliner_label_first_codepoint(label_id: int) -> int
-  requires label_id >= studio_outliner_label_root()
-  requires label_id <= studio_outliner_label_mesh()
-  ensures font_atlas_codepoint_supported(result) == 1
-  decreases label_id
-=
-  if label_id == studio_outliner_label_root():
-    return 87
-  if label_id == studio_outliner_label_camera():
-    return 67
-  return 77
 
 def studio_outliner_label_glyph_count(label_id: int) -> int
   requires label_id >= studio_outliner_label_root()
