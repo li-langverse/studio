@@ -252,6 +252,16 @@ static void paint_viewport_grid(unsigned char* rgb, int w, int h, ShellRect vp) 
   int oy = vp.y + vp.h - 48;
   stroke_vline(rgb, w, h, ox, vp.y + 24, oy, k_accent_cyan);
   stroke_hline(rgb, w, h, ox, vp.x + vp.w - 24, oy, k_accent_cyan);
+  int pad = 24;
+  ShellRect frame = {vp.x + pad, vp.y + pad, vp.w - pad * 2, vp.h - pad * 2};
+  if (frame.w > 0 && frame.h > 0) {
+    fill_round_rect(rgb, w, h, frame, k_bg_elevated, 6);
+    stroke_round_rect(rgb, w, h, frame, k_border, 1, 6);
+    ShellRect title = {frame.x + 40, frame.y + frame.h / 3, frame.w / 2, 12};
+    fill_round_rect(rgb, w, h, title, k_bg_primary, 4);
+    ShellRect cta = {frame.x + frame.w / 4, frame.y + frame.h / 2, frame.w / 2, 28};
+    stroke_round_rect(rgb, w, h, cta, k_accent_cyan, 1, 4);
+  }
 }
 
 static void paint_panel_shadow(unsigned char* rgb, int w, int h, ShellRect panel, int offset) {
