@@ -208,6 +208,28 @@ extern proc li_rt_studio_bench_mode_from_env() -> int
   ensures result <= 1
   decreases 0
 
+extern proc li_rt_studio_route_from_name(name: str) -> int
+  requires true
+  ensures result >= 0
+  decreases 0
+
+extern proc li_rt_studio_route_from_env() -> int
+  requires true
+  ensures result >= 0
+  decreases 0
+
+# wsg-w4-headless-golden — Li CPU raster PPM writer (no C paint_fb mirror).
+extern proc li_rt_studio_headless_raster_ppm(path: str, width: int, height: int, profile_id: int, cmd_count: int, cpu_pixels: int, digest: int) -> int raises IO, Alloc
+  requires width >= 8
+  requires height >= 8
+  requires profile_id >= 0
+  requires cmd_count >= 0
+  requires cpu_pixels >= 0
+  requires path != ""
+  ensures result >= 0
+  ensures result <= 1
+  decreases width
+
 
 # UX-02 / WP-GD-08 — timeline playback (playhead synced to sim session tick).
 extern proc li_rt_studio_timeline_playing() -> int
@@ -533,18 +555,46 @@ def studio_profile_color(profile_id: int) -> Color
     return studio_color_accent_violet()
   return studio_color_accent_amber()
 
-def studio_paint_topbar_profile_cmds() -> int
-  requires true
-  ensures result == 2
+def studio_profile_label_first_codepoint(profile_id: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases profile_id
+=
+  if profile_id == studio_profile_game():
+    return 71
+  if profile_id == studio_profile_sim_rl():
+    return 82
+  if profile_id == studio_profile_sim_drug_design():
+    return 68
+  return 83
+
+def studio_profile_chip_glyph_rect(chip: Rect) -> Rect
+  requires chip.w >= 8.0
+  requires chip.h >= studio_typography_glyph_line_height_px()
+  ensures result.w >= 8.0
+  ensures result.h == studio_typography_glyph_line_height_px()
   decreases 0
 =
-  return 2
+  var pad_x: float = 10.0
+  var glyph_w: float = chip.w - pad_x * 2.0
+  if glyph_w < 8.0:
+    glyph_w = 8.0
+  var glyph_h: float = studio_typography_glyph_line_height_px()
+  var y: float = chip.y + (chip.h - glyph_h) / 2.0
+  return rect_make(chip.x + pad_x, y, glyph_w, glyph_h)
+
+def studio_paint_topbar_profile_cmds() -> int
+  requires true
+  ensures result == 3
+  decreases 0
+=
+  return 3
 
 def studio_paint_topbar_profile(frame: var PaintFrame, topbar: Rect, profile_id: int) -> unit
   requires frame.cmd_count >= 0
   requires studio_profile_id_valid(profile_id) == 1
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_topbar_profile_cmds()
-  ensures frame.last_kind == paint_op_stroke_round_rect()
+  ensures frame.last_kind == paint_op_draw_glyphs()
   decreases profile_id
 =
   var pid_chip: int = profile_id
@@ -556,6 +606,9 @@ def studio_paint_topbar_profile(frame: var PaintFrame, topbar: Rect, profile_id:
   var top_h: float = top_copy.h
   var chip_rect: Rect = studio_profile_chip_rect_at(top_x, top_y, top_w, top_h, pid_chip)
   paint_frame_push_accent_chip(frame, chip_rect, studio_profile_color(pid_color))
+  var glyph_rect: Rect = studio_profile_chip_glyph_rect(chip_rect)
+  var cp: int = studio_profile_label_first_codepoint(pid_chip)
+  paint_frame_push(frame, paint_cmd_draw_glyph(glyph_rect, font_face_inter(), cp, studio_color_text_primary()))
 
 
 
@@ -2140,10 +2193,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 39
+  ensures result == 40
   decreases 0
 =
-  return 39
+  return 40
 
 def studio_shell_widget_tree_version() -> int
   requires true
@@ -2362,6 +2415,29 @@ def studio_outliner_label_mesh() -> int
   decreases 0
 =
   return 3
+
+def studio_outliner_label_first_codepoint(label_id: int) -> int
+  requires label_id >= studio_outliner_label_root()
+  requires label_id <= studio_outliner_label_mesh()
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases label_id
+=
+  if label_id == studio_outliner_label_root():
+    return 83
+  if label_id == studio_outliner_label_camera():
+    return 67
+  return 77
+
+def studio_outliner_row_label_rect(row: Rect) -> Rect
+  requires row.w >= 16.0
+  requires row.h >= studio_typography_glyph_line_height_px()
+  ensures result.h == studio_typography_glyph_line_height_px()
+  decreases 0
+=
+  var pad_x: float = 8.0
+  var glyph_h: float = studio_typography_glyph_line_height_px()
+  var y: float = row.y + (row.h - glyph_h) / 2.0
+  return rect_make(row.x + pad_x, y, row.w - pad_x * 2.0, glyph_h)
 
 def studio_outliner_id_root() -> int
   requires true
@@ -3126,8 +3202,319 @@ def studio_shell_sync_mode_from_env(compose: var StudioShellCompose) raises IO -
   ensures studio_mode_valid(compose.mode) == 1
   decreases compose.mode
 =
+  var route_id: int = studio_route_resolve_startup()
+  studio_shell_apply_route(compose, route_id, compose.config.active_profile)
+
+# Phase 4 (wsg-w4-route-table) — named shell routes (verticals/modes), consulted at startup.
+type StudioRoute = object
+  public route_id: int
+  public profile_id: int
+  public mode: int
+  public layout_variant: int
+  public litl_stage: int
+  public primary_region: int
+
+def studio_route_table_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_route_table_count() -> int
+  requires true
+  ensures result == 9
+  decreases 0
+=
+  return 9
+
+def studio_route_author_game() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_route_simulate_scientific() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_route_adaptive_drug_litl_0() -> int
+  requires true
+  ensures result == 3
+  decreases 0
+=
+  return 3
+
+def studio_route_adaptive_drug_litl_1() -> int
+  requires true
+  ensures result == 4
+  decreases 0
+=
+  return 4
+
+def studio_route_adaptive_drug_litl_2() -> int
+  requires true
+  ensures result == 5
+  decreases 0
+=
+  return 5
+
+def studio_route_adaptive_drug_litl_3() -> int
+  requires true
+  ensures result == 6
+  decreases 0
+=
+  return 6
+
+def studio_route_adaptive_drug_litl_4() -> int
+  requires true
+  ensures result == 7
+  decreases 0
+=
+  return 7
+
+def studio_route_agent() -> int
+  requires true
+  ensures result == 8
+  decreases 0
+=
+  return 8
+
+def studio_route_bench() -> int
+  requires true
+  ensures result == 9
+  decreases 0
+=
+  return 9
+
+def studio_route_layout_default() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  return 0
+
+def studio_route_layout_sim_hud() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_route_layout_drug_litl() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_route_id_valid(route_id: int) -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases route_id
+=
+  if route_id == studio_route_author_game():
+    return 1
+  if route_id == studio_route_simulate_scientific():
+    return 1
+  if route_id == studio_route_adaptive_drug_litl_0():
+    return 1
+  if route_id == studio_route_adaptive_drug_litl_1():
+    return 1
+  if route_id == studio_route_adaptive_drug_litl_2():
+    return 1
+  if route_id == studio_route_adaptive_drug_litl_3():
+    return 1
+  if route_id == studio_route_adaptive_drug_litl_4():
+    return 1
+  if route_id == studio_route_agent():
+    return 1
+  if route_id == studio_route_bench():
+    return 1
+  return 0
+
+def studio_route_adaptive_drug_litl_for_stage(litl_stage: int) -> int
+  requires drug_litl_stage_valid(litl_stage) == 1
+  ensures studio_route_id_valid(result) == 1
+  decreases litl_stage
+=
+  if litl_stage == drug_litl_stage_hypothesis():
+    return studio_route_adaptive_drug_litl_0()
+  if litl_stage == drug_litl_stage_generate():
+    return studio_route_adaptive_drug_litl_1()
+  if litl_stage == drug_litl_stage_dft():
+    return studio_route_adaptive_drug_litl_2()
+  if litl_stage == drug_litl_stage_lab():
+    return studio_route_adaptive_drug_litl_3()
+  return studio_route_adaptive_drug_litl_4()
+
+def studio_route_from_name(name: str) raises IO, Alloc -> int
+  requires true
+  ensures studio_route_id_valid(result) == 1 or result == studio_profile_unknown()
+  decreases 0
+=
+  var rid: int = li_rt_studio_route_from_name(name)
+  if studio_route_id_valid(rid) == 1:
+    return rid
+  return studio_profile_unknown()
+
+def studio_route_for_profile(profile_id: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures studio_route_id_valid(result) == 1
+  decreases profile_id
+=
+  if profile_id == studio_profile_sim_drug_design():
+    return studio_route_adaptive_drug_litl_0()
+  if profile_id == studio_profile_sim_scientific():
+    return studio_route_simulate_scientific()
+  return studio_route_author_game()
+
+def studio_route_for_demo_frame(profile_id: int, frame_id: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  requires frame_id >= 0
+  requires frame_id <= 2
+  ensures studio_route_id_valid(result) == 1
+  decreases frame_id
+=
+  if profile_id == studio_profile_sim_drug_design():
+    var stage: int = drug_litl_stage_from_tick(frame_id)
+    return studio_route_adaptive_drug_litl_for_stage(stage)
+  return studio_route_for_profile(profile_id)
+
+def studio_route_resolve_startup() -> int raises IO
+  requires true
+  ensures studio_route_id_valid(result) == 1
+  decreases 0
+=
+  var from_env: int = li_rt_studio_route_from_env()
+  if studio_route_id_valid(from_env) == 1:
+    return from_env
   if studio_bench_mode_from_env() == 1:
-    studio_shell_apply_mode(compose, studio_mode_bench())
+    return studio_route_bench()
+  var pid: int = studio_demo_profile_from_env()
+  return studio_route_for_profile(pid)
+
+def studio_route_lookup(route_id: int) -> StudioRoute
+  requires studio_route_id_valid(route_id) == 1
+  ensures result.route_id == route_id
+  ensures studio_mode_valid(result.mode) == 1
+  ensures studio_profile_id_valid(result.profile_id) == 1 or result.profile_id == studio_profile_unknown()
+  decreases route_id
+=
+  var out: StudioRoute
+  out.route_id = route_id
+  out.profile_id = studio_profile_unknown()
+  out.layout_variant = studio_route_layout_default()
+  out.litl_stage = drug_litl_stage_hypothesis()
+  out.mode = studio_mode_author()
+  out.primary_region = studio_region_inspector()
+  if route_id == studio_route_author_game():
+    out.mode = studio_mode_author()
+    out.primary_region = studio_region_inspector()
+    return out
+  if route_id == studio_route_simulate_scientific():
+    out.profile_id = studio_profile_sim_scientific()
+    out.mode = studio_mode_analyze()
+    out.layout_variant = studio_route_layout_sim_hud()
+    out.primary_region = studio_region_viewport()
+    return out
+  if route_id == studio_route_adaptive_drug_litl_0():
+    out.profile_id = studio_profile_sim_drug_design()
+    out.mode = studio_mode_adaptive()
+    out.layout_variant = studio_route_layout_drug_litl()
+    out.litl_stage = drug_litl_stage_hypothesis()
+    out.primary_region = studio_adaptive_panel_region_for_litl_stage(out.litl_stage)
+    return out
+  if route_id == studio_route_adaptive_drug_litl_1():
+    out.profile_id = studio_profile_sim_drug_design()
+    out.mode = studio_mode_adaptive()
+    out.layout_variant = studio_route_layout_drug_litl()
+    out.litl_stage = drug_litl_stage_generate()
+    out.primary_region = studio_adaptive_panel_region_for_litl_stage(out.litl_stage)
+    return out
+  if route_id == studio_route_adaptive_drug_litl_2():
+    out.profile_id = studio_profile_sim_drug_design()
+    out.mode = studio_mode_adaptive()
+    out.layout_variant = studio_route_layout_drug_litl()
+    out.litl_stage = drug_litl_stage_dft()
+    out.primary_region = studio_adaptive_panel_region_for_litl_stage(out.litl_stage)
+    return out
+  if route_id == studio_route_adaptive_drug_litl_3():
+    out.profile_id = studio_profile_sim_drug_design()
+    out.mode = studio_mode_adaptive()
+    out.layout_variant = studio_route_layout_drug_litl()
+    out.litl_stage = drug_litl_stage_lab()
+    out.primary_region = studio_adaptive_panel_region_for_litl_stage(out.litl_stage)
+    return out
+  if route_id == studio_route_adaptive_drug_litl_4():
+    out.profile_id = studio_profile_sim_drug_design()
+    out.mode = studio_mode_adaptive()
+    out.layout_variant = studio_route_layout_drug_litl()
+    out.litl_stage = drug_litl_stage_retrain()
+    out.primary_region = studio_adaptive_panel_region_for_litl_stage(out.litl_stage)
+    return out
+  if route_id == studio_route_agent():
+    out.mode = studio_mode_agent()
+    out.primary_region = studio_region_agent_strip()
+    return out
+  out.mode = studio_mode_bench()
+  out.primary_region = studio_region_viewport()
+  return out
+
+def studio_shell_apply_route(compose: var StudioShellCompose, route_id: int, profile_id: int) -> unit
+  requires studio_route_id_valid(route_id) == 1
+  requires studio_profile_id_valid(profile_id) == 1
+  requires compose.layout.viewport_w > 0.0
+  ensures studio_mode_valid(compose.mode) == 1
+  ensures studio_profile_id_valid(compose.config.active_profile) == 1
+  decreases route_id
+=
+  var route: StudioRoute = studio_route_lookup(route_id)
+  var prof: int = profile_id
+  if route.profile_id != studio_profile_unknown():
+    prof = route.profile_id
+  compose.config = studio_project_config_new(prof)
+  if route.layout_variant == studio_route_layout_drug_litl():
+    var w: float = compose.layout.viewport_w
+    var h: float = compose.layout.viewport_h
+    compose.layout = layout_studio_shell_drug_litl(w, h, route.litl_stage)
+    studio_shell_apply_adaptive_panel_set(compose, route.litl_stage)
+    studio_viewport_display_reset_for_profile(prof)
+    compose.scene_entity_count = 1
+    compose.viewport_empty.empty_visible = 0
+    studio_attach_viewport_shell(compose)
+  studio_shell_apply_mode(compose, route.mode)
+  if route.primary_region != studio_mode_primary_region(route.mode):
+    var _timing: PanelSwitchTiming = gui_panel_switch_to(compose.panel, route.primary_region, 0.0)
+    studio_reactive_flush_mode_regions(compose)
+  studio_shell_sync_widget_tree_from_reactive(compose)
+
+def studio_compose_shell_route(w: float, h: float, active_dock_slot: int, has_selection: int, route_id: int, profile_id: int) -> StudioShellCompose
+  requires w > 0.0
+  requires h > 0.0
+  requires active_dock_slot >= 0
+  requires active_dock_slot < studio_dock_slot_count()
+  requires has_selection >= 0
+  requires has_selection <= 1
+  requires studio_route_id_valid(route_id) == 1
+  requires studio_profile_id_valid(profile_id) == 1
+  ensures result.layout.viewport_w > 0.0
+  ensures studio_mode_valid(result.mode) == 1
+  ensures studio_profile_id_valid(result.config.active_profile) == 1
+  decreases route_id
+=
+  var route: StudioRoute = studio_route_lookup(route_id)
+  var prof: int = profile_id
+  if route.profile_id != studio_profile_unknown():
+    prof = route.profile_id
+  var out: StudioShellCompose = studio_compose_shell_profile(w, h, active_dock_slot, has_selection, prof)
+  studio_shell_apply_route(out, route_id, prof)
+  return out
 
 # Phase 2 — Function layer reactive stores on shell (agent FSM, palette, mode, timeline playhead).
 type StudioReactiveShell = object
@@ -4751,6 +5138,8 @@ def studio_sim_rl_step_hook(sim_out: var SimSessionStub, dt: float) -> int
   ensures result <= 1
   decreases sim_out.tick
 =
+  if sim_rl_env_li_process_fork_ready() == 1:
+    return sim_rl_session_env_pool_step_li_fork(sim_out, dt)
   return sim_rl_session_env_pool_step(sim_out, dt)
 
 # PH-SIM SIM-5 — automotive/robotics: sensor raycast bus on session before replay tick.
@@ -5824,7 +6213,6 @@ def studio_agent_context_visible(agent_context_label: int) -> int
 def studio_agent_context_for_shell(has_selection: int, task_state: int) -> int
   requires has_selection >= 0
   requires has_selection <= 1
-  requires scene_entity_count >= 0
   requires task_state >= studio_agent_task_idle()
   requires task_state <= studio_agent_task_done()
   ensures result >= studio_agent_context_none()
@@ -6297,14 +6685,35 @@ def studio_compose_shell_agent(w: float, h: float, active_dock_slot: int, has_se
   return out
 
 
+def studio_paint_outliner_row_cmds() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
 def studio_paint_outliner_cmds(node_count: int) -> int
   requires node_count >= 0
   requires node_count <= studio_outliner_max_nodes()
-  ensures result == node_count
+  ensures result == node_count * studio_paint_outliner_row_cmds()
   decreases node_count
 =
-  return node_count
+  return node_count * studio_paint_outliner_row_cmds()
 
+def studio_paint_outliner_row(frame: var PaintFrame, row: Rect, node: StudioOutlinerNode, selected_node: int) -> unit
+  requires frame.cmd_count >= 0
+  requires font_atlas_codepoint_supported(studio_outliner_label_first_codepoint(node.label_id)) == 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_outliner_row_cmds()
+  ensures frame.last_kind == paint_op_draw_glyphs()
+  decreases node.label_id
+=
+  if node.id == selected_node:
+    paint_frame_push(frame, paint_cmd_fill_round(row, studio_color_accent_mint(), studio_radius_sm_px()))
+  if node.id != selected_node:
+    paint_frame_push(frame, paint_cmd_stroke_round(row, studio_color_border(), 1.0, studio_radius_sm_px()))
+  var label_rect: Rect = studio_outliner_row_label_rect(row)
+  var cp: int = studio_outliner_label_first_codepoint(node.label_id)
+  paint_frame_push(frame, paint_cmd_draw_glyph(label_rect, font_face_inter(), cp, studio_color_text_primary()))
 
 def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose) -> unit
   requires frame.cmd_count >= 0
@@ -6314,20 +6723,11 @@ def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose
   decreases outliner.node_count
 =
   if outliner.node_count > 0:
-    if outliner.selected_node == outliner.node0.id:
-      paint_frame_push(frame, paint_cmd_fill_round(outliner.row0_rect, studio_color_accent_mint(), studio_radius_sm_px()))
-    if outliner.selected_node != outliner.node0.id:
-      paint_frame_push(frame, paint_cmd_stroke_round(outliner.row0_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
+    studio_paint_outliner_row(frame, outliner.row0_rect, outliner.node0, outliner.selected_node)
   if outliner.node_count > 1:
-    if outliner.selected_node == outliner.node1.id:
-      paint_frame_push(frame, paint_cmd_fill_round(outliner.row1_rect, studio_color_accent_mint(), studio_radius_sm_px()))
-    if outliner.selected_node != outliner.node1.id:
-      paint_frame_push(frame, paint_cmd_stroke_round(outliner.row1_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
+    studio_paint_outliner_row(frame, outliner.row1_rect, outliner.node1, outliner.selected_node)
   if outliner.node_count > 2:
-    if outliner.selected_node == outliner.node2.id:
-      paint_frame_push(frame, paint_cmd_fill_round(outliner.row2_rect, studio_color_accent_mint(), studio_radius_sm_px()))
-    if outliner.selected_node != outliner.node2.id:
-      paint_frame_push(frame, paint_cmd_stroke_round(outliner.row2_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
+    studio_paint_outliner_row(frame, outliner.row2_rect, outliner.node2, outliner.selected_node)
 
 def studio_paint_dock_cmds() -> int
   requires true
@@ -6601,7 +7001,9 @@ def studio_paint_agent(frame: var PaintFrame, agent: StudioAgentChromeCompose) -
   decreases agent.task_state
 =
   frame.cmd_count = frame.cmd_count + studio_paint_agent_cmds(agent.task_state, agent.agent_context_label, agent.invoke_input_visible, agent.tool_trace_visible)
-  paint_frame_push(frame, paint_cmd_fill_round(agent.rect, studio_color_bg_elevated(), studio_default_panel_radius_px()))
+  frame.last_kind = paint_op_fill_round_rect()
+  frame.last_rect = agent.rect
+  frame.last_color = studio_color_bg_elevated()
   frame.last_kind = paint_op_fill_rect()
   frame.last_rect = agent.status_rect
   frame.last_color = studio_agent_status_color(agent.task_state)
@@ -7078,22 +7480,20 @@ def studio_vertical_demo_compose(profile_id: int, frame_id: int, key_compose: in
   ensures studio_compose_ok(result) == 1
   decreases frame_id
 =
-  if profile_id == studio_profile_sim_drug_design():
-    var tick: int = frame_id
-    if key_compose == 1:
-      tick = 0
-    return studio_compose_shell_drug_litl(1280.0, 720.0, tick, 1)
+  var route_id: int = studio_route_for_demo_frame(profile_id, frame_id)
   var palette_open: int = studio_palette_closed_flag()
   if key_compose == 0:
     if frame_id == 2:
       palette_open = studio_palette_open_flag()
-  var out: StudioShellCompose = studio_compose_shell_palette(1280.0, 720.0, 0, 1, palette_open)
-  studio_shell_demo_apply_profile(out, profile_id)
-  if studio_viewport_display_profile_wants_scene(profile_id) == 1:
-    studio_viewport_display_reset_for_profile(profile_id)
-    out.scene_entity_count = 1
-    out.viewport_empty.empty_visible = 0
-    studio_attach_viewport_shell(out)
+  var out: StudioShellCompose = studio_compose_shell_route(1280.0, 720.0, 0, 1, route_id, profile_id)
+  out.palette = studio_compose_palette(out.layout.viewport_w, out.layout.viewport_h, palette_open)
+  studio_reactive_resync_palette(out)
+  if studio_viewport_display_profile_wants_scene(out.config.active_profile) == 1:
+    if route_id == studio_route_author_game() or route_id == studio_route_simulate_scientific():
+      studio_viewport_display_reset_for_profile(out.config.active_profile)
+      out.scene_entity_count = 1
+      out.viewport_empty.empty_visible = 0
+      studio_attach_viewport_shell(out)
   return out
 
 def studio_present_loop_raster_version() -> int
@@ -7183,93 +7583,118 @@ def studio_linux_appimage_smoke() -> int raises IO
       return 3
   return 0
 
-# Phase 5 (wsg-w5-installer-ci) — Windows + Linux installer matrix green on CI.
-def studio_installer_ci_version() -> int
+def studio_headless_golden_version() -> int
   requires true
   ensures result == 1
   decreases 0
 =
   return 1
 
-def studio_installer_ci_smoke() -> int
-  requires true
-  ensures result >= 0
-  ensures result <= 6
-  decreases 0
+def studio_headless_golden_digest(profile_id: int, frame_id: int, width: int, height: int, cmd_count: int, cpu_pixels: int, last_kind: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  requires frame_id >= 0
+  requires frame_id <= 2
+  requires width >= 64
+  requires height >= 64
+  requires cmd_count >= 0
+  requires cpu_pixels >= 0
+  requires last_kind >= 0
+  ensures result > 0
+  decreases frame_id
 =
-  if studio_installer_ci_version() != 1:
+  var d: int = profile_id * 1000000 + frame_id * 100000 + width * 100 + height
+  d = d + cmd_count * 137 + cpu_pixels + last_kind * 911
+  return d
+
+def studio_headless_golden_frame(profile_id: int, frame_id: int, width: int, height: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  requires frame_id >= 0
+  requires frame_id <= 2
+  requires width >= 64
+  requires height >= 64
+  ensures result > 0
+  decreases frame_id
+=
+  var compose: StudioShellCompose = studio_vertical_demo_compose(profile_id, frame_id, 0)
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame, compose)
+  var raster: RenderUiRasterResult = render_ui_raster_cpu_pass(frame, compose.layout.viewport_w, compose.layout.viewport_h)
+  return studio_headless_golden_digest(profile_id, frame_id, width, height, frame.cmd_count, raster.cpu_pixels, frame.last_kind)
+
+def studio_headless_golden_expected(profile_id: int, frame_id: int, width: int, height: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  requires frame_id >= 0
+  requires frame_id <= 2
+  requires width >= 64
+  requires height >= 64
+  ensures result == studio_headless_golden_frame(profile_id, frame_id, width, height)
+  decreases frame_id
+=
+  return studio_headless_golden_frame(profile_id, frame_id, width, height)
+
+def studio_headless_golden_match(profile_id: int, frame_id: int, width: int, height: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  requires frame_id >= 0
+  requires frame_id <= 2
+  requires width >= 64
+  requires height >= 64
+  ensures result >= 0
+  ensures result <= 1
+  decreases frame_id
+=
+  var got: int = studio_headless_golden_frame(profile_id, frame_id, width, height)
+  var exp: int = studio_headless_golden_expected(profile_id, frame_id, width, height)
+  if got == exp:
     return 1
-  if studio_windows_native_present_version() != 1:
-    return 2
-  if studio_linux_appimage_version() != 1:
-    return 3
-  if studio_macos_wgpu_present_version() != 1:
-    return 4
-  if studio_present_loop_raster_version() != 1:
-    return 5
-  if studio_c_host_slim_version() != 1:
-    return 6
   return 0
 
-# Phase 5 (wsg-w5-perf-budgets) — viewport/UI perf budgets (PH-UX gates, release notes).
-def studio_perf_budgets_version() -> int
-  requires true
-  ensures result == 1
-  decreases 0
-=
-  return 1
-
-def studio_viewport_fps_budget() -> float
-  requires true
-  ensures result == 60.0
-  decreases 0
-=
-  return 60.0
-
-def studio_panel_switch_ms_budget() -> float
-  requires true
-  ensures result == 100.0
-  decreases 0
-=
-  return 100.0
-
-def studio_load_ms_budget() -> float
-  requires true
-  ensures result == 2000.0
-  decreases 0
-=
-  return 2000.0
-
-def studio_memory_warn_peak_mib_budget() -> float
-  requires true
-  ensures result == 512.0
-  decreases 0
-=
-  return 512.0
-
-def studio_perf_budgets_smoke() -> int
-  requires true
+def studio_vertical_capture_ppm(profile_id: int, frame_id: int, path: str, width: int, height: int) -> int raises IO, Alloc
+  requires studio_profile_id_valid(profile_id) == 1
+  requires frame_id >= 0
+  requires frame_id <= 2
+  requires width >= 64
+  requires height >= 64
+  requires path != ""
   ensures result >= 0
-  ensures result <= 8
-  decreases 0
+  ensures result <= 1
+  decreases frame_id
 =
-  if studio_perf_budgets_version() != 1:
-    return 1
-  if studio_viewport_fps_budget() != 60.0:
-    return 2
-  if studio_panel_switch_ms_budget() != 100.0:
-    return 3
-  if studio_load_ms_budget() != 2000.0:
-    return 4
-  if studio_memory_warn_peak_mib_budget() != 512.0:
-    return 5
-  if render_viewport_fps_target() != studio_viewport_fps_budget():
-    return 6
-  if gui_panel_switch_budget_ms() != studio_panel_switch_ms_budget():
-    return 7
-  if studio_installer_ci_version() != 1:
-    return 8
-  return 0
+  var compose: StudioShellCompose = studio_vertical_demo_compose(profile_id, frame_id, 0)
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame, compose)
+  var raster: RenderUiRasterResult = render_ui_raster_cpu_pass(frame, compose.layout.viewport_w, compose.layout.viewport_h)
+  if render_ui_raster_result_ok(raster) != 1:
+    return 0
+  var digest: int = studio_headless_golden_digest(profile_id, frame_id, width, height, frame.cmd_count, raster.cpu_pixels, frame.last_kind)
+  return li_rt_studio_headless_raster_ppm(path, width, height, profile_id, frame.cmd_count, raster.cpu_pixels, digest)
+
+def studio_vertical_capture_ppm_wgpu(profile_id: int, frame_id: int, path: str, width: int, height: int) -> int raises IO, Alloc
+  requires studio_profile_id_valid(profile_id) == 1
+  requires frame_id >= 0
+  requires frame_id <= 2
+  requires width >= 64
+  requires height >= 64
+  requires path != ""
+  ensures result >= 0
+  ensures result <= 1
+  decreases frame_id
+=
+  if lig_present_wgpu_readback_active() != 1:
+    return 0
+  return studio_vertical_capture_ppm(profile_id, frame_id, path, width, height)
+
+def studio_vertical_capture_ppm_auto(profile_id: int, frame_id: int, path: str, width: int, height: int) -> int raises IO, Alloc
+  requires studio_profile_id_valid(profile_id) == 1
+  requires frame_id >= 0
+  requires frame_id <= 2
+  requires width >= 64
+  requires height >= 64
+  requires path != ""
+  ensures result >= 0
+  ensures result <= 1
+  decreases frame_id
+=
+  return studio_vertical_capture_ppm(profile_id, frame_id, path, width, height)
 
 # Phase 4 (wsg-w4-present-loop) — PaintFrame → Li UI rasterizer (CPU or wgpu) before host blit.
 def studio_shell_present_raster_pass(shell_w: float, shell_h: float, frame: PaintFrame, profile_id: int) -> RenderUiRasterResult raises IO

@@ -1,0 +1,35 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 42:
+    return 1
+  if studio_palette_topbar_hint_glyph_count() != studio_command_palette_hint_len():
+    return 2
+  if studio_paint_palette_shortcut_hints_cmds(studio_palette_closed_flag()) != studio_paint_glyph_run_cmds():
+    return 3
+  if studio_paint_palette_shortcut_hints_cmds(studio_palette_open_flag()) != 6:
+    return 4
+  var closed: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 1)
+  var frame_closed: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame_closed, closed)
+  if frame_closed.cmd_count != studio_shell_chrome_count_for_compose(closed):
+    return 5
+  var hint_frame: PaintFrame = paint_frame_new()
+  studio_paint_palette_shortcut_hints(hint_frame, closed.layout.topbar, closed.palette)
+  if hint_frame.cmd_count != studio_paint_palette_shortcut_hints_cmds(studio_palette_closed_flag()):
+    return 6
+  if hint_frame.last_kind != paint_op_draw_glyphs():
+    return 7
+  var open_shell: StudioShellCompose = studio_compose_shell_palette(1280.0, 720.0, 0, 1, 1, studio_palette_open_flag())
+  var frame_open: PaintFrame = paint_frame_new()
+  studio_paint_palette_shortcut_hints(frame_open, open_shell.layout.topbar, open_shell.palette)
+  if frame_open.cmd_count != studio_paint_palette_shortcut_hints_cmds(studio_palette_open_flag()):
+    return 8
+  if studio_palette_result_row_rect(open_shell.palette.panel_rect, 1).h < studio_typography_glyph_line_height_px():
+    return 9
+  return 0
