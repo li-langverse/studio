@@ -1,0 +1,38 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 45:
+    return 1
+  if studio_spacing_unit_px() != 4.0:
+    return 2
+  if studio_spacing_rhythm_px() != 8.0:
+    return 3
+  if studio_outliner_row_gap_px() != studio_spacing_unit_px():
+    return 4
+  if studio_paint_panel_shadow_cmds() != 1:
+    return 5
+  if studio_paint_elevated_panel_shadow_cmds() != 3:
+    return 6
+  if studio_paint_dock_cmds() != 14:
+    return 7
+  if studio_paint_timeline_cmds() != 7:
+    return 8
+  if studio_paint_topbar_profile_cmds() != 4:
+    return 9
+  var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 1)
+  var dock_frame: PaintFrame = paint_frame_new()
+  studio_paint_dock(dock_frame, shell.dock, shell.hover)
+  if dock_frame.cmd_count != studio_paint_dock_cmds():
+    return 10
+  if dock_frame.last_kind != paint_op_draw_glyphs():
+    return 11
+  var out_frame: PaintFrame = paint_frame_new()
+  studio_paint_outliner(out_frame, shell.outliner, shell.hover)
+  if out_frame.cmd_count != studio_paint_outliner_cmds(shell.outliner.node_count):
+    return 12
+  return 0
