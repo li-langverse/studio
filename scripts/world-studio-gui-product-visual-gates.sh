@@ -95,10 +95,11 @@ build_capture_bins() {
   local lic_pkg="$LIC_ROOT/packages/li-studio"
   local src_640="$STUDIO_ROOT/src/capture_vertical_640x360.li"
   local src_720="$STUDIO_ROOT/src/capture_vertical_1280x720.li"
-  if [[ -f "$lic_pkg/src/capture_vertical_640x360.li" ]]; then
+  # Studio repo capture harness is canonical for product-visual gates (lic copy may carry debug exit codes).
+  if [[ ! -f "$src_640" && -f "$lic_pkg/src/capture_vertical_640x360.li" ]]; then
     src_640="$lic_pkg/src/capture_vertical_640x360.li"
   fi
-  if [[ -f "$lic_pkg/src/capture_vertical_1280x720.li" ]]; then
+  if [[ ! -f "$src_720" && -f "$lic_pkg/src/capture_vertical_1280x720.li" ]]; then
     src_720="$lic_pkg/src/capture_vertical_1280x720.li"
   fi
   if [[ ! -x "$CAP_640" ]]; then
