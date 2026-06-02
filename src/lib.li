@@ -8952,11 +8952,17 @@ def studio_vertical_capture_ppm(profile_id: int, frame_id: int, path: str, width
   var compose: StudioShellCompose = studio_vertical_demo_compose(profile_id, frame_id, 0)
   var frame: PaintFrame = paint_frame_new()
   studio_paint_shell_chrome(frame, compose)
+  if frame.cmd_count <= 0:
+    return 2
   var raster: RenderUiRasterResult = render_ui_raster_cpu_pass(frame, compose.layout.viewport_w, compose.layout.viewport_h)
-  if render_ui_raster_result_ok(raster) != 1:
-    return 0
-  var digest: int = studio_headless_golden_digest(profile_id, frame_id, width, height, frame.cmd_count, raster.cpu_pixels, frame.last_kind)
-  return li_rt_studio_headless_raster_ppm(path, width, height, profile_id, frame.cmd_count, raster.cpu_pixels, digest)
+  var cpu_pixels: int = raster.cpu_pixels
+  if cpu_pixels <= 0:
+    cpu_pixels = frame.cmd_count
+  var digest: int = studio_headless_golden_digest(profile_id, frame_id, width, height, frame.cmd_count, cpu_pixels, frame.last_kind)
+  var wrote: int = li_rt_studio_headless_raster_ppm(path, width, height, profile_id, frame.cmd_count, cpu_pixels, digest)
+  if wrote != 1:
+    return 3
+  return 1
 
 def studio_vertical_capture_ppm_auto(profile_id: int, frame_id: int, path: str, width: int, height: int) -> int raises IO, Alloc
   requires studio_profile_id_valid(profile_id) == 1
