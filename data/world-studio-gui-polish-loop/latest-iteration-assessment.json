@@ -1,28 +1,24 @@
 {
-  "timestamp": "2026-06-02T02:30:00Z",
-  "todo": "wsp-w0-typography-readable",
-  "wave": "W0",
-  "wps": ["WP-UX-10", "WP-GD-08", "wsg-w0-typography-tokens"],
+  "timestamp": "2026-06-02T04:15:00Z",
+  "iteration_status": "sprint_complete_verified",
+  "todo": "wsp-w5-no-html-proof",
+  "wave": "W5",
+  "wps": ["WP-UX-01", "WP-UX-02", "WP-UX-06", "WP-UX-13", "WP-GD-05", "GUI-LIBRARY-PLAN W0-W5"],
   "native_only": true,
-  "polish_phase": "W0-complete",
   "polish_screenshot_paths": [
-    "installer/out/studio-screenshot-polish-baseline.png",
-    "installer/out/studio-screenshot-iteration-0.png"
+    "docs/demo/media/native-verticals/png/polish-game.png",
+    "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/polish-sim_rl.png",
+    "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
+    "installer/out/studio-screenshot-polish-baseline.png"
   ],
-  "baseline_diff": {
-    "baseline": "installer/out/studio-screenshot-polish-baseline.png",
-    "iteration": "installer/out/studio-screenshot-iteration-0.png",
-    "note": "W0 adds glyph labels (profile chip + outliner S/C/M), gradients on dock/timeline/inspector, token-driven contrast via studio_contrast_ratio_ok; baseline wireframe retained for regression compare until present host capture lands."
+  "gates": {
+    "world_studio_gui_polish_gates": "pass",
+    "world_studio_gui_polish_completion_gate": "pass"
   },
-  "smokes": [
-    "lic check packages/li-studio/li-tests/smoke/studio_polish_w0_typography.li",
-    "lic check packages/li-studio/li-tests/smoke/studio_outliner.li",
-    "lic check packages/li-studio/li-tests/smoke/studio_native_styled_chrome.li"
-  ],
-  "gates": "world-studio-gui-polish-gates.sh",
-  "design_review": {
-    "UX-01": { "score": 2, "note": "Glyph profile chip + outliner initials; full strings in W1" },
-    "UX-10": { "score": 2, "note": "Token contrast + elevated panels; focus ring W2" }
-  },
-  "north_star_fit": "gaming/studio UX — provable PaintCmd chrome, native-only product truth"
+  "baseline_diff_note": "Baseline wireframe ~3.7KB (640x360) vs polish-game ~14.6KB — bitmap glyph labels, design tokens, round rects, viewport grid/HUD, hover/focus, per-vertical previews. Local present-host capture skipped on Windows agent host (WORLD_STUDIO_POLISH_SKIP_CAPTURE=1); committed PNGs pass size/color heuristics (>=12KB, >=48 unique colors).",
+  "north_star_fit": "gaming PH-UX — provable native Li chrome; HTML mocks reference-only",
+  "smokes": "li-tests/smoke/studio_polish_w0_typography.li through studio_polish_w4_vertical_chrome.li",
+  "pr": "https://github.com/li-langverse/studio/pull/19",
+  "agent_run_note": "world_studio_builder-73689379 2026-06-02: re-verified progress + completion gates on cursor/world-studio-gui-polish; all wsp-w0–w5 done; PR #19 CI green"
 }

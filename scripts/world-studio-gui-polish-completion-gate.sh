@@ -35,7 +35,7 @@ then
   exit 1
 fi
 
-"$ROOT/scripts/world-studio-gui-polish-gates.sh"
+bash "$ROOT/scripts/world-studio-gui-polish-gates.sh"
 
 required=(
   "polish-game-1280x720.png"
@@ -58,7 +58,9 @@ def png_unique_colors(path: Path) -> int:
     if data[:8] != b"\x89PNG\r\n\x1a\n":
         return 0
     pos = 8
-    colors: set[tuple[int, int, int]] = set()
+    w = h = 0
+    bit_depth = color_type = 0
+    idat: list[bytes] = []
     while pos < len(data):
         if pos + 8 > len(data):
             break
@@ -68,21 +70,31 @@ def png_unique_colors(path: Path) -> int:
         pos += 12 + length
         if ctype == b"IHDR" and length >= 13:
             w, h = struct.unpack(">II", chunk[:8])
-            if w * h > 4_000_000:
-                return min_colors + 1
-        if ctype == b"IDAT":
-            try:
-                raw = zlib.decompress(chunk)
-            except zlib.error:
-                continue
-            stride = len(raw) // max(h, 1) if "h" in dir() else 0
-            if stride >= 4:
-                step = max(1, stride // 4)
-                for i in range(0, min(len(raw), 200_000), step * 17):
-                    if i + 2 < len(raw):
-                        colors.add((raw[i], raw[i + 1], raw[i + 2]))
-            if len(colors) >= min_colors:
-                return len(colors)
+            bit_depth = chunk[8]
+            color_type = chunk[9]
+        elif ctype == b"IDAT":
+            idat.append(chunk)
+    if not idat or w <= 0 or h <= 0 or bit_depth != 8 or color_type != 2:
+        return 0
+    if w * h > 4_000_000:
+        return min_colors + 1
+    try:
+        raw = zlib.decompress(b"".join(idat))
+    except zlib.error:
+        return 0
+    colors: set[tuple[int, int, int]] = set()
+    row_bytes = 1 + w * 3
+    off = 0
+    for _y in range(h):
+        if off + row_bytes > len(raw):
+            break
+        off += 1  # PNG filter byte per row
+        for _x in range(w):
+            if off + 2 < len(raw):
+                colors.add((raw[off], raw[off + 1], raw[off + 2]))
+            off += 3
+        if len(colors) >= min_colors:
+            return len(colors)
     return len(colors)
 
 missing = []
