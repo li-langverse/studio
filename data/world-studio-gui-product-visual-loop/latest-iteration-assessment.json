@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-02T23:45:00.000000+00:00",
+  "timestamp": "2026-06-02T21:30:00.000000+00:00",
   "native_only": true,
   "todo": "wsv-w5-acceptance-screenshots",
   "wps": [
@@ -7,16 +7,17 @@
     "WP-UX-05"
   ],
   "summary": [
-    "W5 acceptance: Li headless capture API (studio_vertical_capture_ppm_auto) wired in studio package with li_rt_studio_headless_raster_ppm.",
-    "Progress gate captures/seeds product-visual PNGs for all seven runtime verticals plus game 1280x720.",
-    "Completion gate requires eight acceptance PNGs; plan loop P5 marked DONE.",
-    "li_std_studio_version 49; smoke studio_product_visual_w5_acceptance.li."
+    "Product-visual sprint complete: all wsv-w0..w5 todos done; progress + completion gates PASS.",
+    "Gates build capture binaries from LIC_ROOT so import studio resolves (fixes standalone lic build failure).",
+    "Eight acceptance PNGs committed under docs/demo/media/native-verticals/png/product-visual-*.png.",
+    "PR #66 tracks cursor/world-studio-gui-product-visual for review."
   ],
   "evidence": {
     "product_visual_gates": "scripts/world-studio-gui-product-visual-gates.sh",
     "product_visual_completion": "scripts/world-studio-gui-product-visual-completion-gate.sh",
     "product_visual_loop": "docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md",
-    "smoke": "li-tests/smoke/studio_product_visual_w5_acceptance.li"
+    "smoke": "li-tests/smoke/studio_product_visual_w5_acceptance.li",
+    "pr": "https://github.com/li-langverse/studio/pull/66"
   },
   "product_visual_phase": "P5",
   "captures": {
@@ -31,5 +32,13 @@
       "sim_scientific",
       "sim_drug_design"
     ]
+  },
+  "north_star_fit": {
+    "domain": "gaming / native studio UX",
+    "ph_ids": [
+      "PH-GD",
+      "PH-UX"
+    ],
+    "pillar": "proof (lic gates + native raster truth) before perf polish"
   }
 }

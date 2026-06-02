@@ -70,6 +70,22 @@ resolve_lic_bin() {
   return 1
 }
 
+lic_build_capture_src() {
+  local lic_bin="$1"
+  local src_abs="$2"
+  local out="$3"
+  local rel=""
+  if [[ ! -f "$src_abs" ]]; then
+    return 1
+  fi
+  rel="$(realpath --relative-to="$LIC_ROOT" "$src_abs" 2>/dev/null || true)"
+  if [[ -z "$rel" || "$rel" == "$src_abs" ]]; then
+    rel="$src_abs"
+  fi
+  # import studio resolves via lic workspace packages/li.toml — build from LIC_ROOT, not studio cwd.
+  (cd "$LIC_ROOT" && "$lic_bin" build --allow-open-vc --no-lean-verify "$rel" -o "$out")
+}
+
 build_capture_bins() {
   local lic_bin=""
   if ! lic_bin="$(resolve_lic_bin)"; then
@@ -77,23 +93,19 @@ build_capture_bins() {
     return 1
   fi
   local lic_pkg="$LIC_ROOT/packages/li-studio"
+  local src_640="$STUDIO_ROOT/src/capture_vertical_640x360.li"
+  local src_720="$STUDIO_ROOT/src/capture_vertical_1280x720.li"
+  if [[ -f "$lic_pkg/src/capture_vertical_640x360.li" ]]; then
+    src_640="$lic_pkg/src/capture_vertical_640x360.li"
+  fi
+  if [[ -f "$lic_pkg/src/capture_vertical_1280x720.li" ]]; then
+    src_720="$lic_pkg/src/capture_vertical_1280x720.li"
+  fi
   if [[ ! -x "$CAP_640" ]]; then
-    if [[ -f "$lic_pkg/src/capture_vertical_640x360.li" ]]; then
-      (cd "$lic_pkg" && "$lic_bin" build --allow-open-vc --no-lean-verify src/capture_vertical_640x360.li -o "$CAP_640") \
-        || return 1
-    else
-      "$lic_bin" build --allow-open-vc --no-lean-verify "$STUDIO_ROOT/src/capture_vertical_640x360.li" -o "$CAP_640" \
-        || return 1
-    fi
+    lic_build_capture_src "$lic_bin" "$src_640" "$CAP_640" || return 1
   fi
   if [[ ! -x "$CAP_720" ]]; then
-    if [[ -f "$lic_pkg/src/capture_vertical_1280x720.li" ]]; then
-      (cd "$lic_pkg" && "$lic_bin" build --allow-open-vc --no-lean-verify src/capture_vertical_1280x720.li -o "$CAP_720") \
-        || return 1
-    else
-      "$lic_bin" build --allow-open-vc --no-lean-verify "$STUDIO_ROOT/src/capture_vertical_1280x720.li" -o "$CAP_720" \
-        || return 1
-    fi
+    lic_build_capture_src "$lic_bin" "$src_720" "$CAP_720" || return 1
   fi
   return 0
 }
