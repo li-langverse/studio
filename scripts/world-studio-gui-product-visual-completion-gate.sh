@@ -22,11 +22,19 @@ import re, sys
 from pathlib import Path
 text = Path(sys.argv[1]).read_text(encoding="utf-8")
 pending = []
+matched = 0
 for m in re.finditer(
-    r"- id: (wsv-w\\S+)\\n\\s+content: [^\\n]+\\n\\s+status: (\\w+)", text
+    r"- id: (wsv-w\S+)\n\s+content: [^\n]+\n\s+status: (\w+)", text
 ):
+    matched += 1
     if m.group(2) != "done":
         pending.append(m.group(1))
+if matched == 0:
+    print(
+        "world-studio-gui-product-visual completion gate: no wsv-w* todos matched in plan YAML",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 if pending:
     print("world-studio-gui-product-visual completion gate: pending todos:", ", ".join(pending), file=sys.stderr)
     sys.exit(1)
