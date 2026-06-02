@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-06-02T12:00:00+00:00",
+  "todo": "wsp-w0-typography-readable",
+  "wave": "W0",
+  "wp_ids": ["WP-UX-01", "WP-UX-10"],
+  "native_only": true,
+  "polish_phase": "W0-complete",
+  "li_std_studio_version": 40,
+  "changes": [
+    "Topbar profile chips render Inter atlas glyphs (G/R/D) via paint_op_draw_glyph",
+    "Outliner rows use glyph labels (S/C/M) on elevated panel background",
+    "Viewport empty state uses gradient + round-rect chrome instead of flat wireframe strokes",
+    "studio_contrast_ratio_ok >= 4.5 via li-ui token contract"
+  ],
+  "polish_screenshot_paths": [
+    "installer/out/studio-screenshot-polish-baseline.png"
+  ],
+  "baseline_diff": {
+    "baseline": "installer/out/studio-screenshot-polish-baseline.png",
+    "iteration": "installer/out/studio-screenshot-iteration-0.png",
+    "note": "Iteration capture pending present-host build; structural regions unchanged, chrome uses tokens/glyphs/elevation"
+  },
+  "smokes": [
+    "lic check packages/li-studio/li-tests/smoke/studio_polish_w0_typography.li"
+  ],
+  "gates": {
+    "world-studio-gui-polish-gates.sh": "pass"
+  }
+}

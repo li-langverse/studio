@@ -4,6 +4,7 @@
 
 ### Added
 
+- **wsp-w0 GUI polish visual baseline** — profile/outliner `paint_op_draw_glyph` labels, elevated outliner panel, round-rect viewport empty state; `li_std_studio_version` → 40; smoke `studio_polish_w0_typography.li` (lic).
 - **wsg-w5-perf-budgets PH-UX perf budgets** — release notes `docs/release-notes/2026-06-01-wsg-w5-perf-budgets.md`, `benchmarks/competitive/studio-ui.toml` v2, `studio_perf_budgets_*` API + smoke `studio_perf_budgets.li`, `verify-perf-budgets.py`; `li_std_studio_version` → 39.
 - **wsg-w5-macos-wgpu macOS Metal wgpu surface** — `studio_macos_wgpu_present_version`, `studio_macos_wgpu_surface_smoke`; macOS build/launch scripts, `lig_macos_wgpu_surface_probe.c`, CI `macos-wgpu-surface-smoke` on `macos-14`; smoke `studio_macos_wgpu_present.li`.
 - **WP-PUB-03 publish_bundle reproducibility manifest** — `studio_publish_bundle`, `studio_publish_bundle_three_click_flow` (Select → lic build proof → Export zip manifest); MCP `publish_bundle` writes manifest contract after proof pass; smoke `studio_publish_bundle.li`; `li_std_studio_version` → 31.
