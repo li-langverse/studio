@@ -26,6 +26,8 @@ def main() -> int
   var frame: PaintFrame = paint_frame_new()
   var topbar0: Rect = compose0.layout.topbar
   studio_paint_topbar_profile(frame, topbar0, prof0)
-  if frame.last_rect.h != studio_profile_paint_tag_h(studio_profile_sim_rl()):
+  if frame.last_kind != paint_op_draw_glyphs():
     return 7
+  if frame.last_rect.h != studio_typography_glyph_line_height_px():
+    return 8
   return 0
