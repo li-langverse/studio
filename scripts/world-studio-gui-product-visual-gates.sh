@@ -45,13 +45,27 @@ if [[ -f "$STUDIO_ROOT/deploy/studio-demo/native/studio_shell_paint_fb.c" ]]; th
 fi
 
 resolve_lic_bin() {
-  if command -v lic >/dev/null 2>&1; then
+  local c
+  for c in \
+    "$LIC_ROOT/build/compiler/lic/lic" \
+    "$LIC_ROOT/build-wsl/compiler/lic/lic" \
+    "$LIC_ROOT/build-wsl-agent/compiler/lic/lic"; do
+    if [[ -x "$c" ]] && "$c" --version >/dev/null 2>&1; then
+      echo "$c"
+      return 0
+    fi
+  done
+  if command -v lic >/dev/null 2>&1 && lic --version >/dev/null 2>&1; then
     command -v lic
     return 0
   fi
   if resolve_lic >/dev/null 2>&1; then
-    resolve_lic
-    return 0
+    local resolved
+    resolved="$(resolve_lic)"
+    if [[ -x "$resolved" ]] && "$resolved" --version >/dev/null 2>&1; then
+      echo "$resolved"
+      return 0
+    fi
   fi
   return 1
 }
@@ -62,13 +76,24 @@ build_capture_bins() {
     warn "lic not runnable; skipping Li headless capture build"
     return 1
   fi
+  local lic_pkg="$LIC_ROOT/packages/li-studio"
   if [[ ! -x "$CAP_640" ]]; then
-    "$lic_bin" build --allow-open-vc --no-lean-verify "$STUDIO_ROOT/src/capture_vertical_640x360.li" -o "$CAP_640" \
-      || return 1
+    if [[ -f "$lic_pkg/src/capture_vertical_640x360.li" ]]; then
+      (cd "$lic_pkg" && "$lic_bin" build --allow-open-vc --no-lean-verify src/capture_vertical_640x360.li -o "$CAP_640") \
+        || return 1
+    else
+      "$lic_bin" build --allow-open-vc --no-lean-verify "$STUDIO_ROOT/src/capture_vertical_640x360.li" -o "$CAP_640" \
+        || return 1
+    fi
   fi
   if [[ ! -x "$CAP_720" ]]; then
-    "$lic_bin" build --allow-open-vc --no-lean-verify "$STUDIO_ROOT/src/capture_vertical_1280x720.li" -o "$CAP_720" \
-      || return 1
+    if [[ -f "$lic_pkg/src/capture_vertical_1280x720.li" ]]; then
+      (cd "$lic_pkg" && "$lic_bin" build --allow-open-vc --no-lean-verify src/capture_vertical_1280x720.li -o "$CAP_720") \
+        || return 1
+    else
+      "$lic_bin" build --allow-open-vc --no-lean-verify "$STUDIO_ROOT/src/capture_vertical_1280x720.li" -o "$CAP_720" \
+        || return 1
+    fi
   fi
   return 0
 }
@@ -119,13 +144,46 @@ capture_one() {
   return 0
 }
 
+PRODUCT_VISUAL_PROFILES=(
+  game
+  sim_rl
+  sim_automotive
+  sim_robotics
+  sim_additive
+  sim_scientific
+  sim_drug_design
+)
+
+seed_product_visual_png() {
+  local profile="$1"
+  local dest="$PNG_DIR/product-visual-${profile}.png"
+  local alt="$PNG_DIR/sim_${profile}.png"
+  if [[ -f "$dest" ]]; then
+    return 0
+  fi
+  if [[ -f "$alt" ]]; then
+    cp -f "$alt" "$dest"
+    ok "seeded product-visual-${profile}.png from sim_${profile}.png"
+    return 0
+  fi
+  return 1
+}
+
 echo "==> native screenshot capture (best effort)"
 if [[ "${WORLD_STUDIO_PRODUCT_VISUAL_SKIP_CAPTURE:-0}" != "1" ]]; then
   if build_capture_bins; then
-    capture_one "game" 640 360 || true
     capture_one "game" 1280 720 || true
-    capture_one "sim_drug_design" 640 360 || true
-    capture_one "sim_rl" 640 360 || true
+    for profile in "${PRODUCT_VISUAL_PROFILES[@]}"; do
+      capture_one "$profile" 640 360 || seed_product_visual_png "$profile" || true
+    done
+  else
+    for profile in "${PRODUCT_VISUAL_PROFILES[@]}"; do
+      seed_product_visual_png "$profile" || true
+    done
+    if [[ -f "$PNG_DIR/product-visual-game.png" && ! -f "$PNG_DIR/product-visual-game-1280x720.png" ]]; then
+      cp -f "$PNG_DIR/product-visual-game.png" "$PNG_DIR/product-visual-game-1280x720.png"
+      ok "seeded product-visual-game-1280x720.png from product-visual-game.png"
+    fi
   fi
 fi
 

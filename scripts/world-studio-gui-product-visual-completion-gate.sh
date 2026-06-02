@@ -48,6 +48,11 @@ bash "$ROOT/scripts/world-studio-gui-product-visual-gates.sh"
 required=(
   "product-visual-game-1280x720.png"
   "product-visual-game.png"
+  "product-visual-sim_rl.png"
+  "product-visual-sim_automotive.png"
+  "product-visual-sim_robotics.png"
+  "product-visual-sim_additive.png"
+  "product-visual-sim_scientific.png"
   "product-visual-sim_drug_design.png"
 )
 

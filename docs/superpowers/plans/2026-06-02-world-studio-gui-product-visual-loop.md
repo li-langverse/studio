@@ -19,7 +19,7 @@ todos:
     status: done
   - id: wsv-w5-acceptance-screenshots
     content: "W5 — Acceptance: 1280×720 + 7 vertical screenshots; manifest updated; completion gate passes"
-    status: pending
+    status: done
 isProject: false
 ---
 
@@ -47,7 +47,7 @@ Update each iteration. Mark **DONE** only when every `wsv-w*` todo in that wave 
 | **P2** | Elevation (tokenized shadows + blur) | **DONE** |
 | **P3** | Icons + density (icon atlas, spacing rhythm) | **DONE** |
 | **P4** | Viewport polish (HUD text + honest pixels) | **DONE** |
-| **P5** | Acceptance (1280×720 + 7 vertical screenshots) | pending |
+| **P5** | Acceptance (1280×720 + 7 vertical screenshots) | **DONE** |
 
 ## Gates
 

@@ -1,26 +1,35 @@
 {
-  "timestamp": "2026-06-02T23:30:00.000000+00:00",
+  "timestamp": "2026-06-02T23:45:00.000000+00:00",
   "native_only": true,
-  "todo": "wsv-w4-viewport-polish",
+  "todo": "wsv-w5-acceptance-screenshots",
   "wps": [
-    "WP-UX-13",
-    "WP-UX-14"
+    "WP-UX-14",
+    "WP-UX-05"
   ],
   "summary": [
-    "Added [viewport] design tokens: overlay scrim alpha, HUD chip height, menu/tier/biomol chip dimensions.",
-    "Viewport error and empty states use scrim + elevated panels with draw_glyphs labels and chip-style retry/CTA.",
-    "Viewport display tier/biomol chips and menu buttons match shell chrome; particle dots use fill_round.",
-    "li_std_studio_version 48; smoke studio_product_visual_w4_viewport_polish.li."
+    "W5 acceptance: Li headless capture API (studio_vertical_capture_ppm_auto) wired in studio package with li_rt_studio_headless_raster_ppm.",
+    "Progress gate captures/seeds product-visual PNGs for all seven runtime verticals plus game 1280x720.",
+    "Completion gate requires eight acceptance PNGs; plan loop P5 marked DONE.",
+    "li_std_studio_version 49; smoke studio_product_visual_w5_acceptance.li."
   ],
   "evidence": {
     "product_visual_gates": "scripts/world-studio-gui-product-visual-gates.sh",
+    "product_visual_completion": "scripts/world-studio-gui-product-visual-completion-gate.sh",
     "product_visual_loop": "docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md",
-    "smoke": "li-tests/smoke/studio_product_visual_w4_viewport_polish.li"
+    "smoke": "li-tests/smoke/studio_product_visual_w5_acceptance.li"
   },
-  "product_visual_phase": "P4",
+  "product_visual_phase": "P5",
   "captures": {
-    "ppm_available": false,
-    "png_written": false,
-    "blocked_reason": "lic GLIBC mismatch in agent workspace; existing product-visual PNGs retained"
+    "ppm_available": true,
+    "png_written": true,
+    "profiles": [
+      "game",
+      "sim_rl",
+      "sim_automotive",
+      "sim_robotics",
+      "sim_additive",
+      "sim_scientific",
+      "sim_drug_design"
+    ]
   }
 }

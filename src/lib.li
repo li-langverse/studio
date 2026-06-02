@@ -274,6 +274,18 @@ extern proc li_rt_studio_mcp_tool_name(tool_id: int) raises IO, Alloc -> str
   ensures result != ""
   decreases tool_id
 
+# wsv-w0/w5 — Li CPU raster PPM writer (no C paint_fb mirror as product truth).
+extern proc li_rt_studio_headless_raster_ppm(path: str, width: int, height: int, profile_id: int, cmd_count: int, cpu_pixels: int, digest: int) -> int raises IO, Alloc
+  requires width >= 8
+  requires height >= 8
+  requires profile_id >= 0
+  requires cmd_count >= 0
+  requires cpu_pixels >= 0
+  requires path != ""
+  ensures result >= 0
+  ensures result <= 1
+  decreases width
+
 def studio_profile_unknown() -> int
   requires true
   ensures result == 0
@@ -3398,10 +3410,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 48
+  ensures result == 49
   decreases 0
 =
-  return 48
+  return 49
 
 def studio_shell_widget_tree_version() -> int
   requires true
@@ -8909,6 +8921,82 @@ def studio_shell_present_raster_and_blit(compose: StudioShellCompose, frame: Pai
       return 55
     return 53 + frame_id
   return 0
+
+def studio_headless_golden_digest(profile_id: int, frame_id: int, width: int, height: int, cmd_count: int, cpu_pixels: int, last_kind: int) -> int
+  requires studio_profile_id_valid(profile_id) == 1
+  requires frame_id >= 0
+  requires frame_id <= 2
+  requires width >= 64
+  requires height >= 64
+  requires cmd_count >= 0
+  requires cpu_pixels >= 0
+  requires last_kind >= 0
+  ensures result > 0
+  decreases frame_id
+=
+  var d: int = profile_id * 1000000 + frame_id * 100000 + width * 100 + height
+  d = d + cmd_count * 137 + cpu_pixels + last_kind * 911
+  return d
+
+def studio_vertical_capture_ppm(profile_id: int, frame_id: int, path: str, width: int, height: int) -> int raises IO, Alloc
+  requires studio_profile_id_valid(profile_id) == 1
+  requires frame_id >= 0
+  requires frame_id <= 2
+  requires width >= 64
+  requires height >= 64
+  requires path != ""
+  ensures result >= 0
+  ensures result <= 1
+  decreases frame_id
+=
+  var compose: StudioShellCompose = studio_vertical_demo_compose(profile_id, frame_id, 0)
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame, compose)
+  var raster: RenderUiRasterResult = render_ui_raster_cpu_pass(frame, compose.layout.viewport_w, compose.layout.viewport_h)
+  if render_ui_raster_result_ok(raster) != 1:
+    return 0
+  var digest: int = studio_headless_golden_digest(profile_id, frame_id, width, height, frame.cmd_count, raster.cpu_pixels, frame.last_kind)
+  return li_rt_studio_headless_raster_ppm(path, width, height, profile_id, frame.cmd_count, raster.cpu_pixels, digest)
+
+def studio_vertical_capture_ppm_auto(profile_id: int, frame_id: int, path: str, width: int, height: int) -> int raises IO, Alloc
+  requires studio_profile_id_valid(profile_id) == 1
+  requires frame_id >= 0
+  requires frame_id <= 2
+  requires width >= 64
+  requires height >= 64
+  requires path != ""
+  ensures result >= 0
+  ensures result <= 1
+  decreases frame_id
+=
+  return studio_vertical_capture_ppm(profile_id, frame_id, path, width, height)
+
+def studio_product_visual_acceptance_vertical_count() -> int
+  requires true
+  ensures result == 7
+  decreases 0
+=
+  return 7
+
+def studio_product_visual_acceptance_profile_id(index: int) -> int
+  requires index >= 0
+  requires index < studio_product_visual_acceptance_vertical_count()
+  ensures studio_profile_id_valid(result) == 1
+  decreases index
+=
+  if index == 0:
+    return studio_profile_game()
+  if index == 1:
+    return studio_profile_sim_rl()
+  if index == 2:
+    return studio_profile_sim_automotive()
+  if index == 3:
+    return studio_profile_sim_robotics()
+  if index == 4:
+    return studio_profile_sim_additive()
+  if index == 5:
+    return studio_profile_sim_scientific()
+  return studio_profile_sim_drug_design()
 
 def studio_vertical_demo_frame(profile_id: int, frame_id: int) -> int raises IO
   requires studio_profile_id_valid(profile_id) == 1
