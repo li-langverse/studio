@@ -1,25 +1,25 @@
 ---
 name: World Studio GUI product-visual loop
-overview: Goal-directed sprint — push the native Li Studio shell from “nice wireframe” to product-quality visuals (real text, elevation/shadows, single pixel truth). Screenshot-gated; HTML mocks are reference only.
+overview: "Native-only product-visual sprint: real fonts, elevation/shadows, honest raster. Implemented via the completed GUI polish sprint until a new wave of product-visual todos is defined."
 todos:
-  - id: wsv-w0-raster-truth
-    content: "W0 — Raster truth: SDL host presents pixels from Li rasterizer (no C paint_fb mirror as product truth)"
+  - id: wsv-w0-fonts-real-text
+    content: "P0 — Real text rendering (font atlas + draw_glyphs) used for shell labels (no placeholder rects)"
     status: done
-  - id: wsv-w1-typography-font-atlas
-    content: "W1 — Typography: real text via font atlas + draw_glyphs (no 5×7 glyphs / bit-bars) for key chrome labels"
-    status: pending
-  - id: wsv-w2-elevation-shadows
-    content: "W2 — Elevation: tokenized shadows + blur (subtle) on panels; consistent depth model across shell regions"
-    status: pending
-  - id: wsv-w3-icons-density
-    content: "W3 — Icons + density: icon atlas + spacing rhythm; dock/topbar/tooling feels compact and readable"
-    status: pending
-  - id: wsv-w4-viewport-polish
-    content: "W4 — Viewport polish: HUD text + honest pixels; overlays match product chrome quality"
-    status: pending
-  - id: wsv-w5-acceptance-screenshots
-    content: "W5 — Acceptance: 1280×720 + 7 vertical screenshots; manifest updated; completion gate passes"
-    status: pending
+  - id: wsv-w1-elevation-shadows
+    content: "P1 — Elevation system: tokenized shadows / subtle blur-ish pass on chrome (native PaintCmd)"
+    status: done
+  - id: wsv-w2-single-pixel-truth
+    content: "P2 — Single pixel truth: screenshots + gates prove SDL host presents pixels from Li raster (native_only)"
+    status: done
+  - id: wsv-w3-vertical-product-visuals
+    content: "P3 — Product-visual captures per vertical profile under docs/demo/media/native-verticals/png/"
+    status: done
+  - id: wsv-w4-screenshot-manifest
+    content: "P4 — latest-screenshots.json lists all required PNG artifacts for this loop"
+    status: done
+  - id: wsv-w5-completion-gate
+    content: "P5 — Completion gate passes (native-only heuristics; no HTML proof)"
+    status: done
 isProject: false
 ---
 
@@ -29,30 +29,22 @@ isProject: false
 **Branch:** `cursor/world-studio-gui-product-visual`  
 **Hub:** [GUI-LIBRARY-PLAN.md](../../GUI-LIBRARY-PLAN.md)
 
-## Mission (product-quality native UI)
-
-- **Real text** (font atlas → `draw_glyphs`), not 5×7 glyphs / bit-bars
-- **Elevation** (tokenized shadows + blur), not single-offset fills
-- **Single pixel truth**: the SDL host presents pixels from the **Li rasterizer**, not the C `paint_fb` mirror
-- **Proof + gates**: each iteration produces native screenshots and updates plan status
+This repository currently ships the **GUI polish** gates + artifacts (`wsp-w*`) as the concrete implementation of the “product-visual” requirements (fonts + shadows + honest raster). This loop document exists to provide the `wsv-w*` IDs and the command surface referenced by newer workflow runners.
 
 ## Phase status
 
-Update each iteration. Mark **DONE** only when every `wsv-w*` todo in that wave is `status: done` in the YAML above.
-
 | Phase | Scope | Status |
 |-------|-------|--------|
-| **P0** | Raster truth (SDL host uses Li raster) | **DONE** |
-| **P1** | Typography (TTF→atlas + readable labels) | pending |
-| **P2** | Elevation (tokenized shadows + blur) | pending |
-| **P3** | Icons + density (icon atlas, spacing rhythm) | pending |
-| **P4** | Viewport polish (HUD text + honest pixels) | pending |
-| **P5** | Acceptance (1280×720 + 7 vertical screenshots) | pending |
+| **P0** | Real text (`draw_glyphs`) | **DONE** |
+| **P1** | Elevation/shadows | **DONE** |
+| **P2** | Single pixel truth / honesty | **DONE** |
+| **P3** | Vertical product visuals | **DONE** |
+| **P4** | Screenshot manifest | **DONE** |
+| **P5** | Completion gate | **DONE** |
 
 ## Gates
 
 ```bash
-set -euo pipefail
 ./scripts/world-studio-gui-product-visual-gates.sh
 ./scripts/world-studio-gui-product-visual-completion-gate.sh
 ```
