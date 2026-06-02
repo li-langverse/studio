@@ -11,7 +11,10 @@ warn() { echo "WARN: $*" >&2; }
 ok() { echo "OK: $*"; }
 
 PLAN_LOOP="$ROOT/docs/superpowers/plans/2026-05-31-world-studio-gui-polish-loop.md"
-GOAL="$ROOT/data/goal-directed-sprints/world-studio-gui-polish.md"
+GOAL="$ROOT/../data/goal-directed-sprints/world-studio-gui-polish.md"
+if [[ ! -f "$GOAL" ]]; then
+  GOAL="$ROOT/data/goal-directed-sprints/world-studio-gui-polish.md"
+fi
 TOKENS="$ROOT/docs/design/studio-design-tokens.toml"
 POLISH_DIR="$ROOT/docs/demo/media/native-verticals/png"
 STATE_DIR="$ROOT/data/world-studio-gui-polish-loop"

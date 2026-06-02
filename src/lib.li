@@ -3220,6 +3220,29 @@ def studio_outliner_label_mesh() -> int
 =
   return 3
 
+def studio_outliner_label_first_codepoint(label_id: int) -> int
+  requires label_id >= studio_outliner_label_root()
+  requires label_id <= studio_outliner_label_mesh()
+  ensures font_atlas_codepoint_supported(result) == 1
+  decreases label_id
+=
+  if label_id == studio_outliner_label_root():
+    return 83
+  if label_id == studio_outliner_label_camera():
+    return 67
+  return 77
+
+def studio_outliner_row_label_rect(row: Rect) -> Rect
+  requires row.w >= 16.0
+  requires row.h >= studio_typography_glyph_line_height_px()
+  ensures result.h == studio_typography_glyph_line_height_px()
+  decreases 0
+=
+  var pad_x: float = 8.0
+  var glyph_h: float = studio_typography_glyph_line_height_px()
+  var y: float = row.y + (row.h - glyph_h) / 2.0
+  return rect_make(row.x + pad_x, y, row.w - pad_x * 2.0, glyph_h)
+
 def studio_outliner_id_root() -> int
   requires true
   ensures result == 0
@@ -7288,25 +7311,20 @@ def studio_paint_viewport_empty(frame: var PaintFrame, viewport_empty: StudioVie
   requires frame.cmd_count >= 0
   requires viewport_empty.empty_visible == 1
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_viewport_empty_cmds()
+  ensures frame.last_kind == paint_op_stroke_round_rect()
   decreases 0
 =
-  frame.cmd_count = frame.cmd_count + studio_paint_viewport_empty_cmds()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = viewport_empty.frame_rect
-  frame.last_color = studio_color_border()
-  frame.last_kind = paint_op_fill_rect()
-  frame.last_rect = viewport_empty.title_rect
-  frame.last_color = studio_color_border()
-  frame.last_kind = paint_op_stroke_rect()
-  frame.last_rect = viewport_empty.cta_rect
-  frame.last_color = studio_color_border()
+  paint_frame_push(frame, paint_cmd_fill_round(viewport_empty.frame_rect, studio_color_bg_elevated(), studio_radius_md_px()))
+  paint_frame_push(frame, paint_cmd_stroke_round(viewport_empty.frame_rect, studio_color_border(), 1.0, studio_radius_md_px()))
+  paint_frame_push(frame, paint_cmd_fill_round(viewport_empty.title_rect, studio_color_bg_primary(), studio_radius_sm_px()))
+  paint_frame_push(frame, paint_cmd_stroke_round(viewport_empty.cta_rect, studio_color_accent_cyan(), 1.0, studio_radius_sm_px()))
 
 def studio_paint_viewport_empty_cmds() -> int
   requires true
-  ensures result == 3
+  ensures result == 4
   decreases 0
 =
-  return 3
+  return 4
 
 def studio_viewport_game_entity_preview_count() -> int
   requires true
