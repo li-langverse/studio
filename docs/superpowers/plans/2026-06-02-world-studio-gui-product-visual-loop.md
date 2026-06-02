@@ -10,7 +10,7 @@ todos:
     status: done
   - id: wsv-w2-elevation-shadows
     content: "W2 — Elevation: tokenized shadows + blur (subtle) on panels; consistent depth model across shell regions"
-    status: pending
+    status: done
   - id: wsv-w3-icons-density
     content: "W3 — Icons + density: icon atlas + spacing rhythm; dock/topbar/tooling feels compact and readable"
     status: pending
@@ -44,7 +44,7 @@ Update each iteration. Mark **DONE** only when every `wsv-w*` todo in that wave 
 |-------|-------|--------|
 | **P0** | Raster truth (SDL host uses Li raster) | **DONE** |
 | **P1** | Typography (TTF→atlas + readable labels) | **DONE** |
-| **P2** | Elevation (tokenized shadows + blur) | pending |
+| **P2** | Elevation (tokenized shadows + blur) | **DONE** |
 | **P3** | Icons + density (icon atlas, spacing rhythm) | pending |
 | **P4** | Viewport polish (HUD text + honest pixels) | pending |
 | **P5** | Acceptance (1280×720 + 7 vertical screenshots) | pending |

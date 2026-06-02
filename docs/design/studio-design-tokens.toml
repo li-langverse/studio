@@ -48,6 +48,17 @@ md_px = 6
 lg_px = 8
 pill_px = 999
 
+[elevation]
+shadow_r = 0.0
+shadow_g = 0.0
+shadow_b = 0.0
+shadow_alpha_base = 0.32
+shadow_layer_count = 3
+shadow_offset_base_px = 2.0
+shadow_spread_px = 6.0
+shadow_alpha_falloff = 0.45
+elevated_extra_layers = 1
+
 [icons]
 dock_scene = "dock_scene"
 dock_assets = "dock_assets"

@@ -1,22 +1,24 @@
 {
-  "timestamp": "2026-06-02T07:31:39.395326+00:00",
+  "timestamp": "2026-06-02T12:00:00.000000+00:00",
   "native_only": true,
-  "todo": "wsv-w1-typography-font-atlas",
+  "todo": "wsv-w2-elevation-shadows",
   "wps": [
     "WP-UX-14"
   ],
   "summary": [
-    "Added GUI product-visual plan loop + gates/completion scripts to prioritize raster truth and native-only evidence.",
-    "Updated native window launcher to present pixels from Li raster PPM when available (no C paint_fb mirror linkage)."
+    "Added [elevation] design tokens and multi-layer shadow paint (3 blur layers with alpha falloff) for panel vs raised depth.",
+    "studio_paint_panel_shadow_at_depth drives dock/timeline/agent (panel) and outliner/inspector (raised); li_std_studio_version 46.",
+    "Smoke studio_product_visual_w2_elevation.li; token verify extended for elevation section in studio/src/lib.li."
   ],
   "evidence": {
     "product_visual_gates": "scripts/world-studio-gui-product-visual-gates.sh",
-    "product_visual_loop": "docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md"
+    "product_visual_loop": "docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md",
+    "smoke": "li-tests/smoke/studio_product_visual_w2_elevation.li"
   },
-  "product_visual_phase": "P1",
+  "product_visual_phase": "P2",
   "captures": {
     "ppm_available": false,
     "png_written": false,
-    "blocked_reason": "Runner cannot execute lic (GLIBC/GLIBCXX mismatch), so headless Li raster capture and lic check smokes are blocked in this workspace."
+    "blocked_reason": "lic not on PATH in agent workspace; existing product-visual PNGs retained from prior capture"
   }
 }

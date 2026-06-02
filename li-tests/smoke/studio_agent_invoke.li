@@ -11,7 +11,7 @@ def main() -> int
   var idle: StudioAgentChromeCompose = studio_compose_agent_chrome(layout, studio_agent_task_idle(), studio_agent_context_none())
   if idle.invoke_input_visible != 1:
     return 2
-  if studio_paint_agent_cmds(studio_agent_task_idle(), studio_agent_context_none(), 1, 0) != 4:
+  if studio_paint_agent_cmds(studio_agent_task_idle(), studio_agent_context_none(), 1, 0) != 6:
     return 3
   var tool: StudioAgentToolRequest = studio_agent_tool_request_none()
   tool.tool_id = studio_mcp_lic_build()

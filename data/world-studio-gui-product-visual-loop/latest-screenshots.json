@@ -1,6 +1,16 @@
 {
-  "timestamp": "2026-06-02T08:22:22.119243+00:00",
+  "timestamp": "2026-06-02T21:12:00.822096+00:00",
   "native_only": true,
-  "paths": [],
-  "pngs": []
+  "paths": [
+    "docs/demo/media/native-verticals/png/product-visual-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/product-visual-game.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_drug_design.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_rl.png"
+  ],
+  "pngs": [
+    "docs/demo/media/native-verticals/png/product-visual-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/product-visual-game.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_drug_design.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_rl.png"
+  ]
 }

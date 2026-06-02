@@ -31,6 +31,7 @@ def resolve_palette() -> Path:
 
 
 PALETTE = resolve_palette()
+STUDIO_LIB = ROOT / "src/lib.li"
 
 # TOML [color] key -> lib.li studio token function name
 COLOR_MAP = {
@@ -49,6 +50,14 @@ COLOR_MAP = {
     "agent_error": "studio_color_agent_error",
     "focus_ring": "studio_color_focus_ring",
     "viewport_grid": "studio_color_viewport_grid",
+}
+
+ELEVATION_FLOAT_MAP = {
+    "shadow_alpha_base": ("studio_elevation_shadow_alpha_base", "elevation"),
+    "shadow_layer_count": ("studio_elevation_shadow_layer_count", "elevation"),
+    "shadow_offset_base_px": ("studio_elevation_shadow_offset_base_px", "elevation"),
+    "shadow_spread_px": ("studio_elevation_shadow_spread_px", "elevation"),
+    "shadow_alpha_falloff": ("studio_elevation_shadow_alpha_falloff", "elevation"),
 }
 
 FLOAT_MAP = {
@@ -181,7 +190,27 @@ def main() -> int:
         "motion": parse_toml_section(TOKENS, "motion"),
         "typography": parse_toml_section(TOKENS, "typography"),
         "radius": parse_toml_section(TOKENS, "radius"),
+        "elevation": parse_toml_section(TOKENS, "elevation"),
     }
+
+    if STUDIO_LIB.is_file():
+        for key, (fn, section) in ELEVATION_FLOAT_MAP.items():
+            raw = sections[section].get(key)
+            if raw is None:
+                errors.append(f"missing TOML {section}.{key}")
+                continue
+            tom = float(raw)
+            try:
+                actual = parse_palette_float(STUDIO_LIB, fn)
+            except KeyError:
+                errors.append(f"missing studio {fn} in {STUDIO_LIB}")
+                continue
+            if key == "shadow_layer_count":
+                actual_i = parse_palette_int(STUDIO_LIB, fn)
+                if actual_i != int(tom):
+                    errors.append(f"{fn}: studio {actual_i} != TOML {int(tom)}")
+            elif actual != tom:
+                errors.append(f"{fn}: studio {actual} != TOML {tom}")
 
     for key, (fn, section) in FLOAT_MAP.items():
         raw = sections[section].get(key)
