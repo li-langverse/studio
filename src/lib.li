@@ -533,6 +533,15 @@ def studio_profile_color(profile_id: int) -> Color
     return studio_color_accent_violet()
   return studio_color_accent_amber()
 
+# W0 typography — glyph row height for profile chip + outliner labels (WP-UX-01).
+def studio_typography_glyph_line_height_px() -> float
+  requires true
+  ensures result >= studio_typography_body_px()
+  ensures result == studio_typography_heading_px()
+  decreases 0
+=
+  return studio_typography_heading_px()
+
 def studio_profile_label_first_codepoint(profile_id: int) -> int
   requires studio_profile_id_valid(profile_id) == 1
   ensures font_atlas_codepoint_supported(result) == 1
