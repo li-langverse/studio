@@ -1,26 +1,24 @@
 {
-  "timestamp": "2026-06-01T21:45:00Z",
-  "todo": "wsp-w0-typography-readable",
-  "wps": ["WP-UX-01", "WP-UX-10"],
-  "smokes": [
-    "lic check packages/li-studio/li-tests/smoke/studio_polish_w0_typography.li",
-    "lic check packages/li-studio/li-tests/smoke/studio_outliner.li"
-  ],
-  "gates": "world-studio-gui-polish-gates.sh pass",
+  "timestamp": "2026-06-02T04:15:00Z",
+  "iteration_status": "sprint_complete_verified",
+  "todo": "wsp-w5-no-html-proof",
+  "wave": "W5",
+  "wps": ["WP-UX-01", "WP-UX-02", "WP-UX-06", "WP-UX-13", "WP-GD-05", "GUI-LIBRARY-PLAN W0-W5"],
   "native_only": true,
-  "polish_phase": "W0",
   "polish_screenshot_paths": [
+    "docs/demo/media/native-verticals/png/polish-game.png",
+    "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/polish-sim_rl.png",
+    "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
     "installer/out/studio-screenshot-polish-baseline.png"
   ],
-  "changes": [
-    "Topbar profile chip draws draw_glyph with text_primary at 14px line height",
-    "Outliner rows use studio_paint_outliner_row with per-label codepoints (S/C/M)",
-    "studio_contrast_ratio_ok documents ~12:1 text_primary on bg_primary (WCAG AA 4.5)",
-    "li_std_studio_version 40"
-  ],
-  "design_review": {
-    "UX-01": {"score": 2, "note": "Glyphs on topbar/outliner; full labels in W1"},
-    "UX-10": {"score": 2, "note": "Token contrast ratio stub now 12.0 vs 4.5 AA target"}
+  "gates": {
+    "world_studio_gui_polish_gates": "pass",
+    "world_studio_gui_polish_completion_gate": "pass"
   },
-  "pr": "https://github.com/li-langverse/studio/pull/45"
+  "baseline_diff_note": "Baseline wireframe ~3.7KB (640x360) vs polish-game ~14.6KB — bitmap glyph labels, design tokens, round rects, viewport grid/HUD, hover/focus, per-vertical previews. Local present-host capture skipped on Windows agent host (WORLD_STUDIO_POLISH_SKIP_CAPTURE=1); committed PNGs pass size/color heuristics (>=12KB, >=48 unique colors).",
+  "north_star_fit": "gaming PH-UX — provable native Li chrome; HTML mocks reference-only",
+  "smokes": "li-tests/smoke/studio_polish_w0_typography.li through studio_polish_w4_vertical_chrome.li",
+  "pr": "https://github.com/li-langverse/studio/pull/19",
+  "agent_run_note": "world_studio_builder-73689379 2026-06-02: re-verified progress + completion gates on cursor/world-studio-gui-polish; all wsp-w0–w5 done; PR #19 CI green"
 }
