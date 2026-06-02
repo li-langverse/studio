@@ -14,7 +14,7 @@ from pathlib import Path
 p = Path("docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md")
 text = p.read_text(encoding="utf-8")
 ids = re.findall(
-    r"^- id: (wsv-\\S+)\\s*\\r?\\n\\s+content: .*?\\r?\\n\\s+status: (\\w+)",
+    r"^- id: (wsv-\S+)\\s*\\r?\\n\\s+content: .*?\\r?\\n\\s+status: (\\w+)",
     text,
     flags=re.M,
 )
