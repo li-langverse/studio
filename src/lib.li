@@ -536,6 +536,7 @@ def studio_profile_color(profile_id: int) -> Color
 def studio_profile_label_first_codepoint(profile_id: int) -> int
   requires studio_profile_id_valid(profile_id) == 1
   ensures font_atlas_codepoint_supported(result) == 1
+  ensures result == 71 or result == 82 or result == 68 or result == 83
   decreases profile_id
 =
   if profile_id == studio_profile_game():
@@ -545,6 +546,15 @@ def studio_profile_label_first_codepoint(profile_id: int) -> int
   if profile_id == studio_profile_sim_drug_design():
     return 68
   return 83
+
+# W0 typography — glyph row height for profile chip + outliner labels (WP-UX-01).
+def studio_typography_glyph_line_height_px() -> float
+  requires true
+  ensures result >= studio_typography_body_px()
+  ensures result == studio_typography_heading_px()
+  decreases 0
+=
+  return studio_typography_heading_px()
 
 def studio_profile_chip_glyph_rect(chip: Rect) -> Rect
   requires chip.w >= 8.0
@@ -2398,6 +2408,7 @@ def studio_outliner_label_first_codepoint(label_id: int) -> int
   requires label_id >= studio_outliner_label_root()
   requires label_id <= studio_outliner_label_mesh()
   ensures font_atlas_codepoint_supported(result) == 1
+  ensures result == 83 or result == 67 or result == 77
   decreases label_id
 =
   if label_id == studio_outliner_label_root():
