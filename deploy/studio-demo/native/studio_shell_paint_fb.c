@@ -35,6 +35,125 @@ static const unsigned char k_text_muted[] = {139, 148, 158};
 static const unsigned char k_text_dim[] = {96, 105, 115};
 static const unsigned char k_hover_tint[] = {32, 38, 48};
 static const unsigned char k_focus_ring[] = {61, 214, 255};
+static const unsigned char k_viewport_grid[] = {33, 38, 45};
+
+#define FONT_W 5
+#define FONT_H 7
+
+static const unsigned char k_font_glyphs[][FONT_H] = {
+    {0x0E, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0E}, /* 0 */
+    {0x04, 0x0C, 0x04, 0x04, 0x04, 0x04, 0x0E}, /* 1 */
+    {0x0E, 0x11, 0x01, 0x06, 0x08, 0x10, 0x1F}, /* 2 */
+    {0x0E, 0x11, 0x01, 0x06, 0x01, 0x11, 0x0E}, /* 3 */
+    {0x02, 0x06, 0x0A, 0x12, 0x1F, 0x02, 0x02}, /* 4 */
+    {0x1F, 0x10, 0x1E, 0x01, 0x01, 0x11, 0x0E}, /* 5 */
+    {0x06, 0x08, 0x10, 0x1E, 0x11, 0x11, 0x0E}, /* 6 */
+    {0x1F, 0x01, 0x02, 0x04, 0x08, 0x08, 0x08}, /* 7 */
+    {0x0E, 0x11, 0x11, 0x0E, 0x11, 0x11, 0x0E}, /* 8 */
+    {0x0E, 0x11, 0x11, 0x0F, 0x01, 0x02, 0x0C}, /* 9 */
+    {0x1F, 0x10, 0x10, 0x1E, 0x10, 0x10, 0x1F}, /* E */
+    {0x11, 0x12, 0x14, 0x18, 0x14, 0x12, 0x11}, /* K */
+    {0x11, 0x1B, 0x15, 0x11, 0x11, 0x11, 0x11}, /* M */
+    {0x11, 0x19, 0x15, 0x13, 0x11, 0x11, 0x11}, /* N */
+    {0x1E, 0x11, 0x11, 0x1E, 0x10, 0x10, 0x10}, /* P */
+    {0x0E, 0x11, 0x10, 0x0E, 0x01, 0x11, 0x0E}, /* S */
+    {0x1F, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04}, /* T */
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x0C, 0x0C}, /* . */
+    {0x00, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x00}, /* - */
+    {0x00, 0x0C, 0x0C, 0x00, 0x0C, 0x0C, 0x00}, /* : */
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, /* sp */
+    {0x0E, 0x11, 0x10, 0x17, 0x11, 0x11, 0x0F}, /* G */
+    {0x1E, 0x11, 0x11, 0x1E, 0x14, 0x12, 0x11}, /* R */
+};
+
+static int font_glyph_index(char c) {
+  if (c >= '0' && c <= '9') {
+    return c - '0';
+  }
+  switch (c) {
+    case 'C':
+    case 'c':
+      return 2;
+    case 'D':
+    case 'd':
+      return 3;
+    case 'E':
+    case 'e':
+      return 10;
+    case 'G':
+    case 'g':
+      return 21;
+    case 'K':
+    case 'k':
+      return 11;
+    case 'M':
+    case 'm':
+      return 12;
+    case 'N':
+    case 'n':
+      return 13;
+    case 'P':
+    case 'p':
+      return 14;
+    case 'R':
+    case 'r':
+      return 22;
+    case 'S':
+    case 's':
+      return 15;
+    case 'T':
+    case 't':
+      return 16;
+    default:
+      return 20;
+  }
+}
+
+static void draw_glyph(unsigned char* rgb, int w, int h, int x, int y, char c, int scale, const unsigned char* color) {
+  int gi = font_glyph_index(c);
+  const unsigned char* glyph = k_font_glyphs[gi];
+  for (int row = 0; row < FONT_H; row++) {
+    unsigned char bits = glyph[row];
+    for (int col = 0; col < FONT_W; col++) {
+      if (bits & (1 << (FONT_W - 1 - col))) {
+        for (int sy = 0; sy < scale; sy++) {
+          for (int sx = 0; sx < scale; sx++) {
+            put_px(rgb, w, h, x + col * scale + sx, y + row * scale + sy, color);
+          }
+        }
+      }
+    }
+  }
+}
+
+static void draw_text(unsigned char* rgb, int w, int h, int x, int y, const char* str, int scale, const unsigned char* color) {
+  for (; *str; str++, x += (FONT_W + 1) * scale) {
+    draw_glyph(rgb, w, h, x, y, *str, scale, color);
+  }
+}
+
+static char profile_chip_letter(int profile_id) {
+  if (profile_id == 1) {
+    return 'G';
+  }
+  if (profile_id == 2) {
+    return 'R';
+  }
+  if (profile_id == 7) {
+    return 'D';
+  }
+  return 'S';
+}
+
+static char outliner_row_letter(int row) {
+  if (row == 0) {
+    return 'S';
+  }
+  if (row == 1) {
+    return 'C';
+  }
+  return 'M';
+}
 
 static const ShellProfileVisual k_profiles[] = {
     {1, "game", 21, 61, 214, 255},
@@ -233,25 +352,17 @@ static ShellRect profile_chip(ShellRect topbar, int tag_h) {
 
 static void paint_viewport_grid(unsigned char* rgb, int w, int h, ShellRect vp) {
   for (int x = vp.x; x < vp.x + vp.w; x += 64) {
-    unsigned char grid_c[3] = {
-        (unsigned char)(k_border[0] + (x % 3)),
-        (unsigned char)(k_border[1] + (x % 5)),
-        (unsigned char)(k_border[2] + (x % 7)),
-    };
-    stroke_vline(rgb, w, h, x, vp.y, vp.y + vp.h - 1, grid_c);
+    stroke_vline(rgb, w, h, x, vp.y, vp.y + vp.h - 1, k_viewport_grid);
   }
   for (int y = vp.y; y < vp.y + vp.h; y += 64) {
-    unsigned char grid_c[3] = {
-        (unsigned char)(k_border[0] + (y % 5)),
-        (unsigned char)(k_border[1] + (y % 3)),
-        (unsigned char)(k_border[2] + (y % 11)),
-    };
-    stroke_hline(rgb, w, h, vp.x, vp.x + vp.w - 1, y, grid_c);
+    stroke_hline(rgb, w, h, vp.x, vp.x + vp.w - 1, y, k_viewport_grid);
   }
-  int ox = vp.x + 48;
-  int oy = vp.y + vp.h - 48;
-  stroke_vline(rgb, w, h, ox, vp.y + 24, oy, k_accent_cyan);
-  stroke_hline(rgb, w, h, ox, vp.x + vp.w - 24, oy, k_accent_cyan);
+  int pad = 24;
+  ShellRect frame = {vp.x + pad, vp.y + pad, vp.w - pad * 2, vp.h - pad * 2};
+  if (frame.w > 0 && frame.h > 0) {
+    stroke_round_rect(rgb, w, h, frame, k_border, 1, 6);
+    draw_text(rgb, w, h, frame.x + 12, frame.y + 12, "Viewport", 2, k_text_primary);
+  }
 }
 
 static void paint_panel_shadow(unsigned char* rgb, int w, int h, ShellRect panel, int offset) {
@@ -504,10 +615,8 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
       fill_round_rect(rgb, width, height, row_r, k_bg_elevated, 4);
       stroke_round_rect(rgb, width, height, row_r, k_border, 1, 4);
     }
-    ShellRect label = {row_r.x + 6, row_r.y + 4, row_r.w - 12, row_r.h - 8};
-    const char* outliner_labels[] = {"World", "Camera", "Mesh"};
-    paint_bitmap_text_in_rect(rgb, width, height, label, outliner_labels[row], FONT5X7_SCALE_CAPTION,
-                              row == 0 ? k_text_primary : k_text_muted);
+    char label[2] = {outliner_row_letter(row), '\0'};
+    draw_text(rgb, width, height, row_r.x + 8, row_r.y + 4, label, 2, k_text_primary);
   }
 
   paint_viewport_profile(rgb, width, height, layout.viewport, profile);
@@ -539,7 +648,7 @@ void shell_paint_frame(unsigned char* rgb, int width, int height, const ShellPro
     unsigned char chip_c[] = {profile->chip_r, profile->chip_g, profile->chip_b};
     fill_round_rect(rgb, width, height, chip, chip_c, 4);
     stroke_round_rect(rgb, width, height, chip, k_border, 1, 4);
-    ShellRect chip_label = {chip.x + 4, chip.y + 4, chip.w - 8, chip.h - 8};
-    paint_bitmap_text_in_rect(rgb, width, height, chip_label, profile->slug, FONT5X7_SCALE_CAPTION, k_text_primary);
+    char plabel[2] = {profile_chip_letter(profile->id), '\0'};
+    draw_text(rgb, width, height, chip.x + 10, chip.y + 6, plabel, 2, k_text_primary);
   }
 }
