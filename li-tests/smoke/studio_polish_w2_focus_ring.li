@@ -1,0 +1,29 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 6:
+    return 1
+  var compose: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 1)
+  compose.panel.active_region = studio_region_inspector()
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame, compose)
+  if frame.cmd_count != studio_shell_chrome_count_for_compose(compose):
+    return 2
+  if studio_paint_focus_ring_cmds(compose.panel.active_region) != 1:
+    return 3
+  if frame.last_kind != paint_op_stroke_rect():
+    return 4
+  if frame.last_color.r != studio_color_focus_ring().r:
+    return 5
+  compose.panel.active_region = studio_region_viewport()
+  var frame_vp: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame_vp, compose)
+  if frame_vp.cmd_count != studio_shell_chrome_count_for_compose(compose):
+    return 6
+  if studio_paint_focus_ring_cmds(studio_region_viewport()) != 0:
+    return 7
+  return 0

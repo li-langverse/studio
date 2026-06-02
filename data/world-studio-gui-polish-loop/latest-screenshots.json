@@ -1,8 +1,18 @@
 {
-  "timestamp": "2026-06-02T00:57:41.566544+00:00",
+  "timestamp": "2026-06-02T05:23:11.938092+00:00",
   "native_only": true,
   "paths": [
-    "C:\\Users\\Julian\\Documents\\Programming\\li\\li-cursor-agents\\data\\workspaces\\li-langverse\\studio\\world_studio_builder-1780361326082\\repo\\installer\\out\\studio-screenshot-polish-baseline.png"
+    "installer/out/studio-screenshot-polish-baseline.png",
+    "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/polish-game.png",
+    "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
+    "docs/demo/media/native-verticals/png/polish-sim_rl.png",
+    "installer/out/studio-screenshot-iteration-0.png"
   ],
-  "polish_pngs": []
+  "polish_pngs": [
+    "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/polish-game.png",
+    "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
+    "docs/demo/media/native-verticals/png/polish-sim_rl.png"
+  ]
 }

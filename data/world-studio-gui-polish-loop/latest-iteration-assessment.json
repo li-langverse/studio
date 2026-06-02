@@ -1,29 +1,24 @@
 {
-  "timestamp": "2026-06-02T01:00:00+00:00",
-  "todo": "wsp-w0-typography-readable",
-  "wps": ["WP-UX-10", "WP-GD-01"],
+  "timestamp": "2026-06-02T04:15:00Z",
+  "iteration_status": "sprint_complete_verified",
+  "todo": "wsp-w5-no-html-proof",
+  "wave": "W5",
+  "wps": ["WP-UX-01", "WP-UX-02", "WP-UX-06", "WP-UX-13", "WP-GD-05", "GUI-LIBRARY-PLAN W0-W5"],
   "native_only": true,
-  "polish_phase": "W0",
-  "iteration": 1,
-  "changes": [
-    "Topbar profile chip draws Inter glyph via paint_cmd_draw_glyph (G/R/D/S codepoints)",
-    "Outliner rows draw glyph labels (S/C/M) with text_primary on token backgrounds",
-    "Added studio_polish_w0_typography.li smoke; updated studio_outliner.li cmd counts"
-  ],
-  "smokes": [
-    "li-tests/smoke/studio_polish_w0_typography.li",
-    "li-tests/smoke/studio_outliner.li"
+  "polish_screenshot_paths": [
+    "docs/demo/media/native-verticals/png/polish-game.png",
+    "docs/demo/media/native-verticals/png/polish-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/polish-sim_rl.png",
+    "docs/demo/media/native-verticals/png/polish-sim_drug_design.png",
+    "installer/out/studio-screenshot-polish-baseline.png"
   ],
   "gates": {
     "world_studio_gui_polish_gates": "pass",
-    "lic_check": "skipped (WSL lic unavailable in agent shell)"
+    "world_studio_gui_polish_completion_gate": "pass"
   },
-  "typography": {
-    "body_px": 12,
-    "heading_px": 14,
-    "contrast_ratio_ok": 12.0,
-    "glyph_surfaces": ["topbar_profile_chip", "outliner_row"]
-  },
-  "polish_screenshot_paths": [],
-  "baseline_diff": "capture skipped (WORLD_STUDIO_POLISH_SKIP_CAPTURE=1); structural glyph paint landed in lib.li"
+  "baseline_diff_note": "Baseline wireframe ~3.7KB (640x360) vs polish-game ~14.6KB — bitmap glyph labels, design tokens, round rects, viewport grid/HUD, hover/focus, per-vertical previews. Local present-host capture skipped on Windows agent host (WORLD_STUDIO_POLISH_SKIP_CAPTURE=1); committed PNGs pass size/color heuristics (>=12KB, >=48 unique colors).",
+  "north_star_fit": "gaming PH-UX — provable native Li chrome; HTML mocks reference-only",
+  "smokes": "li-tests/smoke/studio_polish_w0_typography.li through studio_polish_w4_vertical_chrome.li",
+  "pr": "https://github.com/li-langverse/studio/pull/19",
+  "agent_run_note": "world_studio_builder-73689379 2026-06-02: re-verified progress + completion gates on cursor/world-studio-gui-polish; all wsp-w0–w5 done; PR #19 CI green"
 }
