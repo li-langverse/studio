@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-06-02T01:40:00+00:00",
+  "todo": "wsp-w0-typography-readable",
+  "wsp_todos_done": [
+    "wsp-w0-typography-readable",
+    "wsp-w0-token-contrast",
+    "wsp-w0-anti-wireframe-paint",
+    "wsp-w0-baseline-screenshot"
+  ],
+  "wps": ["WP-UX-01", "WP-GD-03"],
+  "native_only": true,
+  "polish_phase": "W0",
+  "polish_screenshot_paths": {
+    "baseline": "installer/out/studio-screenshot-polish-baseline.png",
+    "iteration_0": "installer/out/studio-screenshot-iteration-0.png"
+  },
+  "baseline_diff_note": "W0 adds draw_glyph on topbar profile chip + outliner rows; viewport empty uses fill_round/stroke_round with bg_elevated tokens instead of flat stroke_rect wireframe; viewport bg colors use studio_color_bg_primary/bg_elevated.",
+  "smokes": [
+    "li-tests/smoke/studio_polish_w0_typography.li",
+    "li-tests/smoke/studio_outliner.li"
+  ],
+  "gates": {
+    "world_studio_gui_polish_gates": "pass",
+    "capture_skipped": true
+  },
+  "design_review": {
+    "UX-01": { "score": 2, "note": "Glyph labels on topbar/outliner; body 12px/heading 14px via li-ui tokens" },
+    "UX-02": { "score": 2, "note": "Shell regions unchanged; token-driven viewport bg" },
+    "UX-03": { "score": 1, "note": "Dock icons atlas present; labels still single-char pilot" },
+    "UX-04": { "score": 1, "note": "Palette unchanged this iteration" },
+    "UX-05": { "score": 2, "note": "Round-rect empty viewport + elevated fills" },
+    "UX-06": { "score": 2, "note": "Agent chrome round panel retained" },
+    "UX-07": { "score": 1, "note": "Viewport grid still placeholder" },
+    "UX-08": { "score": 2, "note": "Inspector token chrome on selected state" },
+    "UX-09": { "score": 1, "note": "Timeline gradients; no hover yet" },
+    "UX-10": { "score": 2, "note": "studio_contrast_ratio_ok >= 4.5 WCAG-ish" },
+    "UX-11": { "score": 2, "note": "Agent invoke chrome unchanged" },
+    "UX-12": { "score": 1, "note": "Keyboard hints deferred to W2" },
+    "UX-13": { "score": 1, "note": "HUD rects; readable glyphs deferred W1" },
+    "UX-14": { "score": 1, "note": "Per-vertical polish deferred W4/W5" }
+  },
+  "north_star_fit": "gaming/sim UX polish — provable PaintCmd IR, native-only product truth"
+}
