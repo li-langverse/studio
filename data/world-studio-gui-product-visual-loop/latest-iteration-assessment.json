@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-02T21:30:00.000000+00:00",
+  "timestamp": "2026-06-02T21:45:00.000000+00:00",
   "native_only": true,
   "todo": "wsv-w5-acceptance-screenshots",
   "wps": [
@@ -8,20 +8,21 @@
   ],
   "summary": [
     "Product-visual sprint complete: all wsv-w0..w5 todos done; progress + completion gates PASS.",
-    "Gates build capture binaries from LIC_ROOT so import studio resolves (fixes standalone lic build failure).",
-    "Eight acceptance PNGs committed under docs/demo/media/native-verticals/png/product-visual-*.png.",
-    "PR #66 tracks cursor/world-studio-gui-product-visual for review."
+    "CI fix: replaced bare float() casts with studio_int_as_float() in elevation shadow + topbar density helpers (lic check E0202).",
+    "Eight acceptance PNGs present under docs/demo/media/native-verticals/png/product-visual-*.png.",
+    "PR #66 tracks cursor/world-studio-gui-product-visual; CI check job expected green after float cast fix."
   ],
   "evidence": {
     "product_visual_gates": "scripts/world-studio-gui-product-visual-gates.sh",
     "product_visual_completion": "scripts/world-studio-gui-product-visual-completion-gate.sh",
     "product_visual_loop": "docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md",
     "smoke": "li-tests/smoke/studio_product_visual_w5_acceptance.li",
-    "pr": "https://github.com/li-langverse/studio/pull/66"
+    "pr": "https://github.com/li-langverse/studio/pull/66",
+    "ci_fix": "src/lib.li studio_int_as_float replaces float() in w2/w3 helpers"
   },
   "product_visual_phase": "P5",
   "captures": {
-    "ppm_available": true,
+    "ppm_available": false,
     "png_written": true,
     "profiles": [
       "game",
@@ -39,6 +40,6 @@
       "PH-GD",
       "PH-UX"
     ],
-    "pillar": "proof (lic gates + native raster truth) before perf polish"
+    "pillar": "proof (lic check + native raster truth) before perf polish"
   }
 }

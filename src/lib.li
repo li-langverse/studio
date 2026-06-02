@@ -979,11 +979,11 @@ def studio_elevation_shadow_layer_offset_px(layer: int, depth: int) -> float
 =
   var base: float = studio_elevation_shadow_offset_base_px()
   var spread: float = studio_elevation_shadow_spread_px()
-  var layer_step: float = spread / float(studio_elevation_shadow_layer_count())
+  var layer_step: float = spread / studio_int_as_float(studio_elevation_shadow_layer_count())
   var depth_boost: float = 0.0
   if depth == studio_elevation_depth_raised():
     depth_boost = studio_spacing_unit_px()
-  return base + layer_step * float(layer + 1) + depth_boost
+  return base + layer_step * studio_int_as_float(layer + 1) + depth_boost
 
 def studio_paint_panel_shadow_layer_rect(panel: Rect, layer: int, depth: int) -> Rect
   requires panel.w >= 0.0
@@ -1142,10 +1142,10 @@ def studio_topbar_tool_rect_at(topbar: Rect, tool_index: int) -> Rect
   var gap: float = studio_density_topbar_tool_gap_px()
   var pad: float = studio_spacing_rhythm_px()
   var count: int = studio_density_topbar_tool_count()
-  var span: float = float(count) * size + float(count - 1) * gap
+  var span: float = studio_int_as_float(count) * size + studio_int_as_float(count - 1) * gap
   var x0: float = topbar.x + topbar.w - pad - span
   var y: float = topbar.y + (topbar.h - size) / 2.0
-  var x: float = x0 + float(tool_index) * (size + gap)
+  var x: float = x0 + studio_int_as_float(tool_index) * (size + gap)
   return rect_make(x, y, size, size)
 
 def studio_topbar_tool_icon_id(tool_index: int) -> int
