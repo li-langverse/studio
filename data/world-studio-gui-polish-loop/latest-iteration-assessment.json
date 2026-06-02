@@ -20,5 +20,5 @@
   "north_star_fit": "gaming PH-UX — provable native Li chrome; HTML mocks reference-only",
   "smokes": "li-tests/smoke/studio_polish_w0_typography.li through studio_polish_w4_vertical_chrome.li",
   "pr": "https://github.com/li-langverse/studio/pull/19",
-  "agent_run_note": "world_studio_builder-73260746 2026-06-02: fast-forwarded agent branch to cursor/world-studio-gui-polish; re-ran progress + completion gates; all wsp-w0–w5 done; PR #19 CI green"
+  "agent_run_note": "world_studio_builder-73689379 2026-06-02: re-verified progress + completion gates on cursor/world-studio-gui-polish; all wsp-w0–w5 done; PR #19 CI green"
 }
