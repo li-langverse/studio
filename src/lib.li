@@ -3220,29 +3220,6 @@ def studio_outliner_label_mesh() -> int
 =
   return 3
 
-def studio_outliner_label_first_codepoint(label_id: int) -> int
-  requires label_id >= studio_outliner_label_root()
-  requires label_id <= studio_outliner_label_mesh()
-  ensures font_atlas_codepoint_supported(result) == 1
-  decreases label_id
-=
-  if label_id == studio_outliner_label_root():
-    return 83
-  if label_id == studio_outliner_label_camera():
-    return 67
-  return 77
-
-def studio_outliner_row_label_rect(row: Rect) -> Rect
-  requires row.w >= 16.0
-  requires row.h >= studio_typography_glyph_line_height_px()
-  ensures result.h == studio_typography_glyph_line_height_px()
-  decreases 0
-=
-  var pad_x: float = 8.0
-  var glyph_h: float = studio_typography_glyph_line_height_px()
-  var y: float = row.y + (row.h - glyph_h) / 2.0
-  return rect_make(row.x + pad_x, y, row.w - pad_x * 2.0, glyph_h)
-
 def studio_outliner_id_root() -> int
   requires true
   ensures result == 0
