@@ -81,7 +81,9 @@ done
 WTFX_SMOKES=(
   "$LIC_ROOT/packages/li-ui/li-tests/smoke/font_atlas_metrics_matrix.li"
   "$LIC_ROOT/packages/li-ui/li-tests/smoke/text_layout_baseline.li"
+  "$LIC_ROOT/packages/li-ui/li-tests/smoke/glyph_run_layout.li"
   "$STUDIO_ROOT/li-tests/smoke/studio_typography_engine.li"
+  "$STUDIO_ROOT/li-tests/smoke/studio_typography_raster_bounds.li"
   "$LIC_ROOT/packages/li-ui/li-tests/smoke/color_alpha_composite.li"
   "$STUDIO_ROOT/li-tests/smoke/studio_shadow_math.li"
   "$LIC_ROOT/packages/li-ui/li-tests/smoke/blur_kernel_energy.li"

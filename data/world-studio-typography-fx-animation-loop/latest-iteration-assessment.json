@@ -1,23 +1,22 @@
 {
-  "timestamp": "2026-06-03T12:00:00Z",
-  "iteration_status": "wtfx_w0_complete",
-  "todo": "wtfx-w0-typography-tests",
-  "wave": "W0",
-  "wps": ["GUI-LIBRARY-PLAN typography", "WP-UX-01"],
+  "timestamp": "2026-06-03T18:00:00Z",
+  "iteration_status": "wtfx_w1_complete",
+  "todo": "wtfx-w1-typography-raster",
+  "wave": "W1",
+  "wps": ["GUI-LIBRARY-PLAN typography raster", "WP-UX-01"],
   "native_only": true,
   "gates": {
     "world_studio_typography_fx_animation_gates": "pass",
     "lic_check_smokes": "skipped_host_glibc",
-    "note": "Agent host lacks GLIBC_2.38 for build-wsl/lic; smokes added and registered for CI/K8s"
+    "note": "Agent host lacks GLIBC_2.38 for lic; smokes registered for CI/K8s"
   },
   "smokes": [
-    "lic/packages/li-ui/li-tests/smoke/font_atlas_metrics_matrix.li",
-    "lic/packages/li-ui/li-tests/smoke/text_layout_baseline.li",
-    "lic/packages/li-ui/li-tests/smoke/studio_typography_tokens.li",
+    "lic/packages/li-ui/li-tests/smoke/glyph_run_layout.li",
+    "studio/li-tests/smoke/studio_typography_raster_bounds.li",
     "studio/li-tests/smoke/studio_typography_engine.li"
   ],
-  "north_star_fit": "gaming PH-UX — provable typography metrics before FX/motion; proof-before-perf via def contracts",
+  "north_star_fit": "gaming PH-UX — provable glyph run bounds via font_atlas_glyph_advance_px; PaintCmd stroke_px/radius_px record used w/h",
   "pr": "https://github.com/li-langverse/studio/pull/67",
   "lic_pr": "https://github.com/li-langverse/lic/pull/742",
-  "agent_run_note": "world_studio_builder: W0 text_layout.li + test matrix; lic mirror in lib.li"
+  "agent_run_note": "world_studio_builder: W1 GlyphRunLayout + metrics-centered studio_paint_glyph_text + caption dock path"
 }

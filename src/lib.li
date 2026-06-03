@@ -631,22 +631,20 @@ def studio_paint_glyph_run_cmds() -> int
 =
   return 1
 
-def studio_paint_glyph_text_rect(anchor: Rect, glyph_count: int) -> Rect
-  requires anchor.w >= 8.0
-  requires anchor.h >= studio_typography_glyph_line_height_px()
+def studio_paint_glyph_text_rect(anchor: Rect, first_codepoint: int, glyph_count: int, size_px: float) -> Rect
+  requires anchor.w >= 0.0
+  requires anchor.h >= size_px
+  requires size_px > 0.0
   requires glyph_count >= 1
   requires glyph_count <= 32
-  ensures result.w >= 8.0
-  ensures result.h == studio_typography_glyph_line_height_px()
+  requires font_atlas_codepoint_supported(first_codepoint) == 1
+  ensures result.w > 0.0
+  ensures result.h > 0.0
+  ensures text_layout_rect_inside(result, anchor, 1.0) == 1
   decreases glyph_count
 =
-  var pad: float = studio_spacing_rhythm_px()
-  var lh: float = studio_typography_glyph_line_height_px()
-  var y: float = anchor.y + (anchor.h - lh) / 2.0
-  var w: float = anchor.w - pad - pad
-  if w < 8.0:
-    w = 8.0
-  return rect_make(anchor.x + pad, y, w, lh)
+  var face: FontAtlasFace = font_atlas_face_new(font_face_inter())
+  return text_layout_glyph_dest_in_anchor(anchor, face, size_px, first_codepoint, glyph_count)
 
 def studio_paint_glyph_text(frame: var PaintFrame, anchor: Rect, first_codepoint: int, glyph_count: int, color: Color) -> unit
   requires frame.cmd_count >= 0
@@ -657,7 +655,19 @@ def studio_paint_glyph_text(frame: var PaintFrame, anchor: Rect, first_codepoint
   ensures frame.last_kind == paint_op_draw_glyphs()
   decreases glyph_count
 =
-  var dest: Rect = studio_paint_glyph_text_rect(anchor, glyph_count)
+  var dest: Rect = studio_paint_glyph_text_rect(anchor, first_codepoint, glyph_count, studio_typography_body_px())
+  paint_frame_push(frame, paint_cmd_draw_glyphs_run(dest, font_face_inter(), color, first_codepoint, glyph_count))
+
+def studio_paint_glyph_caption_text(frame: var PaintFrame, anchor: Rect, first_codepoint: int, glyph_count: int, color: Color) -> unit
+  requires frame.cmd_count >= 0
+  requires glyph_count >= 1
+  requires glyph_count <= 32
+  requires font_atlas_codepoint_supported(first_codepoint) == 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_glyph_run_cmds()
+  ensures frame.last_kind == paint_op_draw_glyphs()
+  decreases glyph_count
+=
+  var dest: Rect = studio_paint_glyph_text_rect(anchor, first_codepoint, glyph_count, studio_typography_caption_px())
   paint_frame_push(frame, paint_cmd_draw_glyphs_run(dest, font_face_inter(), color, first_codepoint, glyph_count))
 
 def studio_outliner_label_first_codepoint(label_id: int) -> int
@@ -8279,7 +8289,7 @@ def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose, hover: Stu
   var dock_label_rect: Rect = rect_make(dock.rect.x, active_rect.y + active_rect.h + studio_spacing_unit_px(), dock.rect.w, studio_typography_caption_line_height_px())
   var cap_cp: int = studio_dock_slot_caption_first_codepoint(dock.active_slot)
   var cap_cnt: int = studio_dock_slot_caption_glyph_count(dock.active_slot)
-  studio_paint_glyph_text(frame, dock_label_rect, cap_cp, cap_cnt, studio_color_text_muted())
+  studio_paint_glyph_caption_text(frame, dock_label_rect, cap_cp, cap_cnt, studio_color_text_muted())
 
 def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose, hover: StudioShellHoverState) -> unit
   requires frame.cmd_count >= 0
