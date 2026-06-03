@@ -4,7 +4,7 @@ overview: Goal-directed sprint — harden the typography engine with a real Li t
 todos:
   - id: wtfx-w0-typography-tests
     content: "W0 — Typography engine: metrics invariants + expanded li-tests (atlas, shaping, line height, truncation)"
-    status: pending
+    status: done
   - id: wtfx-w1-typography-raster
     content: "W1 — Typography raster: glyph run bounds, subpixel advances, baseline alignment across shell regions"
     status: pending
@@ -53,7 +53,7 @@ Update each iteration. Mark **DONE** only when every `wtfx-w*` in that phase is 
 
 | Phase | Scope | WPs | Status |
 |-------|-------|-----|--------|
-| **P0** | Typography tests + metrics engine | W0–W1 | pending |
+| **P0** | Typography tests + metrics engine | W0–W1 | W0 done; W1 pending |
 | **P1** | Opacity + compositing | W2 | pending |
 | **P2** | Shadows + diffusion (mathematical FX) | W3–W4 | pending |
 | **P3** | Motion + easing + animation clock | W5 | pending |
