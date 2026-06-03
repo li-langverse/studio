@@ -34,6 +34,10 @@ inspector_width_px = 320
 panel_transition_ms = 100
 hover_transition_ms = 200
 
+[animation]
+easing_default = "ease_out_cubic"
+reduced_motion_scale = 0.0
+
 [typography]
 ui = "Inter, system-ui, sans-serif"
 mono = "ui-monospace, monospace"

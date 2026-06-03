@@ -72,6 +72,14 @@ FX_INT_MAP = {
     "blur_passes": ("studio_fx_blur_passes", "fx"),
 }
 
+ANIMATION_FLOAT_MAP = {
+    "reduced_motion_scale": ("studio_animation_reduced_motion_scale", "animation"),
+}
+
+ANIMATION_STRING_LEN_MAP = {
+    "easing_default": ("studio_animation_easing_default_len", "animation"),
+}
+
 VIEWPORT_FLOAT_MAP = {
     "hud_chip_height_px": ("studio_viewport_hud_chip_height_px", "viewport"),
     "menu_chip_inset_px": ("studio_viewport_menu_chip_inset_px", "viewport"),
@@ -221,6 +229,7 @@ def main() -> int:
         "radius": parse_toml_section(TOKENS, "radius"),
         "elevation": parse_toml_section(TOKENS, "elevation"),
         "fx": parse_toml_section(TOKENS, "fx"),
+        "animation": parse_toml_section(TOKENS, "animation"),
         "viewport": parse_toml_section(TOKENS, "viewport"),
         "density": parse_toml_section(TOKENS, "density"),
     }
@@ -253,6 +262,26 @@ def main() -> int:
                 continue
             if actual != tom:
                 errors.append(f"{fn}: studio {actual} != TOML {tom}")
+
+        for key, (fn, section) in ANIMATION_FLOAT_MAP.items():
+            raw = sections[section].get(key)
+            if raw is None:
+                errors.append(f"missing TOML {section}.{key}")
+                continue
+            tom = float(raw)
+            actual = parse_palette_float(PALETTE, fn)
+            if actual != tom:
+                errors.append(f"{fn}: palette {actual} != TOML {tom}")
+
+        for key, (fn, section) in ANIMATION_STRING_LEN_MAP.items():
+            raw = sections[section].get(key)
+            if raw is None:
+                errors.append(f"missing TOML {section}.{key}")
+                continue
+            expected_len = len(raw)
+            actual = parse_palette_int(PALETTE, fn)
+            if actual != expected_len:
+                errors.append(f"{fn}: palette {actual} != TOML string len {expected_len}")
 
         for key, (fn, section) in ELEVATION_FLOAT_MAP.items():
             raw = sections[section].get(key)

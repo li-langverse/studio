@@ -1,21 +1,20 @@
 {
-  "timestamp": "2026-06-03T23:30:00Z",
-  "iteration_status": "wtfx_w4_complete",
-  "todo": "wtfx-w4-diffusion-blur",
-  "wave": "W4",
-  "wps": ["GUI-LIBRARY-PLAN shadow diffusion", "WP-UX-01"],
+  "timestamp": "2026-06-03T23:45:00Z",
+  "iteration_status": "wtfx_w5_complete",
+  "todo": "wtfx-w5-motion-core",
+  "wave": "W5",
+  "wps": ["GUI-LIBRARY-PLAN motion", "WP-UX-01"],
   "native_only": true,
   "gates": {
     "world_studio_typography_fx_animation_gates": "pass",
     "lic_check_smokes": "skipped_host_no_lic",
-    "note": "Agent host lacks lic binary; smokes registered for CI/K8s"
+    "note": "Agent host lacks compatible lic binary (GLIBC_2.38); smokes registered for CI/K8s"
   },
   "smokes": [
-    "lic/packages/li-ui/li-tests/smoke/blur_kernel_energy.li",
-    "studio/li-tests/smoke/studio_shadow_diffusion.li"
+    "lic/packages/li-gui/li-tests/smoke/motion_easing.li"
   ],
-  "north_star_fit": "gaming PH-UX — provable separable blur kernel + paint_op_layer_blur diffused elevation shadows",
+  "north_star_fit": "gaming PH-UX — provable easing/tween library + monotonic motion clock for token-driven shell transitions",
   "pr": "https://github.com/li-langverse/studio/pull/67",
   "lic_pr": "https://github.com/li-langverse/lic/pull/742",
-  "agent_run_note": "world_studio_builder: W4 blur_kernel + paint_op_layer_blur + studio_paint_panel_shadow_diffused; li_std_studio_version 53, li_std_ui_version 10"
+  "agent_run_note": "world_studio_builder: W5 motion.li easing + tween_float + motion_clock_ms + [animation] tokens; li_std_gui_version 14"
 }
