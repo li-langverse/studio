@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-03T01:18:30.000000+00:00",
+  "timestamp": "2026-06-03T01:25:00.000000+00:00",
   "native_only": true,
   "todo": "wsv-w5-acceptance-screenshots",
   "iteration_status": "sprint_complete_reverified",
@@ -9,10 +9,10 @@
     "WP-GD-05"
   ],
   "summary": [
-    "Product-visual sprint complete: all wsv-w0..w5 todos done; progress + completion gates PASS (agent run 49448238).",
+    "Product-visual sprint complete: all wsv-w0..w5 todos done; progress + completion gates PASS (agent run 49558526).",
     "Eight acceptance PNGs on disk; PNG heuristics pass (>=12KB, >=48 unique colors).",
     "PR #66 open on cursor/world-studio-gui-product-visual; CI green (check, native-sdl-capture, installers).",
-    "Local Li headless capture failed in agent workspace (clang link ../runtime/li_rt.c missing); committed PNGs + CI native-sdl-capture remain proof path.",
+    "Local Li headless capture failed in agent workspace (runtime link); committed PNGs + CI native-sdl-capture remain proof path.",
     "No pending wsv-w* todos — sprint ready for human merge review."
   ],
   "evidence": {
@@ -36,6 +36,10 @@
       "sim_drug_design"
     ]
   },
+  "gates": {
+    "world_studio_gui_product_visual_gates": "pass",
+    "world_studio_gui_product_visual_completion_gate": "pass"
+  },
   "north_star_fit": {
     "domain": "gaming / native studio UX",
     "ph_ids": [
@@ -44,5 +48,5 @@
     ],
     "pillar": "proof (lic check + native raster truth) before perf polish"
   },
-  "agent_run_note": "world_studio_builder-49448238 2026-06-03: re-verified progress + completion gates; refreshed screenshot manifest + assessment; no pending wsv-w* todos"
+  "agent_run_note": "world_studio_builder-49558526 2026-06-03: re-verified progress + completion gates; refreshed screenshot manifest + assessment; no pending wsv-w* todos"
 }
