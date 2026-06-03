@@ -52,6 +52,9 @@ pill_px = 999
 opacity_disabled = 0.38
 opacity_scrim = 0.55
 opacity_hover_delta = 0.08
+blur_sigma_px = 3.0
+blur_radius_px = 6.0
+blur_passes = 2
 
 [elevation]
 shadow_r = 0.0

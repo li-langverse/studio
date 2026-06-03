@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-06-03T22:00:00Z",
-  "iteration_status": "wtfx_w3_complete",
-  "todo": "wtfx-w3-shadow-math",
-  "wave": "W3",
-  "wps": ["GUI-LIBRARY-PLAN elevation shadows", "WP-UX-01"],
+  "timestamp": "2026-06-03T23:30:00Z",
+  "iteration_status": "wtfx_w4_complete",
+  "todo": "wtfx-w4-diffusion-blur",
+  "wave": "W4",
+  "wps": ["GUI-LIBRARY-PLAN shadow diffusion", "WP-UX-01"],
   "native_only": true,
   "gates": {
     "world_studio_typography_fx_animation_gates": "pass",
@@ -11,10 +11,11 @@
     "note": "Agent host lacks lic binary; smokes registered for CI/K8s"
   },
   "smokes": [
-    "studio/li-tests/smoke/studio_shadow_math.li"
+    "lic/packages/li-ui/li-tests/smoke/blur_kernel_energy.li",
+    "studio/li-tests/smoke/studio_shadow_diffusion.li"
   ],
-  "north_star_fit": "gaming PH-UX — provable tokenized multi-layer shadow params (StudioShadowParams + studio_shadow_layer_*)",
+  "north_star_fit": "gaming PH-UX — provable separable blur kernel + paint_op_layer_blur diffused elevation shadows",
   "pr": "https://github.com/li-langverse/studio/pull/67",
   "lic_pr": "https://github.com/li-langverse/lic/pull/742",
-  "agent_run_note": "world_studio_builder: W3 StudioShadowParams pure shadow math + studio_shadow_math smoke; li_std_studio_version 52"
+  "agent_run_note": "world_studio_builder: W4 blur_kernel + paint_op_layer_blur + studio_paint_panel_shadow_diffused; li_std_studio_version 53, li_std_ui_version 10"
 }

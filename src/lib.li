@@ -1167,6 +1167,45 @@ def studio_paint_panel_shadow(frame: var PaintFrame, panel: Rect) -> unit
 =
   studio_paint_panel_shadow_at_depth(frame, panel, studio_elevation_depth_panel())
 
+def studio_paint_panel_shadow_diffused_cmds() -> int
+  requires true
+  ensures result == studio_elevation_shadow_layer_count() * 2
+  decreases 0
+=
+  return studio_elevation_shadow_layer_count() * 2
+
+def studio_paint_panel_shadow_diffused_at_depth(frame: var PaintFrame, panel: Rect, depth: int) -> unit
+  requires frame.cmd_count >= 0
+  requires panel.w >= 0.0
+  requires panel.h >= 0.0
+  requires depth >= studio_elevation_depth_panel()
+  requires depth <= studio_elevation_depth_raised()
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_panel_shadow_diffused_cmds()
+  ensures frame.last_kind == paint_op_layer_blur()
+  decreases depth
+=
+  var params: StudioShadowParams = studio_shadow_params(depth)
+  var sigma: float = studio_fx_blur_sigma_px()
+  var radius: float = studio_fx_blur_radius_px()
+  var passes: int = studio_fx_blur_passes()
+  var layer: int = 0
+  while layer < params.layer_count:
+    var shadow_rect: Rect = studio_shadow_layer_rect(panel, params, layer)
+    var col: Color = studio_shadow_layer_color(params, layer)
+    paint_frame_push(frame, paint_cmd_fill_round(shadow_rect, col, studio_default_panel_radius_px()))
+    paint_frame_push_layer_blur(frame, shadow_rect, sigma, radius, passes)
+    layer = layer + 1
+
+def studio_paint_panel_shadow_diffused(frame: var PaintFrame, panel: Rect) -> unit
+  requires frame.cmd_count >= 0
+  requires panel.w >= 0.0
+  requires panel.h >= 0.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_panel_shadow_diffused_cmds()
+  ensures frame.last_kind == paint_op_layer_blur()
+  decreases 0
+=
+  studio_paint_panel_shadow_diffused_at_depth(frame, panel, studio_elevation_depth_panel())
+
 def studio_paint_elevated_panel_shadow_cmds() -> int
   requires true
   ensures result == studio_paint_panel_shadow_cmds() + 2
@@ -1346,6 +1385,27 @@ def studio_fx_opacity_hover_delta() -> float
   decreases 0
 =
   return 0.08
+
+def studio_fx_blur_sigma_px() -> float
+  requires true
+  ensures result == 3.0
+  decreases 0
+=
+  return 3.0
+
+def studio_fx_blur_radius_px() -> float
+  requires true
+  ensures result == 6.0
+  decreases 0
+=
+  return 6.0
+
+def studio_fx_blur_passes() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
 
 def studio_viewport_overlay_scrim_alpha() -> float
   requires true
@@ -3676,10 +3736,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 52
+  ensures result == 53
   decreases 0
 =
-  return 52
+  return 53
 
 def studio_shell_widget_tree_version() -> int
   requires true

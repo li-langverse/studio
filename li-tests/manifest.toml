@@ -72,6 +72,12 @@ note = "wtfx-w3: StudioShadowParams pure shadow offset/alpha/rect + monotonic fa
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_shadow_diffusion.li"
+outcome = "check_ok"
+note = "wtfx-w4: separable blur kernel + paint_op_layer_blur diffused panel shadows"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_polish_w2_focus_ring.li"
 outcome = "check_ok"
 note = "wsp-w2: panel focus ring wired in studio_paint_shell_chrome"

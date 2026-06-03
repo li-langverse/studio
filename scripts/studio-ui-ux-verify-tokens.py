@@ -64,6 +64,12 @@ FX_FLOAT_MAP = {
     "opacity_disabled": ("studio_fx_opacity_disabled", "fx"),
     "opacity_scrim": ("studio_fx_opacity_scrim", "fx"),
     "opacity_hover_delta": ("studio_fx_opacity_hover_delta", "fx"),
+    "blur_sigma_px": ("studio_fx_blur_sigma_px", "fx"),
+    "blur_radius_px": ("studio_fx_blur_radius_px", "fx"),
+}
+
+FX_INT_MAP = {
+    "blur_passes": ("studio_fx_blur_passes", "fx"),
 }
 
 VIEWPORT_FLOAT_MAP = {
@@ -228,6 +234,20 @@ def main() -> int:
             tom = float(raw)
             try:
                 actual = parse_palette_float(STUDIO_LIB, fn)
+            except KeyError:
+                errors.append(f"missing studio {fn} in {STUDIO_LIB}")
+                continue
+            if actual != tom:
+                errors.append(f"{fn}: studio {actual} != TOML {tom}")
+
+        for key, (fn, section) in FX_INT_MAP.items():
+            raw = sections[section].get(key)
+            if raw is None:
+                errors.append(f"missing TOML {section}.{key}")
+                continue
+            tom = int(raw)
+            try:
+                actual = parse_palette_int(STUDIO_LIB, fn)
             except KeyError:
                 errors.append(f"missing studio {fn} in {STUDIO_LIB}")
                 continue
