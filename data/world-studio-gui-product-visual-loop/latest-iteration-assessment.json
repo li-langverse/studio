@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-03T02:22:00.000000+00:00",
+  "timestamp": "2026-06-03T02:25:00.000000+00:00",
   "native_only": true,
   "todo": "wsv-w5-acceptance-screenshots",
   "iteration_status": "sprint_complete_reverified",
@@ -38,7 +38,9 @@
   },
   "gates": {
     "world_studio_gui_product_visual_gates": "pass",
-    "world_studio_gui_product_visual_completion_gate": "pass"
+    "world_studio_gui_product_visual_completion_gate": "pass",
+    "world_studio_plan_gates": "fail_local_smoke_resolve",
+    "world_studio_plan_gates_note": "studio/ui module resolve fails in agent workspace; CI check job passes on PR"
   },
   "north_star_fit": {
     "domain": "gaming / native studio UX",
@@ -48,5 +50,5 @@
     ],
     "pillar": "proof (lic check + native raster truth) before perf polish"
   },
-  "agent_run_note": "world_studio_builder-53097339 2026-06-03: re-verified progress + completion gates; refreshed screenshot manifest + assessment; no pending wsv-w* todos"
+  "agent_run_note": "world_studio_builder-53226334 2026-06-03: re-verified progress + completion gates; refreshed screenshot manifest + assessment; no pending wsv-w* todos"
 }
