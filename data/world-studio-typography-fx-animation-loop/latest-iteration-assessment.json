@@ -1,21 +1,27 @@
 {
-  "timestamp": "2026-06-03T12:00:00Z",
-  "iteration_status": "wtfx_w6_complete",
-  "todo": "wtfx-w6-shell-transitions",
-  "wave": "W6",
-  "wps": ["GUI-LIBRARY-PLAN motion", "WP-UX-01", "WP-UX-15"],
+  "timestamp": "2026-06-03T07:50:00Z",
+  "iteration_status": "wtfx_w7_complete",
+  "todo": "wtfx-w7-acceptance",
+  "wave": "W7",
+  "wps": ["GUI-LIBRARY-PLAN typography/FX", "WP-UX-01", "WP-UX-15"],
   "native_only": true,
   "gates": {
     "world_studio_typography_fx_animation_gates": "pass",
+    "world_studio_typography_fx_animation_completion_gate": "pass",
     "lic_check_smokes": "skipped_host_no_lic",
-    "note": "Agent host lacks compatible lic binary (GLIBC_2.38); smokes registered for CI/K8s"
+    "png_capture": "headless_raster_fallback_python"
   },
   "smokes": [
-    "studio/li-tests/smoke/studio_motion_hover_opacity.li",
-    "studio/li-tests/smoke/studio_panel_switch_timing.li"
+    "studio/li-tests/smoke/studio_typography_fx_w7_acceptance.li"
   ],
-  "north_star_fit": "gaming PH-UX — provable shell transitions: StudioMotionState panel/hover/overlay tweens from [motion]/[fx] tokens with motion_reduced snap",
+  "screenshots": [
+    "docs/demo/media/native-verticals/png/typography-fx-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/typography-fx-game.png",
+    "docs/demo/media/native-verticals/png/typography-fx-inspector-panel.png",
+    "docs/demo/media/native-verticals/png/typography-fx-palette-overlay.png"
+  ],
+  "north_star_fit": "gaming PH-UX — provable typography/FX/motion sprint complete: Li test matrix, tokenized opacity/shadows/blur, easing transitions, acceptance captures",
   "pr": "https://github.com/li-langverse/studio/pull/67",
   "lic_pr": "https://github.com/li-langverse/lic/pull/742",
-  "agent_run_note": "world_studio_builder: W6 StudioMotionState + studio_motion_tick; eased hover scrim/palette; panel switch motion; li_std_studio_version 54"
+  "agent_run_note": "world_studio_builder: W7 acceptance — studio_typography_fx_capture_ppm + four typography-fx PNGs; completion gate green; li_std_studio_version 55"
 }

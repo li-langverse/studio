@@ -90,6 +90,12 @@ note = "wtfx-w6: panel switch motion tick + PH-UX panel_transition_ms budget"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_typography_fx_w7_acceptance.li"
+outcome = "check_ok"
+note = "wtfx-w7: typography-fx acceptance captures (game hover, inspector, palette scrim)"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_polish_w2_focus_ring.li"
 outcome = "check_ok"
 note = "wsp-w2: panel focus ring wired in studio_paint_shell_chrome"

@@ -25,7 +25,7 @@ todos:
     status: done
   - id: wtfx-w7-acceptance
     content: "W7 — Acceptance: FX demo screenshots + completion gate; plan YAML all done"
-    status: pending
+    status: done
 isProject: false
 ---
 
@@ -58,7 +58,7 @@ Update each iteration. Mark **DONE** only when every `wtfx-w*` in that phase is 
 | **P2** | Shadows + diffusion (mathematical FX) | W3–W4 | DONE |
 | **P3** | Motion + easing + animation clock | W5 | DONE |
 | **P4** | Shell integration (transitions) | W6 | DONE |
-| **P5** | Acceptance (screenshots + gates) | W7 | pending |
+| **P5** | Acceptance (screenshots + gates) | W7 | DONE |
 
 ---
 

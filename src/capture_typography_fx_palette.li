@@ -1,0 +1,11 @@
+import studio
+
+def main() -> int raises IO, Alloc
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  var path: str = "/tmp/studio-typography-fx-palette.ppm"
+  if studio_typography_fx_capture_ppm(studio_typography_fx_capture_mode_palette(), path, 1280, 720) != 1:
+    return 1
+  return 0

@@ -4,6 +4,7 @@
 
 ### Added
 
+- **World Studio typography · FX · animation W7 (acceptance)** — `studio_typography_fx_capture_ppm` + four `typography-fx-*.png` acceptance captures; completion gate; smoke `studio_typography_fx_w7_acceptance.li`; `li_std_studio_version` → 55 — [2026-06-03-world-studio-typography-fx-w7.md](docs/release-notes/2026-06-03-world-studio-typography-fx-w7.md).
 - **World Studio GUI product-visual W5 (acceptance)** — Li headless `studio_vertical_capture_ppm_auto` in studio package; eight acceptance PNGs (seven verticals @ 640×360 + game 1280×720); completion gate + smokes `studio_product_visual_w5_acceptance.li`; `li_std_studio_version` → 49 — [2026-06-02-world-studio-gui-product-visual-w5.md](docs/release-notes/2026-06-02-world-studio-gui-product-visual-w5.md).
 - **World Studio GUI polish W5 (screenshot gate)** — `polish-*.png` at 1280×720 (game, sim_rl, sim_drug_design); paint_blit shell shadows/glyphs/viewport previews; completion gate PNG color decode fix; sprint `wsp-w*` all done.
 - **World Studio GUI polish W4 (slick native pass)** — panel shadows, 4/8px spacing rhythm, topbar profile accent strip, drug viewport stick preview; smokes `studio_polish_w4_{shadows_spacing,vertical_chrome}.li`; `li_std_studio_version` → 45.

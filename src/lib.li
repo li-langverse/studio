@@ -1823,7 +1823,7 @@ def studio_motion_shell_smoke() -> int
   ensures result <= 8
   decreases 0
 =
-  if li_std_studio_version() < 54:
+  if li_std_studio_version() < 55:
     return 1
   if studio_panel_transition_ms() != 100.0:
     return 2
@@ -3962,10 +3962,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 54
+  ensures result == 55
   decreases 0
 =
-  return 54
+  return 55
 
 def studio_shell_widget_tree_version() -> int
   requires true
@@ -9577,6 +9577,90 @@ def studio_vertical_capture_ppm_auto(profile_id: int, frame_id: int, path: str, 
   decreases frame_id
 =
   return studio_vertical_capture_ppm(profile_id, frame_id, path, width, height)
+
+# wtfx-w7 — acceptance capture modes (game hover frame, inspector card, palette scrim).
+def studio_typography_fx_capture_mode_game() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  return 0
+
+def studio_typography_fx_capture_mode_inspector() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_typography_fx_capture_mode_palette() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_typography_fx_demo_compose(mode: int) -> StudioShellCompose
+  requires mode >= studio_typography_fx_capture_mode_game()
+  requires mode <= studio_typography_fx_capture_mode_palette()
+  ensures studio_compose_ok(result) == 1
+  decreases mode
+=
+  if mode == studio_typography_fx_capture_mode_inspector():
+    var insp: StudioShellCompose = studio_compose_shell_drug_litl(1280.0, 720.0, 2, 1)
+    studio_shell_demo_apply_profile(insp, studio_profile_sim_drug_design())
+    studio_viewport_display_prepare_for_profile(studio_profile_sim_drug_design())
+    insp.scene_entity_count = 1
+    insp.viewport_empty.empty_visible = 0
+    studio_attach_viewport_shell(insp)
+    insp.motion.panel_t = 1.0
+    return insp
+  if mode == studio_typography_fx_capture_mode_palette():
+    var pal: StudioShellCompose = studio_vertical_demo_compose(studio_profile_game(), 2, 0)
+    pal.motion.overlay_t = 0.5
+    studio_motion_tick(pal, studio_panel_transition_ms() * 0.5)
+    return pal
+  var game: StudioShellCompose = studio_vertical_demo_compose(studio_profile_game(), 1, 0)
+  game.motion.hover_target = 1
+  game.motion.hover_t = 0.5
+  studio_motion_tick(game, studio_hover_transition_ms() * 0.25)
+  return game
+
+def studio_typography_fx_capture_ppm(mode: int, path: str, width: int, height: int) -> int raises IO, Alloc
+  requires mode >= studio_typography_fx_capture_mode_game()
+  requires mode <= studio_typography_fx_capture_mode_palette()
+  requires width >= 64
+  requires height >= 64
+  requires path != ""
+  ensures result >= 0
+  ensures result <= 1
+  decreases mode
+=
+  var compose: StudioShellCompose = studio_typography_fx_demo_compose(mode)
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame, compose)
+  if frame.cmd_count <= 0:
+    return 2
+  var raster: RenderUiRasterResult = render_ui_raster_cpu_pass(frame, compose.layout.viewport_w, compose.layout.viewport_h)
+  var cpu_pixels: int = raster.cpu_pixels
+  if cpu_pixels <= 0:
+    cpu_pixels = frame.cmd_count
+  var profile_id: int = studio_profile_game()
+  if mode == studio_typography_fx_capture_mode_inspector():
+    profile_id = studio_profile_sim_drug_design()
+  var digest: int = studio_headless_golden_digest(profile_id, mode, width, height, frame.cmd_count, cpu_pixels, frame.last_kind)
+  digest = digest + mode * 7919 + 55
+  var wrote: int = li_rt_studio_headless_raster_ppm(path, width, height, profile_id, frame.cmd_count, cpu_pixels, digest)
+  if wrote != 1:
+    return 3
+  return 1
+
+def studio_typography_fx_acceptance_capture_count() -> int
+  requires true
+  ensures result == 4
+  decreases 0
+=
+  return 4
 
 def studio_product_visual_acceptance_vertical_count() -> int
   requires true
