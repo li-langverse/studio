@@ -13,7 +13,7 @@ todos:
     status: done
   - id: wtfx-w3-shadow-math
     content: "W3 — Shadows: tokenized multi-layer elevation as pure functions; smokes prove offset/alpha falloff"
-    status: pending
+    status: done
   - id: wtfx-w4-diffusion-blur
     content: "W4 — Diffusion: separable Gaussian/box blur on shadow layers (sigma from tokens); bounded cost"
     status: pending
@@ -55,7 +55,7 @@ Update each iteration. Mark **DONE** only when every `wtfx-w*` in that phase is 
 |-------|-------|-----|--------|
 | **P0** | Typography tests + metrics engine | W0–W1 | DONE |
 | **P1** | Opacity + compositing | W2 | DONE |
-| **P2** | Shadows + diffusion (mathematical FX) | W3–W4 | pending |
+| **P2** | Shadows + diffusion (mathematical FX) | W3–W4 | W3 done · W4 pending |
 | **P3** | Motion + easing + animation clock | W5 | pending |
 | **P4** | Shell integration (transitions) | W6 | pending |
 | **P5** | Acceptance (screenshots + gates) | W7 | pending |

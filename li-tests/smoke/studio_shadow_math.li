@@ -1,0 +1,49 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 52:
+    return 1
+  if studio_elevation_shadow_layer_count() != 3:
+    return 2
+  var panel: Rect = rect_make(8.0, 8.0, 120.0, 80.0)
+  var params_panel: StudioShadowParams = studio_shadow_params(studio_elevation_depth_panel())
+  var params_raised: StudioShadowParams = studio_shadow_params(studio_elevation_depth_raised())
+  if params_panel.layer_count != 3:
+    return 3
+  if params_panel.alpha_base != studio_elevation_shadow_alpha_base():
+    return 4
+  var prev_off: float = 0.0
+  var prev_alpha: float = 1.0
+  var layer: int = 0
+  while layer < studio_elevation_shadow_layer_count():
+    var off: float = studio_shadow_layer_offset_px(params_panel, layer)
+    if layer > 0:
+      if off <= prev_off:
+        return 5
+    prev_off = off
+    var alpha: float = studio_shadow_layer_alpha(params_panel, layer)
+    if layer > 0:
+      if alpha >= prev_alpha:
+        return 6
+    prev_alpha = alpha
+    var shadow_rect: Rect = studio_shadow_layer_rect(panel, params_panel, layer)
+    if shadow_rect.w != panel.w:
+      return 7
+    if shadow_rect.h != panel.h:
+      return 8
+  var raised_off: float = studio_shadow_layer_offset_px(params_raised, 0)
+  var panel_off: float = studio_shadow_layer_offset_px(params_panel, 0)
+  if raised_off < panel_off:
+    return 9
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_panel_shadow(frame, panel)
+  if frame.cmd_count != studio_paint_panel_shadow_cmds():
+    return 10
+  if studio_elevation_shadow_layer_alpha(0) != studio_shadow_layer_alpha(params_panel, 0):
+    return 11
+  return 0

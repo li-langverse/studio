@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-06-03T20:00:00Z",
-  "iteration_status": "wtfx_w2_complete",
-  "todo": "wtfx-w2-opacity-compositing",
-  "wave": "W2",
-  "wps": ["GUI-LIBRARY-PLAN opacity compositing", "WP-UX-01"],
+  "timestamp": "2026-06-03T22:00:00Z",
+  "iteration_status": "wtfx_w3_complete",
+  "todo": "wtfx-w3-shadow-math",
+  "wave": "W3",
+  "wps": ["GUI-LIBRARY-PLAN elevation shadows", "WP-UX-01"],
   "native_only": true,
   "gates": {
     "world_studio_typography_fx_animation_gates": "pass",
@@ -11,11 +11,10 @@
     "note": "Agent host lacks lic binary; smokes registered for CI/K8s"
   },
   "smokes": [
-    "lic/packages/li-ui/li-tests/smoke/color_alpha_composite.li",
-    "studio/li-tests/smoke/studio_viewport_scrim_opacity.li"
+    "studio/li-tests/smoke/studio_shadow_math.li"
   ],
-  "north_star_fit": "gaming PH-UX — provable straight-alpha source-over (color_over, paint_raster_*) + [fx] token accessors",
+  "north_star_fit": "gaming PH-UX — provable tokenized multi-layer shadow params (StudioShadowParams + studio_shadow_layer_*)",
   "pr": "https://github.com/li-langverse/studio/pull/67",
   "lic_pr": "https://github.com/li-langverse/lic/pull/742",
-  "agent_run_note": "world_studio_builder: W2 color_with_alpha/color_over + paint_raster + studio_fx opacity tokens"
+  "agent_run_note": "world_studio_builder: W3 StudioShadowParams pure shadow math + studio_shadow_math smoke; li_std_studio_version 52"
 }

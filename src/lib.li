@@ -932,7 +932,7 @@ def studio_spacing_rhythm_px() -> float
 =
   return studio_spacing_unit_px() * 2.0
 
-# WSV W2 — tokenized elevation shadows (studio-design-tokens [elevation]).
+# WSV W2 / wtfx-w3 — tokenized elevation shadows (studio-design-tokens [elevation]).
 def studio_elevation_shadow_layer_count() -> int
   requires true
   ensures result == 3
@@ -970,6 +970,27 @@ def studio_elevation_shadow_alpha_falloff() -> float
 =
   return 0.45
 
+def studio_elevation_shadow_r() -> float
+  requires true
+  ensures result == 0.0
+  decreases 0
+=
+  return 0.0
+
+def studio_elevation_shadow_g() -> float
+  requires true
+  ensures result == 0.0
+  decreases 0
+=
+  return 0.0
+
+def studio_elevation_shadow_b() -> float
+  requires true
+  ensures result == 0.0
+  decreases 0
+=
+  return 0.0
+
 def studio_elevation_depth_panel() -> int
   requires true
   ensures result == 0
@@ -984,13 +1005,95 @@ def studio_elevation_depth_raised() -> int
 =
   return 1
 
+type StudioShadowParams = object
+  public layer_count: int
+  public offset_base_px: float
+  public spread_px: float
+  public alpha_base: float
+  public alpha_falloff: float
+  public shadow_r: float
+  public shadow_g: float
+  public shadow_b: float
+  public depth_boost_px: float
+
+def studio_shadow_params(depth: int) -> StudioShadowParams
+  requires depth >= studio_elevation_depth_panel()
+  requires depth <= studio_elevation_depth_raised()
+  ensures result.layer_count == studio_elevation_shadow_layer_count()
+  ensures result.offset_base_px == studio_elevation_shadow_offset_base_px()
+  ensures result.spread_px == studio_elevation_shadow_spread_px()
+  ensures result.alpha_base == studio_elevation_shadow_alpha_base()
+  ensures result.alpha_falloff == studio_elevation_shadow_alpha_falloff()
+  ensures result.shadow_r == studio_elevation_shadow_r()
+  ensures result.shadow_g == studio_elevation_shadow_g()
+  ensures result.shadow_b == studio_elevation_shadow_b()
+  decreases depth
+=
+  var p: StudioShadowParams
+  p.layer_count = studio_elevation_shadow_layer_count()
+  p.offset_base_px = studio_elevation_shadow_offset_base_px()
+  p.spread_px = studio_elevation_shadow_spread_px()
+  p.alpha_base = studio_elevation_shadow_alpha_base()
+  p.alpha_falloff = studio_elevation_shadow_alpha_falloff()
+  p.shadow_r = studio_elevation_shadow_r()
+  p.shadow_g = studio_elevation_shadow_g()
+  p.shadow_b = studio_elevation_shadow_b()
+  p.depth_boost_px = 0.0
+  if depth == studio_elevation_depth_raised():
+    p.depth_boost_px = studio_spacing_unit_px()
+  return p
+
+def studio_shadow_layer_alpha(params: StudioShadowParams, layer: int) -> float
+  requires layer >= 0
+  requires layer < params.layer_count
+  ensures result >= 0.08
+  ensures result <= params.alpha_base
+  decreases layer
+=
+  var scale: float = 1.0
+  if layer == 1:
+    scale = params.alpha_falloff
+  if layer == 2:
+    scale = params.alpha_falloff * params.alpha_falloff
+  return params.alpha_base * scale
+
+def studio_shadow_layer_offset_px(params: StudioShadowParams, layer: int) -> float
+  requires layer >= 0
+  requires layer < params.layer_count
+  ensures result >= params.offset_base_px
+  decreases layer
+=
+  var layer_step: float = params.spread_px / studio_int_as_float(params.layer_count)
+  return params.offset_base_px + layer_step * studio_int_as_float(layer + 1) + params.depth_boost_px
+
+def studio_shadow_layer_rect(panel: Rect, params: StudioShadowParams, layer: int) -> Rect
+  requires panel.w >= 0.0
+  requires panel.h >= 0.0
+  requires layer >= 0
+  requires layer < params.layer_count
+  ensures result.w == panel.w
+  ensures result.h == panel.h
+  decreases layer
+=
+  var off: float = studio_shadow_layer_offset_px(params, layer)
+  return rect_make(panel.x + off, panel.y + off, panel.w, panel.h)
+
+def studio_shadow_layer_color(params: StudioShadowParams, layer: int) -> Color
+  requires layer >= 0
+  requires layer < params.layer_count
+  ensures result.a == studio_shadow_layer_alpha(params, layer)
+  decreases layer
+=
+  var alpha: float = studio_shadow_layer_alpha(params, layer)
+  return color_rgb(params.shadow_r, params.shadow_g, params.shadow_b, alpha)
+
 def studio_color_panel_shadow_alpha(alpha: float) -> Color
   requires alpha >= 0.0
   requires alpha <= 1.0
   ensures result.a == alpha
   decreases 0
 =
-  return color_rgb(0.0, 0.0, 0.0, alpha)
+  return color_rgb(studio_elevation_shadow_r(), studio_elevation_shadow_g(), studio_elevation_shadow_b(), alpha)
 
 def studio_color_panel_shadow() -> Color
   requires true
@@ -1002,34 +1105,20 @@ def studio_color_panel_shadow() -> Color
 def studio_elevation_shadow_layer_alpha(layer: int) -> float
   requires layer >= 0
   requires layer < studio_elevation_shadow_layer_count()
-  ensures result >= 0.08
-  ensures result <= studio_elevation_shadow_alpha_base()
+  ensures result == studio_shadow_layer_alpha(studio_shadow_params(studio_elevation_depth_panel()), layer)
   decreases layer
 =
-  var base: float = studio_elevation_shadow_alpha_base()
-  var fall: float = studio_elevation_shadow_alpha_falloff()
-  var scale: float = 1.0
-  if layer == 1:
-    scale = fall
-  if layer == 2:
-    scale = fall * fall
-  return base * scale
+  return studio_shadow_layer_alpha(studio_shadow_params(studio_elevation_depth_panel()), layer)
 
 def studio_elevation_shadow_layer_offset_px(layer: int, depth: int) -> float
   requires layer >= 0
   requires layer < studio_elevation_shadow_layer_count()
   requires depth >= studio_elevation_depth_panel()
   requires depth <= studio_elevation_depth_raised()
-  ensures result >= studio_elevation_shadow_offset_base_px()
+  ensures result == studio_shadow_layer_offset_px(studio_shadow_params(depth), layer)
   decreases layer
 =
-  var base: float = studio_elevation_shadow_offset_base_px()
-  var spread: float = studio_elevation_shadow_spread_px()
-  var layer_step: float = spread / studio_int_as_float(studio_elevation_shadow_layer_count())
-  var depth_boost: float = 0.0
-  if depth == studio_elevation_depth_raised():
-    depth_boost = studio_spacing_unit_px()
-  return base + layer_step * studio_int_as_float(layer + 1) + depth_boost
+  return studio_shadow_layer_offset_px(studio_shadow_params(depth), layer)
 
 def studio_paint_panel_shadow_layer_rect(panel: Rect, layer: int, depth: int) -> Rect
   requires panel.w >= 0.0
@@ -1038,12 +1127,10 @@ def studio_paint_panel_shadow_layer_rect(panel: Rect, layer: int, depth: int) ->
   requires layer < studio_elevation_shadow_layer_count()
   requires depth >= studio_elevation_depth_panel()
   requires depth <= studio_elevation_depth_raised()
-  ensures result.w == panel.w
-  ensures result.h == panel.h
+  ensures result == studio_shadow_layer_rect(panel, studio_shadow_params(depth), layer)
   decreases layer
 =
-  var off: float = studio_elevation_shadow_layer_offset_px(layer, depth)
-  return rect_make(panel.x + off, panel.y + off, panel.w, panel.h)
+  return studio_shadow_layer_rect(panel, studio_shadow_params(depth), layer)
 
 def studio_paint_panel_shadow_cmds() -> int
   requires true
@@ -1062,11 +1149,12 @@ def studio_paint_panel_shadow_at_depth(frame: var PaintFrame, panel: Rect, depth
   ensures frame.last_kind == paint_op_fill_round_rect()
   decreases depth
 =
+  var params: StudioShadowParams = studio_shadow_params(depth)
   var layer: int = 0
-  while layer < studio_elevation_shadow_layer_count():
-    var shadow_rect: Rect = studio_paint_panel_shadow_layer_rect(panel, layer, depth)
-    var alpha: float = studio_elevation_shadow_layer_alpha(layer)
-    paint_frame_push(frame, paint_cmd_fill_round(shadow_rect, studio_color_panel_shadow_alpha(alpha), studio_default_panel_radius_px()))
+  while layer < params.layer_count:
+    var shadow_rect: Rect = studio_shadow_layer_rect(panel, params, layer)
+    var col: Color = studio_shadow_layer_color(params, layer)
+    paint_frame_push(frame, paint_cmd_fill_round(shadow_rect, col, studio_default_panel_radius_px()))
     layer = layer + 1
 
 def studio_paint_panel_shadow(frame: var PaintFrame, panel: Rect) -> unit
@@ -3588,10 +3676,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 51
+  ensures result == 52
   decreases 0
 =
-  return 51
+  return 52
 
 def studio_shell_widget_tree_version() -> int
   requires true
