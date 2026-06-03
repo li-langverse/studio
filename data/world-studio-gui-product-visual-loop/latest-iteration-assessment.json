@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-03T12:00:00.000000+00:00",
+  "timestamp": "2026-06-03T18:05:00.000000+00:00",
   "native_only": true,
   "todo": "wsv-w5-acceptance-screenshots",
   "iteration_status": "sprint_complete_reverified",
@@ -12,7 +12,8 @@
     "Product-visual sprint complete: all wsv-w0..w5 todos done; progress + completion gates PASS.",
     "Eight acceptance PNGs on disk; PNG heuristics pass (>=12KB, >=48 unique colors).",
     "PR #66 open on cursor/world-studio-gui-product-visual; all CI checks SUCCESS.",
-    "Local Li headless capture binaries exit without PPM in agent workspace; committed PNGs unchanged.",
+    "Local Li headless capture binaries exit without PPM in agent workspace (paint probe / RT path); committed PNGs unchanged.",
+    "Studio lib.li capture return codes aligned with lic (2=empty frame, 3=write fail) for mirror sync.",
     "No pending wsv-w* todos — sprint ready for human merge review."
   ],
   "evidence": {
@@ -50,5 +51,5 @@
     ],
     "pillar": "proof (lic check + native raster truth) before perf polish"
   },
-  "agent_run_note": "world_studio_builder-1780453567127 2026-06-03: re-verified progress + completion gates; refreshed screenshot manifest; no pending wsv-w* todos"
+  "agent_run_note": "world_studio_builder-1780453690489 2026-06-03: re-verified progress + completion gates; refreshed screenshot manifest; no pending wsv-w* todos"
 }
