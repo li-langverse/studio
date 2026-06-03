@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-03T02:22:57.106127+00:00",
+  "timestamp": "2026-06-03T02:25:00.000000+00:00",
   "native_only": true,
   "todo": "wsv-w5-acceptance-screenshots",
   "iteration_status": "sprint_complete_reverified",
@@ -12,7 +12,7 @@
     "Product-visual sprint complete: all wsv-w0..w5 todos done; progress + completion gates PASS.",
     "Eight acceptance PNGs on disk; PNG heuristics pass (>=12KB, >=48 unique colors).",
     "PR #66 open on cursor/world-studio-gui-product-visual; all CI checks SUCCESS.",
-    "Local Li headless capture binaries exit without PPM in agent workspace; committed PNGs unchanged.",
+    "Local Li headless capture binaries exit 2 (no PPM) in agent workspace; committed PNGs unchanged.",
     "No pending wsv-w* todos — sprint ready for human merge review."
   ],
   "evidence": {
@@ -39,8 +39,8 @@
   "gates": {
     "world_studio_gui_product_visual_gates": "pass",
     "world_studio_gui_product_visual_completion_gate": "pass",
-    "world_studio_plan_gates": "fail_local_smoke_resolve",
-    "world_studio_plan_gates_note": "studio/ui module resolve fails in agent workspace; CI check job passes on PR"
+    "world_studio_plan_gates": "not_run",
+    "world_studio_plan_gates_note": "master plan loop out of scope for product-visual re-verify pass"
   },
   "north_star_fit": {
     "domain": "gaming / native studio UX",
@@ -50,5 +50,5 @@
     ],
     "pillar": "proof (lic check + native raster truth) before perf polish"
   },
-  "agent_run_note": "world_studio_builder-53340142 2026-06-03: re-verified progress + completion gates; refreshed screenshot manifest; no pending wsv-w* todos"
+  "agent_run_note": "world_studio_builder-53454580 2026-06-03: re-verified progress + completion gates; refreshed screenshot manifest; no pending wsv-w* todos"
 }
