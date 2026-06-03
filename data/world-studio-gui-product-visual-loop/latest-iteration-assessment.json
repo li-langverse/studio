@@ -8,7 +8,7 @@
     "WP-UX-05"
   ],
   "summary": [
-    "Product-visual sprint complete: all wsv-w0..w5 todos done; progress + completion gates PASS (agent run 44750099).",
+    "Product-visual sprint complete: all wsv-w0..w5 todos done; progress + completion gates PASS (agent run 44865015).",
     "Eight acceptance PNGs on disk; PNG heuristics pass (>=12KB, >=48 unique colors).",
     "PR #66 open on cursor/world-studio-gui-product-visual; CI green (check, native-sdl-capture, installers).",
     "Local Li headless capture fails in agent workspace (studio_vertical_capture_ppm exit 2); committed PNGs + CI native-sdl-capture remain proof path.",
@@ -43,5 +43,5 @@
     ],
     "pillar": "proof (lic check + native raster truth) before perf polish"
   },
-  "agent_run_note": "world_studio_builder-44750099 2026-06-03: re-verified gates; no pending wsv-w* todos"
+  "agent_run_note": "world_studio_builder-44865015 2026-06-03: re-verified gates; no pending wsv-w* todos"
 }
