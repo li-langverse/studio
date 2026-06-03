@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-06-03T23:45:00Z",
-  "iteration_status": "wtfx_w5_complete",
-  "todo": "wtfx-w5-motion-core",
-  "wave": "W5",
-  "wps": ["GUI-LIBRARY-PLAN motion", "WP-UX-01"],
+  "timestamp": "2026-06-03T12:00:00Z",
+  "iteration_status": "wtfx_w6_complete",
+  "todo": "wtfx-w6-shell-transitions",
+  "wave": "W6",
+  "wps": ["GUI-LIBRARY-PLAN motion", "WP-UX-01", "WP-UX-15"],
   "native_only": true,
   "gates": {
     "world_studio_typography_fx_animation_gates": "pass",
@@ -11,10 +11,11 @@
     "note": "Agent host lacks compatible lic binary (GLIBC_2.38); smokes registered for CI/K8s"
   },
   "smokes": [
-    "lic/packages/li-gui/li-tests/smoke/motion_easing.li"
+    "studio/li-tests/smoke/studio_motion_hover_opacity.li",
+    "studio/li-tests/smoke/studio_panel_switch_timing.li"
   ],
-  "north_star_fit": "gaming PH-UX — provable easing/tween library + monotonic motion clock for token-driven shell transitions",
+  "north_star_fit": "gaming PH-UX — provable shell transitions: StudioMotionState panel/hover/overlay tweens from [motion]/[fx] tokens with motion_reduced snap",
   "pr": "https://github.com/li-langverse/studio/pull/67",
   "lic_pr": "https://github.com/li-langverse/lic/pull/742",
-  "agent_run_note": "world_studio_builder: W5 motion.li easing + tween_float + motion_clock_ms + [animation] tokens; li_std_gui_version 14"
+  "agent_run_note": "world_studio_builder: W6 StudioMotionState + studio_motion_tick; eased hover scrim/palette; panel switch motion; li_std_studio_version 54"
 }

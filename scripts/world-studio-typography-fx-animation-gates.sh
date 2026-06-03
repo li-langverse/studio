@@ -90,6 +90,7 @@ WTFX_SMOKES=(
   "$LIC_ROOT/packages/li-ui/li-tests/smoke/blur_kernel_energy.li"
   "$LIC_ROOT/packages/li-gui/li-tests/smoke/motion_easing.li"
   "$STUDIO_ROOT/li-tests/smoke/studio_motion_hover_opacity.li"
+  "$STUDIO_ROOT/li-tests/smoke/studio_panel_switch_timing.li"
 )
 
 for s in "${WTFX_SMOKES[@]}"; do

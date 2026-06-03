@@ -22,7 +22,7 @@ def main() -> int
   if shell_open.palette.result_count != studio_palette_result_count_stub():
     return 6
   var frame: PaintFrame = paint_frame_new()
-  studio_paint_palette_overlay(frame, shell_open.palette)
+  studio_paint_palette_overlay(frame, shell_open.palette, shell_open.motion)
   if frame.cmd_count != studio_paint_palette_cmds(studio_palette_open_flag()):
     return 7
   if studio_paint_palette_cmds(studio_palette_closed_flag()) != 0:

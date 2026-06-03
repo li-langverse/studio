@@ -30,7 +30,7 @@ def main() -> int
   if exp_cmds < 5:
     return 10
   var frame: PaintFrame = paint_frame_new()
-  studio_paint_outliner(frame, compose.outliner, shell.hover)
+  studio_paint_outliner(frame, compose.outliner, shell.hover, shell.motion)
   if frame.cmd_count != exp_cmds:
     return 11
   if frame.last_kind != paint_op_draw_glyphs():

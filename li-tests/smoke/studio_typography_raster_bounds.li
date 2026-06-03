@@ -20,7 +20,7 @@ def main() -> int
   if text_layout_rect_inside(topbar_frame.last_rect, layout.topbar, 1.0) != 1:
     return 4
   var dock_frame: PaintFrame = paint_frame_new()
-  studio_paint_dock(dock_frame, compose.dock, compose.hover)
+  studio_paint_dock(dock_frame, compose.dock, compose.hover, compose.motion)
   if dock_frame.last_kind != paint_op_draw_glyphs():
     return 5
   if text_layout_rect_inside(dock_frame.last_rect, compose.dock.rect, 2.0) != 1:

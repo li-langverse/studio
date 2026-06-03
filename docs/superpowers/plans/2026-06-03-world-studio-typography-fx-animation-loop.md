@@ -22,7 +22,7 @@ todos:
     status: done
   - id: wtfx-w6-shell-transitions
     content: "W6 — Shell transitions: panel/hover/overlay animate from [motion] tokens (respect reduced-motion)"
-    status: pending
+    status: done
   - id: wtfx-w7-acceptance
     content: "W7 — Acceptance: FX demo screenshots + completion gate; plan YAML all done"
     status: pending
@@ -57,7 +57,7 @@ Update each iteration. Mark **DONE** only when every `wtfx-w*` in that phase is 
 | **P1** | Opacity + compositing | W2 | DONE |
 | **P2** | Shadows + diffusion (mathematical FX) | W3–W4 | DONE |
 | **P3** | Motion + easing + animation clock | W5 | DONE |
-| **P4** | Shell integration (transitions) | W6 | pending |
+| **P4** | Shell integration (transitions) | W6 | DONE |
 | **P5** | Acceptance (screenshots + gates) | W7 | pending |
 
 ---

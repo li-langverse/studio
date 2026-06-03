@@ -1,0 +1,22 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if studio_motion_shell_smoke() != 0:
+    return 1
+  var compose: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 1)
+  compose.motion.hover_target = 1
+  compose.motion.hover_t = 0.5
+  var mid: float = studio_motion_hover_overlay_alpha(compose.motion)
+  if mid <= 0.0:
+    return 2
+  if mid >= studio_fx_opacity_hover_delta():
+    return 3
+  var base: Color = studio_color_bg_elevated()
+  var fill: Color = studio_motion_hover_fill(base, compose.motion)
+  if fill.a <= base.a:
+    return 4
+  return 0

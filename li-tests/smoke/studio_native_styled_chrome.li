@@ -15,7 +15,7 @@ def main() -> int
   var compose: StudioShellCompose = studio_compose_shell_palette(1280.0, 720.0, 0, 1, studio_palette_closed_flag())
   var dock: StudioDockCompose = compose.dock
   var dframe: PaintFrame = paint_frame_new()
-  studio_paint_dock(dframe, dock)
+  studio_paint_dock(dframe, dock, compose.hover, compose.motion)
   if dframe.last_kind != paint_op_draw_glyphs():
     return 4
   if studio_paint_dock_cmds() != 20:
@@ -24,7 +24,7 @@ def main() -> int
     return 10
   var timeline: StudioTimelineCompose = compose.timeline
   var tframe: PaintFrame = paint_frame_new()
-  studio_paint_timeline(tframe, timeline)
+  studio_paint_timeline(tframe, timeline, compose.hover, compose.motion)
   if tframe.last_kind != paint_op_stroke_round_rect():
     return 5
   var shell_frame: PaintFrame = paint_frame_new()
