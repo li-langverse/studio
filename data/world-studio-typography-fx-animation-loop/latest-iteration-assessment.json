@@ -17,6 +17,7 @@
     "studio/li-tests/smoke/studio_typography_engine.li"
   ],
   "north_star_fit": "gaming PH-UX — provable typography metrics before FX/motion; proof-before-perf via def contracts",
-  "pr": "",
+  "pr": "https://github.com/li-langverse/studio/pull/67",
+  "lic_pr": "https://github.com/li-langverse/lic/pull/742",
   "agent_run_note": "world_studio_builder: W0 text_layout.li + test matrix; lic mirror in lib.li"
 }
