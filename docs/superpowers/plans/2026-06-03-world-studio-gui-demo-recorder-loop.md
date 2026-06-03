@@ -4,28 +4,28 @@ overview: Goal-directed sprint — agent-controllable native Studio UI (MCP + in
 todos:
   - id: wrec-w0-ui-snapshot-tree
     content: "W0 — UiSnapshot tree: stable element IDs, bounds, roles, accessibility labels on shell widget tree"
-    status: pending
+    status: done
   - id: wrec-w1-control-dispatch
     content: "W1 — Control dispatch: ui_click/ui_key/ui_set_value via InputState + hit-test (in-process API)"
-    status: pending
+    status: done
   - id: wrec-w2-mcp-ui-tools
     content: "W2 — MCP ui_* tools on lis mcp li-engine (snapshot, click, key, wait, set_value)"
-    status: pending
+    status: done
   - id: wrec-w3-demo-script-dsl
     content: "W3 — DemoScript DSL (JSON) + studio_demo_replay_step with requires/ensures"
-    status: pending
+    status: done
   - id: wrec-w4-frame-capture
     content: "W4 — Per-step native frame capture (PPM/PNG) after compose+paint; honest native_pixels flag"
-    status: pending
+    status: done
   - id: wrec-w5-video-encode
     content: "W5 — ffmpeg MP4 encoder + capture-provenance.json (no large binaries in git)"
-    status: pending
+    status: done
   - id: wrec-w6-scenario-library
     content: "W6 — Three curated scenarios (workspace tour, palette flow, agent invoke) + acceptance MP4s"
-    status: pending
+    status: done
   - id: wrec-w7-k8s-recorder-agent
     content: "W7 — Recorder worker docs, gates, delivery manifest; completion gate passes"
-    status: pending
+    status: done
 isProject: false
 ---
 

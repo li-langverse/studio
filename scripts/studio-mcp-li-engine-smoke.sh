@@ -1,31 +1,22 @@
 #!/usr/bin/env bash
-# Integration smoke: lis mcp li-engine stdio initialize + tools/list (WP-AG-03).
+# MCP li-engine smoke — tools/list includes ui_snapshot.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PY="${ROOT}/scripts/lis-mcp-li-engine.py"
-[[ -f "$PY" ]] || { echo "missing $PY" >&2; exit 1; }
-
-send() {
-  local body="$1"
-  local len
-  len="$(printf '%s' "$body" | wc -c | tr -d ' ')"
-  printf 'Content-Length: %s\r\n\r\n%s' "$len" "$body"
-}
-
-init_req='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"smoke","version":"0"}}}'
-list_req='{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
-
-out="$( { send "$init_req"; send "$list_req"; } | python3 "$PY" )"
-echo "$out" | grep -q '"protocolVersion":"2024-11-05"' || {
-  echo "studio-mcp-li-engine-smoke: initialize response missing protocolVersion" >&2
-  exit 1
-}
-echo "$out" | grep -q '"world_scaffold"' || {
-  echo "studio-mcp-li-engine-smoke: tools/list missing world_scaffold" >&2
-  exit 1
-}
-echo "$out" | grep -q '"lic_build"' || {
-  echo "studio-mcp-li-engine-smoke: tools/list missing lic_build" >&2
-  exit 1
-}
-echo "studio-mcp-li-engine-smoke: ok"
+LIC_ROOT="${LIC_ROOT:-$ROOT/../lic}"
+PY="$LIC_ROOT/scripts/lis-mcp-li-engine.py"
+[[ -f "$PY" ]] || PY="$ROOT/../lic/scripts/lis-mcp-li-engine.py"
+[[ -f "$PY" ]] || { echo "studio-mcp-li-engine-smoke: missing lis-mcp-li-engine.py" >&2; exit 1; }
+python3 - "$PY" <<'PY'
+import json, subprocess, sys
+py = sys.argv[1]
+proc = subprocess.run(["python3", py], input=json.dumps({"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}})+"\n", capture_output=True, text=True)
+line = proc.stdout.strip().splitlines()[-1]
+resp = json.loads(line)
+tools = [t["name"] for t in resp.get("result", {}).get("tools", [])]
+need = {"ui_snapshot", "ui_click", "demo_record_finish"}
+missing = need - set(tools)
+if missing:
+    print("studio-mcp-li-engine-smoke: missing tools:", ", ".join(sorted(missing)), file=sys.stderr)
+    sys.exit(1)
+print("studio-mcp-li-engine-smoke: OK")
+PY

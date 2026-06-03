@@ -1,0 +1,18 @@
+import studio
+
+def main() -> int raises IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 50:
+    return 1
+  if studio_mcp_tool_count() != 19:
+    return 2
+  if studio_mcp_tool_from_name("ui_snapshot") != studio_mcp_ui_snapshot():
+    return 3
+  if studio_mcp_tool_from_name("ui_click") != studio_mcp_ui_click():
+    return 4
+  if studio_mcp_tool_from_name("demo_record_finish") != studio_mcp_demo_record_finish():
+    return 5
+  return 0

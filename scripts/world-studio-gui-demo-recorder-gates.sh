@@ -36,7 +36,18 @@ run_smoke() {
   local path="$1"
   [[ -z "$LIC_BIN" ]] && return 0
   [[ -f "$path" ]] || { warn "smoke not yet added: $path"; return 0; }
-  "$LIC_BIN" check --paths "$path" || fail "lic check $path"
+  local rel=""
+  if [[ "$path" == "$STUDIO_ROOT/li-tests/smoke/"* ]]; then
+    rel="packages/li-studio/li-tests/smoke/$(basename "$path")"
+    (cd "$LIC_ROOT" && "$LIC_BIN" check "$rel") || fail "lic check $rel"
+    return 0
+  fi
+  if [[ "$path" == "$LIC_ROOT/packages/li-gui/"* ]]; then
+    rel="${path#"$LIC_ROOT/"}"
+    (cd "$LIC_ROOT" && "$LIC_BIN" check "$rel") || fail "lic check $rel"
+    return 0
+  fi
+  "$LIC_BIN" check "$path" || fail "lic check $path"
 }
 
 # Baseline (must stay green)

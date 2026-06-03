@@ -1,0 +1,366 @@
+# Demo recorder — tag-based UiSnapshot control (no str move in hot path).
+
+def studio_ui_key_tag_cmd_k() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_ui_key_tag_escape() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_ui_key_tag_digit_1() -> int
+  requires true
+  ensures result == 11
+  decreases 0
+=
+  return 11
+
+def studio_ui_snapshot_version() -> int
+  requires true
+  ensures result == gui_ui_snapshot_version()
+  decreases 0
+=
+  return gui_ui_snapshot_version()
+
+def studio_ui_snapshot_from_compose(compose: StudioShellCompose, frame_id: int) -> UiSnapshot
+  requires compose.layout.viewport_w > 0.0
+  requires compose.widget_tree_active == 1
+  requires frame_id >= 0
+  ensures result.element_count >= 18
+  ensures result.frame_id == frame_id
+  decreases frame_id
+=
+  var w: int = compose.layout.viewport_w
+  var h: int = compose.layout.viewport_h
+  var snap: UiSnapshot = shell_widget_tree_ui_snapshot(compose.widget_tree, compose.widget_tree_layout, frame_id, compose.config.active_profile, w, h)
+  var chip: Rect = studio_profile_chip_rect_at(compose.layout.topbar.x, compose.layout.topbar.y, compose.layout.topbar.w, compose.layout.topbar.h, compose.config.active_profile)
+  var chip_elem: UiElement = ui_element_make(ui_snapshot_tag_topbar_profile_chip(), ui_snapshot_role_button(), chip, 1, 0, 0)
+  var _chip: int = ui_snapshot_push(snap, chip_elem)
+  var send_elem: UiElement = ui_element_make(ui_snapshot_tag_agent_send_button(), ui_snapshot_role_button(), compose.agent.send_rect, 1, 0, 0)
+  var _send: int = ui_snapshot_push(snap, send_elem)
+  return snap
+
+def studio_ui_input_at_rect(bounds: Rect) -> InputState
+  requires bounds.w >= 0.0
+  requires bounds.h >= 0.0
+  ensures result.pointer_down == 1
+  decreases 0
+=
+  var s: InputState = input_default()
+  s.pointer_down = 1
+  s.pointer_x = bounds.x + bounds.w / 2.0
+  s.pointer_y = bounds.y + bounds.h / 2.0
+  return s
+
+def studio_ui_key_from_tag(key_tag: int) -> InputState
+  requires key_tag >= 0
+  ensures result.key_escape >= 0
+  ensures result.key_escape <= 1
+  decreases key_tag
+=
+  var s: InputState = input_default()
+  if key_tag == studio_ui_key_tag_cmd_k():
+    s.key_cmd_k = 1
+    return s
+  if key_tag == studio_ui_key_tag_escape():
+    s.key_escape = 1
+    return s
+  if key_tag == studio_ui_key_tag_digit_1():
+    s.key_digit = 1
+    return s
+  return s
+
+def studio_ui_click_dock_slot(compose: var StudioShellCompose, slot: int) -> int
+  requires slot >= 0
+  requires slot < studio_dock_slot_count()
+  ensures compose.dock.active_slot == slot
+  decreases slot
+=
+  compose.dock.active_slot = slot
+  compose.dock.active_slot_rect = studio_dock_slot_rect_at(compose.layout.dock.x, compose.layout.dock.y, compose.layout.dock.w, compose.layout.dock.h, slot)
+  studio_shell_sync_widget_tree_from_reactive(compose)
+  return 1
+
+def studio_ui_click_tag(compose: var StudioShellCompose, id_tag: int) -> int
+  requires compose.layout.viewport_w > 0.0
+  requires compose.widget_tree_active == 1
+  requires id_tag > 0
+  ensures result >= 0
+  ensures result <= 1
+  decreases id_tag
+=
+  if id_tag == ui_snapshot_tag_dock_slot_0():
+    return studio_ui_click_dock_slot(compose, 0)
+  if id_tag == ui_snapshot_tag_dock_slot_1():
+    return studio_ui_click_dock_slot(compose, 1)
+  if id_tag == ui_snapshot_tag_dock_slot_2():
+    return studio_ui_click_dock_slot(compose, 2)
+  if id_tag == ui_snapshot_tag_dock_slot_3():
+    return studio_ui_click_dock_slot(compose, 3)
+  if id_tag == ui_snapshot_tag_palette_row_0():
+    return studio_palette_apply_action(compose, studio_palette_action_focus_agent())
+  if id_tag == ui_snapshot_tag_agent_send_button():
+    var snap: UiSnapshot = studio_ui_snapshot_from_compose(compose, 0)
+    var idx: int = ui_snapshot_element_find_by_tag(snap, id_tag)
+    if idx < 0:
+      return 0
+    var bounds: Rect = ui_snapshot_element_bounds_at(snap, idx)
+    var input: InputState = studio_ui_input_at_rect(bounds)
+    var run: StudioAgentRun = studio_agent_run_idle()
+    run.task_state = studio_agent_task_running()
+    var handled: int = studio_shell_handle_agent_pointer(compose, run, input)
+    studio_reactive_flush_agent_from_run(compose, run)
+    if handled == 1:
+      return 1
+    return 0
+  return 0
+
+def studio_ui_key_tag(compose: var StudioShellCompose, key_tag: int) -> int
+  requires compose.layout.viewport_w > 0.0
+  requires key_tag > 0
+  ensures result >= studio_key_action_none()
+  decreases key_tag
+=
+  var input: InputState = studio_ui_key_from_tag(key_tag)
+  return studio_handle_studio_key(compose, input)
+
+def studio_motion_tick(compose: var StudioShellCompose, dt_ms: int) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires dt_ms >= 0
+  ensures true
+  decreases dt_ms
+=
+  var pct: float = compose.timeline.playhead_pct
+  pct = pct + (layout_int_as_float(dt_ms) / 1000.0) * 0.05
+  if pct > 1.0:
+    pct = 1.0
+  compose.timeline.playhead_pct = pct
+  studio_reactive_resync_timeline_playhead(compose, pct)
+  studio_reactive_flush_timeline(compose)
+
+def studio_ui_wait_frames(compose: var StudioShellCompose, n: int) -> unit
+  requires compose.layout.viewport_w > 0.0
+  requires n >= 0
+  ensures true
+  decreases n
+=
+  var left: int = n
+  while left > 0
+    studio_motion_tick(compose, 16)
+    left = left - 1
+
+def studio_demo_recorder_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_demo_step_kind_wait_ms() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_demo_step_kind_ui_key() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_demo_step_kind_ui_click() -> int
+  requires true
+  ensures result == 3
+  decreases 0
+=
+  return 3
+
+def studio_demo_step_kind_wait_frames() -> int
+  requires true
+  ensures result == 4
+  decreases 0
+=
+  return 4
+
+def studio_demo_step_kind_capture() -> int
+  requires true
+  ensures result == 5
+  decreases 0
+=
+  return 5
+
+type DemoScriptStep = object
+  public kind: int
+  public wait_ms: int
+  public wait_frames: int
+  public key_tag: int
+  public id_tag: int
+  public capture_flag: int
+
+type DemoScript = object
+  public profile_id: int
+  public width: int
+  public height: int
+  public fps: int
+  public native_only: int
+  public step_count: int
+  public steps: array[16, DemoScriptStep]
+
+type DemoStepResult = object
+  public ok: int
+  public captured: int
+
+type DemoReplayResult = object
+  public ok: int
+  public steps_run: int
+  public frames_captured: int
+
+def studio_demo_script_step_wait_ms(ms: int) -> DemoScriptStep
+  requires ms >= 0
+  ensures result.kind == studio_demo_step_kind_wait_ms()
+  ensures result.wait_ms == ms
+  decreases ms
+=
+  var out: DemoScriptStep
+  out.kind = studio_demo_step_kind_wait_ms()
+  out.wait_ms = ms
+  out.wait_frames = 0
+  out.key_tag = 0
+  out.id_tag = 0
+  out.capture_flag = 0
+  return out
+
+def studio_demo_script_step_ui_key(key_tag: int) -> DemoScriptStep
+  requires key_tag > 0
+  ensures result.kind == studio_demo_step_kind_ui_key()
+  ensures result.key_tag == key_tag
+  decreases key_tag
+=
+  var out: DemoScriptStep
+  out.kind = studio_demo_step_kind_ui_key()
+  out.key_tag = key_tag
+  out.id_tag = 0
+  out.capture_flag = 0
+  return out
+
+def studio_demo_script_step_ui_click(id_tag: int) -> DemoScriptStep
+  requires id_tag > 0
+  ensures result.kind == studio_demo_step_kind_ui_click()
+  ensures result.id_tag == id_tag
+  decreases id_tag
+=
+  var out: DemoScriptStep
+  out.kind = studio_demo_step_kind_ui_click()
+  out.id_tag = id_tag
+  out.key_tag = 0
+  out.capture_flag = 0
+  return out
+
+def studio_demo_script_step_capture() -> DemoScriptStep
+  requires true
+  ensures result.kind == studio_demo_step_kind_capture()
+  ensures result.capture_flag == 1
+  decreases 0
+=
+  var out: DemoScriptStep
+  out.kind = studio_demo_step_kind_capture()
+  out.capture_flag = 1
+  return out
+
+def studio_demo_script_minimal() -> DemoScript
+  requires true
+  ensures result.step_count == 2
+  ensures result.native_only == 1
+  decreases 0
+=
+  var out: DemoScript
+  out.profile_id = studio_profile_game()
+  out.width = 1280
+  out.height = 720
+  out.fps = 30
+  out.native_only = 1
+  out.step_count = 2
+  out.steps[0] = studio_demo_script_step_wait_ms(100)
+  out.steps[1] = studio_demo_script_step_capture()
+  return out
+
+def studio_demo_capture_frame(compose: StudioShellCompose, path: str, w: int, h: int) -> int raises IO, Alloc
+  requires compose.layout.viewport_w > 0.0
+  requires w >= 64
+  requires h >= 64
+  requires path != ""
+  ensures result >= 0
+  ensures result <= 1
+  decreases w
+=
+  var pid: int = compose.config.active_profile
+  var wrote: int = studio_vertical_capture_ppm_auto(pid, 0, path, w, h)
+  if wrote != 1:
+    return 0
+  return 1
+
+def studio_demo_replay_step(compose: var StudioShellCompose, step: DemoScriptStep, capture_path: str) -> DemoStepResult raises IO, Alloc
+  requires compose.layout.viewport_w > 0.0
+  ensures result.ok >= 0
+  ensures result.ok <= 1
+  decreases step.kind
+=
+  var out: DemoStepResult
+  out.ok = 1
+  out.captured = 0
+  if step.kind == studio_demo_step_kind_wait_ms():
+    var ticks: int = step.wait_ms / 16
+    if ticks < 1:
+      ticks = 1
+    studio_ui_wait_frames(compose, ticks)
+    return out
+  if step.kind == studio_demo_step_kind_ui_key():
+    var _key: int = studio_ui_key_tag(compose, step.key_tag)
+    return out
+  if step.kind == studio_demo_step_kind_ui_click():
+    var clicked: int = studio_ui_click_tag(compose, step.id_tag)
+    if clicked != 1:
+      out.ok = 0
+    return out
+  if step.kind == studio_demo_step_kind_wait_frames():
+    studio_ui_wait_frames(compose, step.wait_frames)
+    return out
+  if step.kind == studio_demo_step_kind_capture():
+    var cap: int = studio_demo_capture_frame(compose, capture_path, 1280, 720)
+    if cap == 1:
+      out.captured = 1
+    if cap != 1:
+      out.ok = 0
+    return out
+  return out
+
+def studio_demo_replay(script: DemoScript, compose: var StudioShellCompose, capture_path: str) -> DemoReplayResult raises IO, Alloc
+  requires script.step_count >= 0
+  requires script.step_count <= 16
+  requires compose.layout.viewport_w > 0.0
+  ensures result.steps_run >= 0
+  decreases script.step_count
+=
+  var out: DemoReplayResult
+  out.ok = 1
+  out.steps_run = 0
+  out.frames_captured = 0
+  var idx: int = 0
+  while idx < script.step_count
+    var step: DemoScriptStep = script.steps[idx]
+    var step_result: DemoStepResult = studio_demo_replay_step(compose, step, capture_path)
+    if step_result.ok != 1:
+      out.ok = 0
+    if step_result.captured == 1:
+      out.frames_captured = out.frames_captured + 1
+    out.steps_run = out.steps_run + 1
+    idx = idx + 1
+  return out
