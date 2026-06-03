@@ -10,7 +10,7 @@ todos:
     status: done
   - id: wtfx-w2-opacity-compositing
     content: "W2 — Opacity: Color.a math + source-over compositing in CPU raster (PaintCmd + blit path)"
-    status: pending
+    status: done
   - id: wtfx-w3-shadow-math
     content: "W3 — Shadows: tokenized multi-layer elevation as pure functions; smokes prove offset/alpha falloff"
     status: pending
@@ -54,7 +54,7 @@ Update each iteration. Mark **DONE** only when every `wtfx-w*` in that phase is 
 | Phase | Scope | WPs | Status |
 |-------|-------|-----|--------|
 | **P0** | Typography tests + metrics engine | W0–W1 | DONE |
-| **P1** | Opacity + compositing | W2 | pending |
+| **P1** | Opacity + compositing | W2 | DONE |
 | **P2** | Shadows + diffusion (mathematical FX) | W3–W4 | pending |
 | **P3** | Motion + easing + animation clock | W5 | pending |
 | **P4** | Shell integration (transitions) | W6 | pending |

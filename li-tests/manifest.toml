@@ -60,6 +60,12 @@ note = "wtfx-w1: metrics-centered glyph dest + PaintCmd used width/height ext"
 
 [[tests]]
 suite = "smoke"
+file = "smoke/studio_viewport_scrim_opacity.li"
+outcome = "check_ok"
+note = "wtfx-w2: [fx] opacity_scrim + paint_raster source-over scrim composite"
+
+[[tests]]
+suite = "smoke"
 file = "smoke/studio_polish_w2_focus_ring.li"
 outcome = "check_ok"
 note = "wsp-w2: panel focus ring wired in studio_paint_shell_chrome"

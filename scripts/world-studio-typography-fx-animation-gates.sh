@@ -85,6 +85,7 @@ WTFX_SMOKES=(
   "$STUDIO_ROOT/li-tests/smoke/studio_typography_engine.li"
   "$STUDIO_ROOT/li-tests/smoke/studio_typography_raster_bounds.li"
   "$LIC_ROOT/packages/li-ui/li-tests/smoke/color_alpha_composite.li"
+  "$STUDIO_ROOT/li-tests/smoke/studio_viewport_scrim_opacity.li"
   "$STUDIO_ROOT/li-tests/smoke/studio_shadow_math.li"
   "$LIC_ROOT/packages/li-ui/li-tests/smoke/blur_kernel_energy.li"
   "$LIC_ROOT/packages/li-gui/li-tests/smoke/motion_easing.li"

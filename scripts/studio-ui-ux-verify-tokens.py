@@ -60,8 +60,13 @@ ELEVATION_FLOAT_MAP = {
     "shadow_alpha_falloff": ("studio_elevation_shadow_alpha_falloff", "elevation"),
 }
 
+FX_FLOAT_MAP = {
+    "opacity_disabled": ("studio_fx_opacity_disabled", "fx"),
+    "opacity_scrim": ("studio_fx_opacity_scrim", "fx"),
+    "opacity_hover_delta": ("studio_fx_opacity_hover_delta", "fx"),
+}
+
 VIEWPORT_FLOAT_MAP = {
-    "overlay_scrim_alpha": ("studio_viewport_overlay_scrim_alpha", "viewport"),
     "hud_chip_height_px": ("studio_viewport_hud_chip_height_px", "viewport"),
     "menu_chip_inset_px": ("studio_viewport_menu_chip_inset_px", "viewport"),
     "tier_chip_width_px": ("studio_viewport_tier_chip_width_px", "viewport"),
@@ -209,11 +214,26 @@ def main() -> int:
         "typography": parse_toml_section(TOKENS, "typography"),
         "radius": parse_toml_section(TOKENS, "radius"),
         "elevation": parse_toml_section(TOKENS, "elevation"),
+        "fx": parse_toml_section(TOKENS, "fx"),
         "viewport": parse_toml_section(TOKENS, "viewport"),
         "density": parse_toml_section(TOKENS, "density"),
     }
 
     if STUDIO_LIB.is_file():
+        for key, (fn, section) in FX_FLOAT_MAP.items():
+            raw = sections[section].get(key)
+            if raw is None:
+                errors.append(f"missing TOML {section}.{key}")
+                continue
+            tom = float(raw)
+            try:
+                actual = parse_palette_float(STUDIO_LIB, fn)
+            except KeyError:
+                errors.append(f"missing studio {fn} in {STUDIO_LIB}")
+                continue
+            if actual != tom:
+                errors.append(f"{fn}: studio {actual} != TOML {tom}")
+
         for key, (fn, section) in ELEVATION_FLOAT_MAP.items():
             raw = sections[section].get(key)
             if raw is None:

@@ -1,22 +1,21 @@
 {
-  "timestamp": "2026-06-03T18:00:00Z",
-  "iteration_status": "wtfx_w1_complete",
-  "todo": "wtfx-w1-typography-raster",
-  "wave": "W1",
-  "wps": ["GUI-LIBRARY-PLAN typography raster", "WP-UX-01"],
+  "timestamp": "2026-06-03T20:00:00Z",
+  "iteration_status": "wtfx_w2_complete",
+  "todo": "wtfx-w2-opacity-compositing",
+  "wave": "W2",
+  "wps": ["GUI-LIBRARY-PLAN opacity compositing", "WP-UX-01"],
   "native_only": true,
   "gates": {
     "world_studio_typography_fx_animation_gates": "pass",
-    "lic_check_smokes": "skipped_host_glibc",
-    "note": "Agent host lacks GLIBC_2.38 for lic; smokes registered for CI/K8s"
+    "lic_check_smokes": "skipped_host_no_lic",
+    "note": "Agent host lacks lic binary; smokes registered for CI/K8s"
   },
   "smokes": [
-    "lic/packages/li-ui/li-tests/smoke/glyph_run_layout.li",
-    "studio/li-tests/smoke/studio_typography_raster_bounds.li",
-    "studio/li-tests/smoke/studio_typography_engine.li"
+    "lic/packages/li-ui/li-tests/smoke/color_alpha_composite.li",
+    "studio/li-tests/smoke/studio_viewport_scrim_opacity.li"
   ],
-  "north_star_fit": "gaming PH-UX — provable glyph run bounds via font_atlas_glyph_advance_px; PaintCmd stroke_px/radius_px record used w/h",
+  "north_star_fit": "gaming PH-UX — provable straight-alpha source-over (color_over, paint_raster_*) + [fx] token accessors",
   "pr": "https://github.com/li-langverse/studio/pull/67",
   "lic_pr": "https://github.com/li-langverse/lic/pull/742",
-  "agent_run_note": "world_studio_builder: W1 GlyphRunLayout + metrics-centered studio_paint_glyph_text + caption dock path"
+  "agent_run_note": "world_studio_builder: W2 color_with_alpha/color_over + paint_raster + studio_fx opacity tokens"
 }

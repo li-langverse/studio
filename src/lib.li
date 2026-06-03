@@ -1237,12 +1237,34 @@ def studio_timeline_play_icon_content_rect(btn: Rect) -> Rect
   return studio_icon_content_rect(btn, studio_density_timeline_play_icon_inset_px())
 
 # WSV W4 — viewport overlay polish (HUD chips, error/empty overlays, menu chips).
-def studio_viewport_overlay_scrim_alpha() -> float
+# wtfx-w2 — scrim alpha from [fx] opacity_scrim (source-over compositing in li-ui paint_raster).
+def studio_fx_opacity_disabled() -> float
+  requires true
+  ensures result == 0.38
+  decreases 0
+=
+  return 0.38
+
+def studio_fx_opacity_scrim() -> float
   requires true
   ensures result == 0.55
   decreases 0
 =
   return 0.55
+
+def studio_fx_opacity_hover_delta() -> float
+  requires true
+  ensures result == 0.08
+  decreases 0
+=
+  return 0.08
+
+def studio_viewport_overlay_scrim_alpha() -> float
+  requires true
+  ensures result == studio_fx_opacity_scrim()
+  decreases 0
+=
+  return studio_fx_opacity_scrim()
 
 def studio_viewport_hud_chip_height_px() -> float
   requires true
@@ -1274,10 +1296,10 @@ def studio_viewport_biomol_chip_width_px() -> float
 
 def studio_viewport_overlay_scrim_color() -> Color
   requires true
-  ensures result.a == studio_viewport_overlay_scrim_alpha()
+  ensures result.a == studio_fx_opacity_scrim()
   decreases 0
 =
-  return color_rgb(0.0, 0.0, 0.0, studio_viewport_overlay_scrim_alpha())
+  return color_with_alpha(color_rgb(0.0, 0.0, 0.0, 1.0), studio_fx_opacity_scrim())
 
 def studio_viewport_error_retry_label_first_codepoint() -> int
   requires true
@@ -3566,10 +3588,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 50
+  ensures result == 51
   decreases 0
 =
-  return 50
+  return 51
 
 def studio_shell_widget_tree_version() -> int
   requires true
