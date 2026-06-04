@@ -63,8 +63,10 @@ for s in \
   "$LIC_ROOT/packages/li-gui/li-tests/smoke/ui_snapshot_shell_regions.li" \
   "$STUDIO_ROOT/li-tests/smoke/studio_ui_snapshot.li" \
   "$STUDIO_ROOT/li-tests/smoke/studio_mcp_ui_snapshot.li" \
+  "$STUDIO_ROOT/li-tests/smoke/studio_ui_session.li" \
   "$STUDIO_ROOT/li-tests/smoke/studio_demo_replay_minimal.li" \
-  "$STUDIO_ROOT/li-tests/smoke/studio_demo_capture_frame.li"; do
+  "$STUDIO_ROOT/li-tests/smoke/studio_demo_capture_frame.li" \
+  "$STUDIO_ROOT/li-tests/smoke/studio_demo_run_command_palette.li"; do
   run_smoke "$s"
 done
 

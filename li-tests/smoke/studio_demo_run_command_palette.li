@@ -1,0 +1,17 @@
+import studio
+
+def main() -> int raises IO, Alloc
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if studio_demo_recorder_phase2_version() != 2:
+    return 1
+  var replay: DemoReplayResult = studio_demo_run_command_palette(30)
+  if replay.ok != 1:
+    return 2
+  if replay.frames_captured < 2:
+    return 3
+  if li_rt_studio_demo_frame_count() < 30:
+    return 4
+  return 0

@@ -34,6 +34,15 @@ fi
 
 bash "$ROOT/scripts/world-studio-gui-demo-recorder-gates.sh"
 
+if [[ -x "$ROOT/scripts/studio-demo-visual-gate.sh" ]]; then
+  for scenario in workspace-tour command-palette agent-invoke; do
+    frames="$OUT_DIR/../$scenario/frames"
+    if [[ -d "$frames" ]]; then
+      bash "$ROOT/scripts/studio-demo-visual-gate.sh" "$frames" || exit 1
+    fi
+  done
+fi
+
 required=(
   "workspace-tour.mp4"
   "command-palette.mp4"

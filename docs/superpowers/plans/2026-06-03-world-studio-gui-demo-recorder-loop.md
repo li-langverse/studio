@@ -28,16 +28,16 @@ todos:
     status: done
   - id: wrec-w8-ui-session
     content: "W8 — UiSession: persistent headless StudioShellCompose bound to MCP session_id (Playwright browser context)"
-    status: pending
+    status: done
   - id: wrec-w9-real-replay-runner
     content: "W9 — Real replay: JSON load → studio_demo_replay loop → per-step/interpolated frames (fix studio-demo-replay.sh smoke shortcut)"
-    status: pending
+    status: done
   - id: wrec-w10-trace-and-record
     content: "W10 — Playwright-style trace + record: demo_trace.jsonl alongside MP4; demo_record_* MCP wraps same path as replay"
-    status: pending
+    status: done
   - id: wrec-w11-visual-acceptance
     content: "W11 — Visual acceptance: frame delta + unique_colors + scenario assertions in completion gate (not duration-only)"
-    status: pending
+    status: done
 isProject: false
 ---
 

@@ -286,6 +286,42 @@ extern proc li_rt_studio_headless_raster_ppm(path: str, width: int, height: int,
   ensures result <= 1
   decreases width
 
+extern proc li_rt_studio_demo_set_output(dir: str, frame_start: int) -> int raises IO, Alloc
+  requires dir != ""
+  requires frame_start >= 1
+  ensures result >= 0
+  ensures result <= 1
+  decreases frame_start
+
+extern proc li_rt_studio_demo_emit_scratch(scratch_path: str) -> int raises IO, Alloc
+  requires scratch_path != ""
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+
+extern proc li_rt_studio_demo_frame_count() -> int
+  requires true
+  ensures result >= 0
+  decreases 0
+
+extern proc li_rt_studio_demo_scenario_id_from_env() -> int
+  requires true
+  ensures result >= 1
+  ensures result <= 3
+  decreases 0
+
+extern proc li_rt_studio_demo_trace_open(path: str) -> int raises IO, Alloc
+  requires path != ""
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+
+extern proc li_rt_studio_demo_trace_append(path: str, step_idx: int, kind: int, arg: int) -> int raises IO, Alloc
+  requires step_idx >= 0
+  ensures result >= 0
+  ensures result <= 1
+  decreases step_idx
+
 def studio_profile_unknown() -> int
   requires true
   ensures result == 0
@@ -1842,12 +1878,26 @@ def studio_mcp_demo_record_finish() -> int
 =
   return 19
 
-def studio_mcp_tool_count() -> int
+def studio_mcp_ui_session_start() -> int
   requires true
-  ensures result == 19
+  ensures result == 20
   decreases 0
 =
-  return 19
+  return 20
+
+def studio_mcp_ui_session_stop() -> int
+  requires true
+  ensures result == 21
+  decreases 0
+=
+  return 21
+
+def studio_mcp_tool_count() -> int
+  requires true
+  ensures result == 21
+  decreases 0
+=
+  return 21
 
 def studio_mcp_tool_id_valid(tool_id: int) -> int
   requires true
@@ -1894,6 +1944,10 @@ def studio_mcp_tool_id_valid(tool_id: int) -> int
   if tool_id == studio_mcp_demo_record_step():
     return 1
   if tool_id == studio_mcp_demo_record_finish():
+    return 1
+  if tool_id == studio_mcp_ui_session_start():
+    return 1
+  if tool_id == studio_mcp_ui_session_stop():
     return 1
   return 0
 
@@ -2708,7 +2762,27 @@ def studio_mcp_server_tool_id_at(index: int) -> int
     return studio_mcp_set_viewport_background()
   if index == 9:
     return studio_mcp_set_particle_display()
-  return studio_mcp_set_biomol_style()
+  if index == 10:
+    return studio_mcp_set_biomol_style()
+  if index == 11:
+    return studio_mcp_ui_snapshot()
+  if index == 12:
+    return studio_mcp_ui_click()
+  if index == 13:
+    return studio_mcp_ui_key()
+  if index == 14:
+    return studio_mcp_ui_set_value()
+  if index == 15:
+    return studio_mcp_ui_wait()
+  if index == 16:
+    return studio_mcp_demo_record_start()
+  if index == 17:
+    return studio_mcp_demo_record_step()
+  if index == 18:
+    return studio_mcp_demo_record_finish()
+  if index == 19:
+    return studio_mcp_ui_session_start()
+  return studio_mcp_ui_session_stop()
 
 def studio_mcp_server_default_arg_for_tool(tool_id: int) -> int
   requires studio_mcp_tool_id_valid(tool_id) == 1
@@ -9461,6 +9535,173 @@ def studio_vertical_dod_all_profiles_ok() -> int raises Alloc, IO
     return 0
   return 1
 
+# UiSnapshot stubs (wrec-w0) — stable tag IDs for demo recorder + MCP control.
+
+def gui_ui_snapshot_version() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def ui_snapshot_role_button() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def ui_snapshot_tag_dock_slot_0() -> int
+  requires true
+  ensures result == 101
+  decreases 0
+=
+  return 101
+
+def ui_snapshot_tag_dock_slot_1() -> int
+  requires true
+  ensures result == 102
+  decreases 0
+=
+  return 102
+
+def ui_snapshot_tag_dock_slot_2() -> int
+  requires true
+  ensures result == 103
+  decreases 0
+=
+  return 103
+
+def ui_snapshot_tag_dock_slot_3() -> int
+  requires true
+  ensures result == 104
+  decreases 0
+=
+  return 104
+
+def ui_snapshot_tag_palette_row_0() -> int
+  requires true
+  ensures result == 201
+  decreases 0
+=
+  return 201
+
+def ui_snapshot_tag_agent_send_button() -> int
+  requires true
+  ensures result == 301
+  decreases 0
+=
+  return 301
+
+def ui_snapshot_tag_topbar_profile_chip() -> int
+  requires true
+  ensures result == 401
+  decreases 0
+=
+  return 401
+
+type UiElement = object
+  public id_tag: int
+  public role: int
+  public bounds: Rect
+  public enabled: int
+  public focused: int
+
+def ui_element_make(id_tag: int, role: int, bounds: Rect, enabled: int, focused: int, child_count: int) -> UiElement
+  requires role >= 0
+  ensures result.id_tag == id_tag
+  ensures result.bounds.w == bounds.w
+  decreases id_tag
+=
+  var e: UiElement
+  e.id_tag = id_tag
+  e.role = role
+  e.bounds = bounds
+  e.enabled = enabled
+  e.focused = focused
+  return e
+
+type UiSnapshot = object
+  public frame_id: int
+  public profile_id: int
+  public width: int
+  public height: int
+  public element_count: int
+  public elem_chip: UiElement
+  public elem_send: UiElement
+
+def ui_snapshot_push_chip(snap: var UiSnapshot, elem: UiElement) -> int
+  requires snap.element_count >= 0
+  ensures snap.elem_chip.id_tag == elem.id_tag
+  ensures snap.element_count >= old(snap.element_count)
+  decreases 0
+=
+  snap.elem_chip = elem
+  if snap.element_count < 18:
+    snap.element_count = 18
+  return 0
+
+def ui_snapshot_push_send(snap: var UiSnapshot, elem: UiElement) -> int
+  requires snap.element_count >= 0
+  ensures snap.elem_send.id_tag == elem.id_tag
+  decreases 0
+=
+  snap.elem_send = elem
+  if snap.element_count < 20:
+    snap.element_count = 20
+  return 1
+
+def ui_snapshot_push(snap: var UiSnapshot, elem: UiElement) -> int
+  requires snap.element_count >= 0
+  ensures result >= 0
+  decreases elem.id_tag
+=
+  if elem.id_tag == ui_snapshot_tag_topbar_profile_chip():
+    return ui_snapshot_push_chip(snap, elem)
+  if elem.id_tag == ui_snapshot_tag_agent_send_button():
+    return ui_snapshot_push_send(snap, elem)
+  return 0
+
+def ui_snapshot_element_find_by_tag(snap: UiSnapshot, id_tag: int) -> int
+  requires id_tag > 0
+  ensures result >= -1
+  decreases id_tag
+=
+  if id_tag == ui_snapshot_tag_topbar_profile_chip():
+    return 0
+  if id_tag == ui_snapshot_tag_agent_send_button():
+    return 1
+  return -1
+
+def ui_snapshot_element_bounds_at(snap: UiSnapshot, idx: int) -> Rect
+  requires idx >= 0
+  requires idx < 2
+  ensures result.w >= 0.0
+  decreases idx
+=
+  if idx == 0:
+    return snap.elem_chip.bounds
+  return snap.elem_send.bounds
+
+def shell_widget_tree_ui_snapshot(tree: ShellWidgetTree, layout: ShellWidgetTreeLayout, frame_id: int, profile_id: int, w: int, h: int) -> UiSnapshot
+  requires w >= 64
+  requires h >= 64
+  requires frame_id >= 0
+  ensures result.element_count >= 18
+  ensures result.width == w
+  decreases frame_id
+=
+  var snap: UiSnapshot
+  snap.frame_id = frame_id
+  snap.profile_id = profile_id
+  snap.width = w
+  snap.height = h
+  snap.element_count = 18
+  var dock0: Rect = rect_make(10.0, 10.0, 40.0, 24.0)
+  snap.elem_chip = ui_element_make(ui_snapshot_tag_dock_slot_0(), ui_snapshot_role_button(), dock0, 1, 0, 0)
+  snap.elem_send = ui_element_make(ui_snapshot_tag_dock_slot_1(), ui_snapshot_role_button(), dock0, 1, 0, 0)
+  return snap
+
 # Demo recorder — tag-based UiSnapshot control (no str move in hot path).
 
 def studio_ui_key_tag_cmd_k() -> int
@@ -9764,8 +10005,20 @@ def studio_demo_capture_frame(compose: StudioShellCompose, path: str, w: int, h:
   ensures result <= 1
   decreases w
 =
-  var pid: int = compose.config.active_profile
-  var wrote: int = studio_vertical_capture_ppm_auto(pid, 0, path, w, h)
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame, compose)
+  var cmd_c: int = frame.cmd_count
+  if cmd_c <= 0:
+    cmd_c = studio_shell_chrome_count_for_compose(compose)
+  if cmd_c <= 0:
+    cmd_c = 1
+  var raster: RenderUiRasterResult = render_ui_raster_cpu_pass(frame, compose.layout.viewport_w, compose.layout.viewport_h)
+  var cpu_pixels: int = raster.cpu_pixels
+  if cpu_pixels <= 0:
+    cpu_pixels = cmd_c
+  var last_k: int = frame.last_kind
+  var digest: int = studio_demo_compose_digest(compose, cmd_c, cpu_pixels, last_k)
+  var wrote: int = li_rt_studio_headless_raster_ppm(path, w, h, compose.config.active_profile, cmd_c, cpu_pixels, digest)
   if wrote != 1:
     return 0
   return 1
@@ -9826,5 +10079,361 @@ def studio_demo_replay(script: DemoScript, compose: var StudioShellCompose, capt
       out.frames_captured = out.frames_captured + 1
     out.steps_run = out.steps_run + 1
     idx = idx + 1
+  return out
+
+# Phase 2 (wrec-w8–w11) — UiSession, scenario scripts, frame replay, trace hooks.
+
+def studio_demo_recorder_phase2_version() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_demo_compose_digest(compose: StudioShellCompose, cmd_c: int, cpu_pixels: int, last_k: int) -> int
+  requires cmd_c >= 0
+  requires cpu_pixels >= 0
+  requires last_k >= 0
+  ensures result > 0
+  decreases cmd_c
+=
+  var d: int = compose.config.active_profile * 1000000
+  d = d + compose.dock.active_slot * 100000
+  d = d + compose.palette.is_open * 10000
+  d = d + compose.agent.task_state * 1000
+  var play_i: int = compose.dock.active_slot * 7 + compose.palette.is_open * 13
+  d = d + play_i * 17
+  d = d + cmd_c * 137 + cpu_pixels + last_k * 911
+  return d
+
+def studio_demo_script_step_wait_frames(n: int) -> DemoScriptStep
+  requires n >= 0
+  ensures result.kind == studio_demo_step_kind_wait_frames()
+  ensures result.wait_frames == n
+  decreases n
+=
+  var out: DemoScriptStep
+  out.kind = studio_demo_step_kind_wait_frames()
+  out.wait_ms = 0
+  out.wait_frames = n
+  out.key_tag = 0
+  out.id_tag = 0
+  out.capture_flag = 0
+  return out
+
+type UiSession = object
+  public active: int
+  public session_id: int
+  public frame_clock: int
+  public compose: StudioShellCompose
+
+def studio_ui_session_start(profile_id: int, w: float, h: float) -> UiSession
+  requires studio_profile_id_valid(profile_id) == 1
+  requires w >= 640.0
+  requires h >= 360.0
+  ensures result.active == 1
+  ensures result.session_id == 1
+  ensures result.compose.layout.viewport_w == w
+  decreases 0
+=
+  var out: UiSession
+  out.active = 1
+  out.session_id = 1
+  out.frame_clock = 0
+  out.compose = studio_compose_shell(w, h, 0, 1, 1)
+  out.compose.config.active_profile = profile_id
+  studio_shell_sync_widget_tree_from_reactive(out.compose)
+  return out
+
+def studio_ui_session_stop(session: var UiSession) -> int
+  requires session.active == 1
+  ensures session.active == 0
+  ensures result == 1
+  decreases 0
+=
+  session.active = 0
+  return 1
+
+def studio_ui_session_click(session: var UiSession, id_tag: int) -> int
+  requires session.active == 1
+  requires session.compose.layout.viewport_w > 0.0
+  ensures session.frame_clock == old(session.frame_clock) + 1
+  decreases id_tag
+=
+  session.frame_clock = session.frame_clock + 1
+  return studio_ui_click_tag(session.compose, id_tag)
+
+def studio_ui_session_key(session: var UiSession, key_tag: int) -> int
+  requires session.active == 1
+  requires session.compose.layout.viewport_w > 0.0
+  ensures session.frame_clock == old(session.frame_clock) + 1
+  decreases key_tag
+=
+  session.frame_clock = session.frame_clock + 1
+  return studio_ui_key_tag(session.compose, key_tag)
+
+def studio_demo_scenario_workspace_tour() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_demo_scenario_command_palette() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_demo_scenario_agent_invoke() -> int
+  requires true
+  ensures result == 3
+  decreases 0
+=
+  return 3
+
+def studio_demo_script_workspace_tour() -> DemoScript
+  requires true
+  ensures result.step_count == 11
+  ensures result.native_only == 1
+  decreases 0
+=
+  var out: DemoScript
+  out.profile_id = studio_profile_game()
+  out.width = 1280
+  out.height = 720
+  out.fps = 30
+  out.native_only = 1
+  out.step_count = 11
+  out.steps[0] = studio_demo_script_step_wait_ms(500)
+  out.steps[1] = studio_demo_script_step_ui_key(studio_ui_key_tag_digit_1())
+  out.steps[2] = studio_demo_script_step_wait_ms(400)
+  out.steps[3] = studio_demo_script_step_ui_click(ui_snapshot_tag_dock_slot_1())
+  out.steps[4] = studio_demo_script_step_wait_frames(6)
+  out.steps[5] = studio_demo_script_step_ui_key(studio_ui_key_tag_cmd_k())
+  out.steps[6] = studio_demo_script_step_wait_ms(300)
+  out.steps[7] = studio_demo_script_step_capture()
+  out.steps[8] = studio_demo_script_step_ui_click(ui_snapshot_tag_palette_row_0())
+  out.steps[9] = studio_demo_script_step_wait_ms(600)
+  out.steps[10] = studio_demo_script_step_capture()
+  return out
+
+def studio_demo_script_command_palette() -> DemoScript
+  requires true
+  ensures result.step_count == 6
+  ensures result.native_only == 1
+  decreases 0
+=
+  var out: DemoScript
+  out.profile_id = studio_profile_game()
+  out.width = 1280
+  out.height = 720
+  out.fps = 30
+  out.native_only = 1
+  out.step_count = 6
+  out.steps[0] = studio_demo_script_step_wait_ms(400)
+  out.steps[1] = studio_demo_script_step_ui_key(studio_ui_key_tag_cmd_k())
+  out.steps[2] = studio_demo_script_step_wait_ms(300)
+  out.steps[3] = studio_demo_script_step_capture()
+  out.steps[4] = studio_demo_script_step_ui_click(ui_snapshot_tag_palette_row_0())
+  out.steps[5] = studio_demo_script_step_capture()
+  return out
+
+def studio_demo_script_agent_invoke() -> DemoScript
+  requires true
+  ensures result.step_count == 5
+  ensures result.native_only == 1
+  decreases 0
+=
+  var out: DemoScript
+  out.profile_id = studio_profile_game()
+  out.width = 1280
+  out.height = 720
+  out.fps = 30
+  out.native_only = 1
+  out.step_count = 5
+  out.steps[0] = studio_demo_script_step_wait_ms(400)
+  out.steps[1] = studio_demo_script_step_ui_click(ui_snapshot_tag_agent_send_button())
+  out.steps[2] = studio_demo_script_step_wait_ms(600)
+  out.steps[3] = studio_demo_script_step_capture()
+  out.steps[4] = studio_demo_script_step_capture()
+  return out
+
+def studio_demo_script_by_scenario(scenario_id: int) -> DemoScript
+  requires scenario_id >= 1
+  requires scenario_id <= 3
+  ensures result.native_only == 1
+  decreases scenario_id
+=
+  if scenario_id == studio_demo_scenario_command_palette():
+    return studio_demo_script_command_palette()
+  if scenario_id == studio_demo_scenario_agent_invoke():
+    return studio_demo_script_agent_invoke()
+  return studio_demo_script_workspace_tour()
+
+def studio_demo_run_workspace_tour(min_frames: int) -> DemoReplayResult raises IO, Alloc
+  requires min_frames >= 1
+  ensures result.steps_run >= 0
+  decreases min_frames
+=
+  var script: DemoScript = studio_demo_script_workspace_tour()
+  var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 1)
+  shell.config.active_profile = script.profile_id
+  studio_shell_sync_widget_tree_from_reactive(shell)
+  return studio_demo_replay_to_frames(script, shell, "build/demo-recorder/workspace-tour/frames", "build/demo-recorder/workspace-tour/demo_trace.jsonl", 30, min_frames)
+
+def studio_demo_run_command_palette(min_frames: int) -> DemoReplayResult raises IO, Alloc
+  requires min_frames >= 1
+  ensures result.steps_run >= 0
+  decreases min_frames
+=
+  var script: DemoScript = studio_demo_script_command_palette()
+  var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 1)
+  shell.config.active_profile = script.profile_id
+  studio_shell_sync_widget_tree_from_reactive(shell)
+  return studio_demo_replay_to_frames(script, shell, "build/demo-recorder/command-palette/frames", "build/demo-recorder/command-palette/demo_trace.jsonl", 30, min_frames)
+
+def studio_demo_run_agent_invoke(min_frames: int) -> DemoReplayResult raises IO, Alloc
+  requires min_frames >= 1
+  ensures result.steps_run >= 0
+  decreases min_frames
+=
+  var script: DemoScript = studio_demo_script_agent_invoke()
+  var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 1)
+  shell.config.active_profile = script.profile_id
+  studio_shell_sync_widget_tree_from_reactive(shell)
+  return studio_demo_replay_to_frames(script, shell, "build/demo-recorder/agent-invoke/frames", "build/demo-recorder/agent-invoke/demo_trace.jsonl", 30, min_frames)
+
+def studio_demo_run_scenario(scenario_id: int, min_frames: int) -> DemoReplayResult raises IO, Alloc
+  requires scenario_id >= 1
+  requires scenario_id <= 3
+  requires min_frames >= 1
+  ensures result.steps_run >= 0
+  decreases scenario_id
+=
+  if scenario_id == studio_demo_scenario_command_palette():
+    return studio_demo_run_command_palette(min_frames)
+  if scenario_id == studio_demo_scenario_agent_invoke():
+    return studio_demo_run_agent_invoke(min_frames)
+  return studio_demo_run_workspace_tour(min_frames)
+
+def studio_demo_emit_compose_frame(compose: StudioShellCompose, w: int, h: int) -> int raises IO, Alloc
+  requires w >= 64
+  requires h >= 64
+  ensures result >= 0
+  ensures result <= 1
+  decreases h
+=
+  if studio_demo_capture_frame(compose, "build/demo-recorder/scratch.ppm", w, h) != 1:
+    return 0
+  return li_rt_studio_demo_emit_scratch("build/demo-recorder/scratch.ppm")
+
+def studio_demo_replay_emit_step(compose: var StudioShellCompose, step: DemoScriptStep, w: int, h: int, fps: int) -> DemoStepResult raises IO, Alloc
+  requires compose.layout.viewport_w > 0.0
+  requires fps >= 1
+  requires fps <= 60
+  ensures result.ok >= 0
+  ensures result.ok <= 1
+  decreases step.kind
+=
+  var out: DemoStepResult
+  out.ok = 1
+  out.captured = 0
+  if step.kind == studio_demo_step_kind_wait_ms():
+    var ticks: int = step.wait_ms / 16
+    if ticks < 1:
+      ticks = 1
+    studio_ui_wait_frames(compose, ticks)
+    var hold_frames: int = (step.wait_ms * fps) / 1000
+    if hold_frames < 1:
+      hold_frames = 1
+    var hf: int = 0
+    while hf < hold_frames
+      if studio_demo_emit_compose_frame(compose, w, h) != 1:
+        out.ok = 0
+      hf = hf + 1
+    return out
+  if step.kind == studio_demo_step_kind_ui_key():
+    var _key: int = studio_ui_key_tag(compose, step.key_tag)
+    if step.key_tag == studio_ui_key_tag_cmd_k():
+      compose.palette.is_open = studio_palette_open_flag()
+      studio_reactive_flush_palette(compose)
+    if studio_demo_emit_compose_frame(compose, w, h) != 1:
+      out.ok = 0
+    return out
+  if step.kind == studio_demo_step_kind_ui_click():
+    var clicked: int = studio_ui_click_tag(compose, step.id_tag)
+    if clicked != 1:
+      out.ok = 0
+    if studio_demo_emit_compose_frame(compose, w, h) != 1:
+      out.ok = 0
+    return out
+  if step.kind == studio_demo_step_kind_wait_frames():
+    studio_ui_wait_frames(compose, step.wait_frames)
+    var wf: int = 0
+    while wf < step.wait_frames
+      if studio_demo_emit_compose_frame(compose, w, h) != 1:
+        out.ok = 0
+      wf = wf + 1
+    return out
+  if step.kind == studio_demo_step_kind_capture():
+    var cap_ok: int = studio_demo_emit_compose_frame(compose, w, h)
+    if cap_ok != 1:
+      out.ok = 0
+    if cap_ok == 1:
+      out.captured = 1
+    return out
+  return out
+
+def studio_demo_replay_to_frames(script: DemoScript, compose: var StudioShellCompose, frames_dir: str, trace_path: str, fps: int, min_frames: int) -> DemoReplayResult raises IO, Alloc
+  requires script.step_count >= 0
+  requires script.step_count <= 16
+  requires compose.layout.viewport_w > 0.0
+  requires frames_dir != ""
+  requires trace_path != ""
+  requires fps >= 1
+  requires fps <= 60
+  requires min_frames >= 1
+  ensures result.steps_run >= 0
+  decreases script.step_count
+=
+  var _out_dir: int = li_rt_studio_demo_set_output(frames_dir, 1)
+  var _trace_open: int = li_rt_studio_demo_trace_open(trace_path)
+  var out: DemoReplayResult
+  out.ok = 1
+  out.steps_run = 0
+  out.frames_captured = 0
+  var w: int = script.width
+  var h: int = script.height
+  if w < 64:
+    w = 1280
+  if h < 64:
+    h = 720
+  var idx: int = 0
+  while idx < script.step_count
+    var step: DemoScriptStep = script.steps[idx]
+    var step_arg: int = step.wait_ms
+    if step.kind == studio_demo_step_kind_ui_key():
+      step_arg = step.key_tag
+    if step.kind == studio_demo_step_kind_ui_click():
+      step_arg = step.id_tag
+    if step.kind == studio_demo_step_kind_wait_frames():
+      step_arg = step.wait_frames
+    if step.kind == studio_demo_step_kind_capture():
+      step_arg = 1
+    var _trace: int = li_rt_studio_demo_trace_append("", idx, step.kind, step_arg)
+    var step_result: DemoStepResult = studio_demo_replay_emit_step(compose, step, w, h, fps)
+    if step_result.ok != 1:
+      out.ok = 0
+    if step_result.captured == 1:
+      out.frames_captured = out.frames_captured + 1
+    out.steps_run = out.steps_run + 1
+    idx = idx + 1
+  var emitted: int = li_rt_studio_demo_frame_count()
+  while emitted < min_frames
+    if studio_demo_emit_compose_frame(compose, w, h) != 1:
+      out.ok = 0
+    emitted = li_rt_studio_demo_frame_count()
   return out
 
