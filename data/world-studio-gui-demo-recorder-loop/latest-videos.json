@@ -1,17 +1,30 @@
 {
   "native_only": true,
+  "generated_at": "2026-06-05T06:10:00Z",
   "videos": [
     {
+      "scenario": "workspace-tour",
       "file": "demo-recorder/out/workspace-tour.mp4",
-      "duration_s": 10.0
+      "local_path": "build/demo-recorder/out/workspace-tour.mp4",
+      "duration_s": 10.0,
+      "frame_count": 300,
+      "provenance": "build/demo-recorder/workspace-tour/capture-provenance.json"
     },
     {
+      "scenario": "command-palette",
       "file": "demo-recorder/out/command-palette.mp4",
-      "duration_s": 10.0
+      "local_path": "build/demo-recorder/out/command-palette.mp4",
+      "duration_s": 10.0,
+      "frame_count": 300,
+      "provenance": "build/demo-recorder/command-palette/capture-provenance.json"
     },
     {
+      "scenario": "agent-invoke",
       "file": "demo-recorder/out/agent-invoke.mp4",
-      "duration_s": 10.0
+      "local_path": "build/demo-recorder/out/agent-invoke.mp4",
+      "duration_s": 10.0,
+      "frame_count": 300,
+      "provenance": "build/demo-recorder/agent-invoke/capture-provenance.json"
     }
   ],
   "paths": [

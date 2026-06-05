@@ -23,7 +23,11 @@ jobs:
           set -euo pipefail
           ref="${{ github.event.pull_request.head.ref }}"
           if [[ -z "$ref" || "$ref" == "null" ]]; then ref=main; fi
-          git clone --depth 1 --branch "$ref" https://github.com/li-langverse/lic.git ../lic \
+          lic_ref="$ref"
+          if [[ "$ref" == "cursor/world-studio-gui-demo-recorder" ]]; then
+            lic_ref="cursor/world-studio-gui-demo-recorder-phase2"
+          fi
+          git clone --depth 1 --branch "$lic_ref" https://github.com/li-langverse/lic.git ../lic \
             || git clone --depth 1 https://github.com/li-langverse/lic.git ../lic
           test -d ../lic/packages/li-ui
 

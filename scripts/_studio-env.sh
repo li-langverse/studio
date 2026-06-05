@@ -60,18 +60,25 @@ export STUDIO_ROOT LIC_ROOT
 
 resolve_lic() {
   local c
+  # Prefer native build/ over WSL cross-build (build-wsl may need newer glibc on Linux hosts).
   for c in \
-    "$LIC_ROOT/build-wsl/compiler/lic/lic" \
-    "$LIC_ROOT/build-wsl/compiler/lic/lic.exe" \
     "$LIC_ROOT/build/compiler/lic/lic" \
-    "$LIC_ROOT/build/compiler/lic/lic.exe"; do
-    if [[ -f "$c" ]]; then
+    "$LIC_ROOT/build/compiler/lic/lic.exe" \
+    "$LIC_ROOT/out/compiler/lic/lic" \
+    "$LIC_ROOT/build-wsl/compiler/lic/lic" \
+    "$LIC_ROOT/build-wsl/compiler/lic/lic.exe"; do
+    if [[ -f "$c" && -x "$c" ]]; then
       echo "$c"
       return 0
     fi
   done
   if [[ -x "$LIC_ROOT/scripts/resolve-lic.sh" ]]; then
-    "$LIC_ROOT/scripts/resolve-lic.sh" 2>/dev/null && return 0
+    local resolved
+    resolved="$("$LIC_ROOT/scripts/resolve-lic.sh" 2>/dev/null || true)"
+    if [[ -n "$resolved" && -f "$resolved" && -x "$resolved" ]]; then
+      echo "$resolved"
+      return 0
+    fi
   fi
   return 1
 }
