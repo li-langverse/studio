@@ -1,0 +1,23 @@
+import studio
+
+def main() -> int raises IO, Alloc
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 49:
+    return 1
+  if studio_product_visual_acceptance_vertical_count() != 7:
+    return 2
+  var i: int = 0
+  while i < studio_product_visual_acceptance_vertical_count():
+    var pid: int = studio_product_visual_acceptance_profile_id(i)
+    if studio_profile_id_valid(pid) != 1:
+      return 10 + i
+    var path: str = "/tmp/studio-product-visual-w5-acceptance.ppm"
+    if studio_vertical_capture_ppm_auto(pid, 0, path, 320, 180) != 1:
+      return 20 + i
+    i = i + 1
+  if studio_vertical_capture_ppm_auto(studio_profile_game(), 0, path, 1280, 720) != 1:
+    return 30
+  return 0

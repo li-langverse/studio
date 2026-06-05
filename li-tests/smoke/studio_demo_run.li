@@ -1,0 +1,21 @@
+import studio
+
+def main() -> int raises IO, Alloc
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if studio_demo_recorder_phase2_version() != 2:
+    return 1
+  var scenario: int = li_rt_studio_demo_scenario_id_from_env()
+  if scenario < 1:
+    return 2
+  if scenario > 3:
+    return 3
+  var min_frames: int = 300
+  var replay: DemoReplayResult = studio_demo_run_scenario(scenario, min_frames)
+  if replay.ok != 1:
+    return 4
+  if li_rt_studio_demo_frame_count() < min_frames:
+    return 5
+  return 0

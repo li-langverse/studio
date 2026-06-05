@@ -1,0 +1,17 @@
+{
+  "$schema": "./schema.demo.json",
+  "name": "command-palette",
+  "profile": "game",
+  "size": [1280, 720],
+  "fps": 30,
+  "hold_ms_default": 800,
+  "native_only": true,
+  "steps": [
+    {"wait_ms": 400},
+    {"ui_key": "cmd_k"},
+    {"wait_ms": 300},
+    {"capture": "frame"},
+    {"ui_click": "shell.palette.row.0"},
+    {"capture": "frame"}
+  ]
+}

@@ -1,0 +1,19 @@
+import studio
+
+def main() -> int raises IO, Alloc
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 50:
+    return 1
+  if studio_demo_recorder_version() != 1:
+    return 2
+  var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 0, 0)
+  var script: DemoScript = studio_demo_script_minimal()
+  var replay: DemoReplayResult = studio_demo_replay(script, shell, "build/demo-recorder/minimal-frame.ppm")
+  if replay.ok != 1:
+    return 3
+  if replay.frames_captured < 1:
+    return 4
+  return 0

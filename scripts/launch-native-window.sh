@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch Li World Studio native SDL window (no li-studio-demo exe required).
+# Launch Li World Studio native SDL window (host I/O only).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 NATIVE="$ROOT/deploy/studio-demo/native"
@@ -16,7 +16,6 @@ HEADLESS="${STUDIO_LAUNCH_HEADLESS:-0}"
 mkdir -p "$OUT" "$(dirname "$PNG")"
 
 cc -std=c11 -Wall -Wextra -O2 \
-  "$NATIVE/studio_shell_paint_fb.c" \
   "$NATIVE/studio_shell_present_host.c" \
   -o "$BIN" $(pkg-config --cflags --libs sdl2)
 
@@ -26,6 +25,7 @@ if [[ "$HEADLESS" != "1" ]]; then
 fi
 
 echo "launch-native-window: $BIN ${args[*]}"
+export STUDIO_SHELL_RGB_PPM="${STUDIO_SHELL_RGB_PPM:-$PPM}"
 "$BIN" "${args[@]}"
 
 if [[ -f "$PPM" ]]; then
@@ -42,10 +42,11 @@ cat <<EOF
 
 REAL because:
   - SDL window on desktop, not 01-studio-workspace.html
-  - Pixels from studio_shell_paint_fb (li-gui layout contract)
-  - backend=sdl_paint_blit (full dock/timeline/inspector chrome)
+  - Pixels presented from Li raster PPM ($PPM) when available
+  - backend=sdl_li_blit when Li pixels present; io-only fallback otherwise
 
 lic runtime:
   export LIG_HOST_PRESENT=1
   export STUDIO_SHELL_PRESENT_HOST_BIN=$BIN
+  export STUDIO_SHELL_RGB_PPM=$PPM
 EOF

@@ -1,0 +1,22 @@
+{
+  "$schema": "./schema.demo.json",
+  "name": "workspace-tour",
+  "profile": "game",
+  "size": [1280, 720],
+  "fps": 30,
+  "hold_ms_default": 800,
+  "native_only": true,
+  "steps": [
+    {"wait_ms": 500},
+    {"ui_key": "digit_1"},
+    {"wait_ms": 400},
+    {"ui_click": "shell.dock.slot.1"},
+    {"wait_frames": 6},
+    {"ui_key": "cmd_k"},
+    {"wait_ms": 300},
+    {"capture": "frame"},
+    {"ui_click": "shell.palette.row.0"},
+    {"wait_ms": 600},
+    {"capture": "frame"}
+  ]
+}

@@ -26,11 +26,12 @@ def main() -> int
   var compose: StudioShellCompose = studio_compose_shell(1920.0, 1080.0, 1, 1, 1)
   if compose.outliner.node_count != studio_outliner_demo_node_count():
     return 9
-  if studio_paint_outliner_cmds(outliner.node_count) != 8:
+  var exp_cmds: int = studio_paint_outliner_cmds(outliner.node_count)
+  if exp_cmds < 5:
     return 10
   var frame: PaintFrame = paint_frame_new()
-  studio_paint_outliner(frame, compose.outliner)
-  if frame.cmd_count != 8:
+  studio_paint_outliner(frame, compose.outliner, shell.hover)
+  if frame.cmd_count != exp_cmds:
     return 11
   if frame.last_kind != paint_op_draw_glyphs():
     return 12

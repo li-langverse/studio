@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "World Studio DemoScript",
+  "type": "object",
+  "required": ["name", "profile", "size", "fps", "native_only", "steps"],
+  "properties": {
+    "name": {"type": "string"},
+    "profile": {"type": "string"},
+    "size": {"type": "array", "items": {"type": "integer"}, "minItems": 2, "maxItems": 2},
+    "fps": {"type": "integer", "minimum": 1},
+    "hold_ms_default": {"type": "integer", "minimum": 0},
+    "native_only": {"type": "boolean"},
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "wait_ms": {"type": "integer"},
+          "wait_frames": {"type": "integer"},
+          "ui_key": {"type": "string"},
+          "ui_click": {"type": "string"},
+          "ui_set_value": {"type": "object"},
+          "capture": {"type": "string"}
+        }
+      }
+    }
+  }
+}

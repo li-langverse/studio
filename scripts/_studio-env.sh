@@ -7,7 +7,10 @@ _studio_env_root() {
 }
 
 if [[ -z "${STUDIO_ROOT:-}" ]]; then
-  STUDIO_ROOT="${ROOT:-$(_studio_env_root)}"
+  # Avoid inheriting a global $ROOT env var (common in runners / shells) which would
+  # break path resolution for this repo. The studio root is always the directory
+  # containing this script's parent.
+  STUDIO_ROOT="$(_studio_env_root)"
 fi
 
 if [[ -z "${LIC_ROOT:-}" ]]; then

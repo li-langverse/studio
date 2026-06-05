@@ -1,0 +1,18 @@
+import studio
+
+def main() -> int raises IO, Alloc
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  var profile_id: int = studio_demo_profile_from_env()
+  if studio_profile_id_valid(profile_id) != 1:
+    return 1
+  var path: str = "/tmp/studio-vertical-capture-640x360.ppm"
+  var width: int = 640
+  var height: int = 360
+  var frame_id: int = 0
+  if studio_vertical_capture_ppm_auto(profile_id, frame_id, path, width, height) != 1:
+    return 2
+  return 0
+

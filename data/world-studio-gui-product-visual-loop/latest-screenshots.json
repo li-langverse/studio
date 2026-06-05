@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-06-03T03:42:37.376306+00:00",
+  "native_only": true,
+  "paths": [
+    "docs/demo/media/native-verticals/png/product-visual-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/product-visual-game.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_additive.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_automotive.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_drug_design.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_rl.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_robotics.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_scientific.png"
+  ],
+  "pngs": [
+    "docs/demo/media/native-verticals/png/product-visual-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/product-visual-game.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_additive.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_automotive.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_drug_design.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_rl.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_robotics.png",
+    "docs/demo/media/native-verticals/png/product-visual-sim_scientific.png"
+  ]
+}

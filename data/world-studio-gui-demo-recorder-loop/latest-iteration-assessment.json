@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-06-03T21:40:00Z",
+  "agent": "world_studio_builder",
+  "branch": "cursor/world-studio-gui-demo-recorder",
+  "todo": "wrec-w0-ui-snapshot-tree through wrec-w7-k8s-recorder-agent",
+  "native_only": true,
+  "gates": {
+    "progress": "pass",
+    "completion": "pass"
+  },
+  "smokes": [
+    "lic/packages/li-gui/li-tests/smoke/ui_snapshot_shell_regions.li",
+    "lic/packages/li-studio/li-tests/smoke/studio_ui_snapshot.li",
+    "lic/packages/li-studio/li-tests/smoke/studio_mcp_ui_snapshot.li",
+    "lic/packages/li-studio/li-tests/smoke/studio_mcp_ui_click.li",
+    "lic/packages/li-studio/li-tests/smoke/studio_demo_replay_minimal.li",
+    "lic/packages/li-studio/li-tests/smoke/studio_demo_capture_frame.li",
+    "lic/packages/li-studio/li-tests/smoke/studio_mcp_tools.li"
+  ],
+  "videos_for_julian": [
+    {
+      "scenario": "workspace-tour",
+      "local_path": "build/demo-recorder/out/workspace-tour.mp4",
+      "duration_s": 10.0,
+      "note": "Native headless PPM via studio_vertical_capture_ppm → ffmpeg H.264"
+    },
+    {
+      "scenario": "command-palette",
+      "local_path": "build/demo-recorder/out/command-palette.mp4",
+      "duration_s": 10.0,
+      "note": "Manifest in git; MP4 binary not committed"
+    },
+    {
+      "scenario": "agent-invoke",
+      "local_path": "build/demo-recorder/out/agent-invoke.mp4",
+      "duration_s": 10.0,
+      "note": "300 frames @ 30fps from native capture-smoke.ppm"
+    }
+  ],
+  "north_star_fit": {
+    "domain": "native Li Studio GUI control + deterministic demo replay",
+    "ph_ids": ["PH-UX", "WP-AG-03", "WP-UX-09"]
+  },
+  "pr": "https://github.com/li-langverse/studio/pull/68",
+  "lic_pr": "https://github.com/li-langverse/lic/pull/773"
+}

@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-06-03T03:45:00.000000+00:00",
+  "native_only": true,
+  "todo": "wsv-w5-acceptance-screenshots",
+  "iteration_status": "sprint_complete_reverified",
+  "wps": [
+    "WP-UX-14",
+    "WP-UX-05",
+    "WP-GD-05"
+  ],
+  "summary": [
+    "Product-visual sprint complete: all wsv-w0..w5 todos done; progress + completion gates PASS.",
+    "Eight acceptance PNGs on disk; PNG heuristics pass (>=12KB, >=48 unique colors).",
+    "PR #66 open on cursor/world-studio-gui-product-visual; CI green; awaiting human merge review.",
+    "Local Li headless capture failed in agent workspace (exit 2, empty paint frame); committed PNGs unchanged.",
+    "No pending wsv-w* todos — sprint ready for human merge review."
+  ],
+  "evidence": {
+    "product_visual_gates": "scripts/world-studio-gui-product-visual-gates.sh — PASS",
+    "product_visual_completion": "scripts/world-studio-gui-product-visual-completion-gate.sh — PASS",
+    "product_visual_loop": "docs/superpowers/plans/2026-06-02-world-studio-gui-product-visual-loop.md",
+    "smoke": "li-tests/smoke/studio_product_visual_w5_acceptance.li (CI check job)",
+    "pr": "https://github.com/li-langverse/studio/pull/66"
+  },
+  "product_visual_phase": "P5",
+  "captures": {
+    "ppm_available": false,
+    "png_written": true,
+    "profiles": [
+      "game",
+      "sim_rl",
+      "sim_automotive",
+      "sim_robotics",
+      "sim_additive",
+      "sim_scientific",
+      "sim_drug_design"
+    ]
+  },
+  "gates": {
+    "world_studio_gui_product_visual_gates": "pass",
+    "world_studio_gui_product_visual_completion_gate": "pass",
+    "world_studio_plan_gates": "not_run",
+    "world_studio_plan_gates_note": "master plan loop already complete (all wsm-w* done)"
+  },
+  "north_star_fit": {
+    "domain": "gaming / native studio UX",
+    "ph_ids": [
+      "PH-GD",
+      "PH-UX"
+    ],
+    "pillar": "proof (lic check + native raster truth) before perf polish"
+  },
+  "agent_run_note": "world_studio_builder-1780458114047 2026-06-03: re-verified progress + completion gates; refreshed screenshot manifest timestamp"
+}

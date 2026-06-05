@@ -1,0 +1,22 @@
+{
+  "native_only": true,
+  "videos": [
+    {
+      "file": "demo-recorder/out/workspace-tour.mp4",
+      "duration_s": 10.0
+    },
+    {
+      "file": "demo-recorder/out/command-palette.mp4",
+      "duration_s": 10.0
+    },
+    {
+      "file": "demo-recorder/out/agent-invoke.mp4",
+      "duration_s": 10.0
+    }
+  ],
+  "paths": [
+    "demo-recorder/out/workspace-tour.mp4",
+    "demo-recorder/out/command-palette.mp4",
+    "demo-recorder/out/agent-invoke.mp4"
+  ]
+}
