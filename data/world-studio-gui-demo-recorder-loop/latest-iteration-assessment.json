@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-05T06:10:00Z",
+  "timestamp": "2026-06-05T06:30:00Z",
   "agent": "world_studio_builder",
   "branch": "cursor/world-studio-gui-demo-recorder",
   "todo": "wrec-w12-lic-phase2-merge",
@@ -7,7 +7,8 @@
   "gates": {
     "progress": "pass",
     "completion": "pass_except_phase2_merge",
-    "phase2_merge": "pr_open",
+    "phase2_merge": "pr_open_ci_red",
+    "visual_lenient": "pass",
     "visual_strict": "deferred_static_frames"
   },
   "smokes": [
@@ -23,34 +24,45 @@
       "scenario": "workspace-tour",
       "local_path": "build/demo-recorder/out/workspace-tour.mp4",
       "duration_s": 10.0,
-      "note": "Real JSON replay via studio_demo_run; frames static (digest raster) — strict visual gate deferred"
+      "frame_count": 300,
+      "unique_colors_last_frame": 3,
+      "frame_hash_deltas": 0,
+      "note": "Real JSON replay via studio_demo_run; digest raster only 3 colors — strict visual gate deferred"
     },
     {
       "scenario": "command-palette",
       "local_path": "build/demo-recorder/out/command-palette.mp4",
       "duration_s": 10.0,
-      "note": "cmd_k step runs; pixel delta pending richer headless raster"
+      "frame_count": 300,
+      "unique_colors_last_frame": 3,
+      "frame_hash_deltas": 0,
+      "note": "cmd_k step runs in compose; pixel delta pending richer headless raster"
     },
     {
       "scenario": "agent-invoke",
       "local_path": "build/demo-recorder/out/agent-invoke.mp4",
       "duration_s": 10.0,
-      "note": "Agent send step runs; chrome state in compose digest"
+      "frame_count": 300,
+      "unique_colors_last_frame": 3,
+      "frame_hash_deltas": 0,
+      "note": "Agent send step runs; chrome state in compose digest only"
     }
   ],
   "north_star_fit": {
     "domain": "native Li Studio GUI control + deterministic demo replay",
     "ph_ids": ["PH-UX", "WP-AG-03", "WP-UX-09"]
   },
-  "fixes_this_iteration": [
-    "Removed stub UiSnapshot from studio lib.li — delegates to li-gui tag0..tag23 struct (fixes tag0 compile + studio CI)",
-    "resolve_lic prefers native build/ over incompatible build-wsl on Linux",
-    "studio CI checks out lic cursor/world-studio-gui-demo-recorder-phase2 when on demo-recorder branch"
+  "verification_this_iteration": [
+    "Regenerated 3 scenario MP4s via studio-demo-replay.sh + encode (300 frames each, 10s)",
+    "Progress + completion gates pass except phase2-merge-gate (lic PR not merged)",
+    "Visual gate passes lenient (MIN_UNIQUE=3); strict mode (48 colors + frame delta) still fails on static digest raster",
+    "studio PR #69 CI green; lic PR #869 CI red on def-syntax policy (proof-db axioms, unrelated to demo-recorder)"
   ],
   "pr": "https://github.com/li-langverse/studio/pull/69",
   "lic_pr": "https://github.com/li-langverse/lic/pull/869",
   "lic_phase2_merge": {
     "branch": "cursor/world-studio-gui-demo-recorder-phase2",
-    "status": "pr_open_awaiting_merge"
+    "status": "pr_open_awaiting_merge",
+    "ci_blocker": "check-li-def-syntax on proof-db/math/axioms (peano_succ_injective.li, order_antisym.li)"
   }
 }
