@@ -38,7 +38,7 @@
     "domain": "native Li Studio GUI control + deterministic demo replay",
     "ph_ids": ["PH-UX", "WP-AG-03", "WP-UX-09"]
   },
-  "pr": "https://github.com/li-langverse/studio/pull/68",
+  "pr": "https://github.com/li-langverse/studio/pull/69",
   "lic_pr": "https://github.com/li-langverse/lic/pull/869",
   "lic_phase2_merge": {
     "branch": "cursor/world-studio-gui-demo-recorder-phase2",
