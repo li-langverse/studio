@@ -90,3 +90,5 @@ manifest.parent.mkdir(parents=True, exist_ok=True)
 manifest.write_text(json.dumps({"native_only": True, "videos": videos, "paths": [v["file"] for v in videos]}, indent=2) + "\n", encoding="utf-8")
 print("world-studio-gui-demo-recorder completion gate: OK")
 PY
+
+bash "$ROOT/scripts/world-studio-gui-demo-recorder-phase2-merge-gate.sh"
