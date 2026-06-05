@@ -19,14 +19,7 @@ RFC="$STUDIO_ROOT/docs/game-dev/specs/studio-gui-control-rfc.md"
 [[ -f "$RFC" ]] || fail "missing RFC"
 
 resolve_lic_bin() {
-  local c
-  for c in \
-    "$LIC_ROOT/build/compiler/lic/lic" \
-    "$LIC_ROOT/out/compiler/lic/lic" \
-    "$(command -v lic 2>/dev/null || true)"; do
-    [[ -n "$c" && -x "$c" ]] && { echo "$c"; return 0; }
-  done
-  return 1
+  resolve_lic 2>/dev/null || command -v lic 2>/dev/null || true
 }
 
 LIC_BIN=""

@@ -17,18 +17,10 @@ MIN_FRAMES="${STUDIO_DEMO_RECORDER_FRAME_COUNT:-$((FPS * MIN_SEC))}"
 
 mkdir -p "$FRAMES_DIR" "$STUDIO_ROOT/build/demo-recorder" "$LIC_ROOT/build/demo-recorder"
 
-resolve_lic() {
-  for c in \
-    "$LIC_ROOT/build-wsl/compiler/lic/lic" \
-    "$LIC_ROOT/build/compiler/lic/lic" \
-    "$LIC_ROOT/out/compiler/lic/lic" \
-    "$(command -v lic 2>/dev/null || true)"; do
-    [[ -n "$c" && -x "$c" ]] && { echo "$c"; return 0; }
-  done
-  return 1
-}
-
-LIC_BIN="$(resolve_lic)"
+LIC_BIN="$(resolve_lic || true)"
+if [[ -z "$LIC_BIN" ]]; then
+  LIC_BIN="$(command -v lic 2>/dev/null || true)"
+fi
 [[ -x "$LIC_BIN" ]] || { echo "studio-demo-replay: lic not found" >&2; exit 1; }
 
 SCENARIO_ID="$(python3 "$STUDIO_ROOT/scripts/studio-demo-parse-json.py" "$SCRIPT_PATH")"

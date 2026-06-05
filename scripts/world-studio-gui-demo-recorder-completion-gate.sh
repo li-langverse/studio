@@ -14,7 +14,7 @@ MIN_DURATION="${WORLD_STUDIO_DEMO_RECORDER_MIN_DURATION_SEC:-10}"
 if ! python3 - "$PLAN" <<'PY'
 import re, sys
 from pathlib import Path
-text = Path(sys.argv[1]).read_text(encoding="utf-8")
+text = Path(sys.argv[1]).read_text(encoding="utf-8", errors="replace")
 pending = []
 matched = 0
 for m in re.finditer(r"- id: (wrec-w\S+)\n\s+content: [^\n]+\n\s+status: (\w+)", text):
@@ -90,3 +90,5 @@ manifest.parent.mkdir(parents=True, exist_ok=True)
 manifest.write_text(json.dumps({"native_only": True, "videos": videos, "paths": [v["file"] for v in videos]}, indent=2) + "\n", encoding="utf-8")
 print("world-studio-gui-demo-recorder completion gate: OK")
 PY
+
+bash "$ROOT/scripts/world-studio-gui-demo-recorder-phase2-merge-gate.sh"

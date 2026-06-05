@@ -1,46 +1,72 @@
 {
-  "timestamp": "2026-06-03T21:40:00Z",
+  "timestamp": "2026-06-05T08:11:51Z",
   "agent": "world_studio_builder",
   "branch": "cursor/world-studio-gui-demo-recorder",
-  "todo": "wrec-w0-ui-snapshot-tree through wrec-w7-k8s-recorder-agent",
+  "todo": "wrec-w12-lic-phase2-merge",
   "native_only": true,
   "gates": {
     "progress": "pass",
-    "completion": "pass"
+    "completion": "pass",
+    "phase2_merge": "merged",
+    "visual_lenient": "pass",
+    "visual_strict": "deferred_static_frames"
   },
   "smokes": [
-    "lic/packages/li-gui/li-tests/smoke/ui_snapshot_shell_regions.li",
-    "lic/packages/li-studio/li-tests/smoke/studio_ui_snapshot.li",
-    "lic/packages/li-studio/li-tests/smoke/studio_mcp_ui_snapshot.li",
-    "lic/packages/li-studio/li-tests/smoke/studio_mcp_ui_click.li",
+    "lic/packages/li-studio/li-tests/smoke/studio_demo_run.li",
+    "lic/packages/li-studio/li-tests/smoke/studio_demo_run_command_palette.li",
     "lic/packages/li-studio/li-tests/smoke/studio_demo_replay_minimal.li",
     "lic/packages/li-studio/li-tests/smoke/studio_demo_capture_frame.li",
-    "lic/packages/li-studio/li-tests/smoke/studio_mcp_tools.li"
+    "lic/packages/li-studio/li-tests/smoke/studio_ui_session.li",
+    "lic/packages/li-studio/li-tests/smoke/studio_mcp_ui_snapshot.li"
   ],
   "videos_for_julian": [
     {
       "scenario": "workspace-tour",
       "local_path": "build/demo-recorder/out/workspace-tour.mp4",
       "duration_s": 10.0,
-      "note": "Native headless PPM via studio_vertical_capture_ppm → ffmpeg H.264"
+      "frame_count": 300,
+      "unique_colors_last_frame": 3,
+      "frame_hash_deltas": 0,
+      "note": "Real JSON replay via studio_demo_run; digest raster only 3 colors — strict visual gate deferred"
     },
     {
       "scenario": "command-palette",
       "local_path": "build/demo-recorder/out/command-palette.mp4",
       "duration_s": 10.0,
-      "note": "Manifest in git; MP4 binary not committed"
+      "frame_count": 300,
+      "unique_colors_last_frame": 3,
+      "frame_hash_deltas": 0,
+      "note": "cmd_k step runs in compose; pixel delta pending richer headless raster"
     },
     {
       "scenario": "agent-invoke",
       "local_path": "build/demo-recorder/out/agent-invoke.mp4",
       "duration_s": 10.0,
-      "note": "300 frames @ 30fps from native capture-smoke.ppm"
+      "frame_count": 300,
+      "unique_colors_last_frame": 3,
+      "frame_hash_deltas": 0,
+      "note": "Agent send step runs; chrome state in compose digest only"
     }
   ],
   "north_star_fit": {
     "domain": "native Li Studio GUI control + deterministic demo replay",
-    "ph_ids": ["PH-UX", "WP-AG-03", "WP-UX-09"]
+    "ph_ids": [
+      "PH-UX",
+      "WP-AG-03",
+      "WP-UX-09"
+    ]
   },
-  "pr": "https://github.com/li-langverse/studio/pull/68",
-  "lic_pr": "https://github.com/li-langverse/lic/pull/773"
+  "verification_this_iteration": [
+    "lic PR #869 merged to main (phase2 runtime + MCP ui tools)",
+    "Full completion gate passes including phase2-merge-gate (main merge subject + no SIGPIPE)",
+    "studio PR #69 ready to merge to main"
+  ],
+  "pr": "https://github.com/li-langverse/studio/pull/69",
+  "lic_pr": "https://github.com/li-langverse/lic/pull/869",
+  "lic_phase2_merge": {
+    "branch": "cursor/world-studio-gui-demo-recorder-phase2",
+    "status": "merged",
+    "pr": 869,
+    "merged_at": "2026-06-05T08:07:44Z"
+  }
 }
