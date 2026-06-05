@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # Exit 0 when all wrec-w* todos done and acceptance MP4s meet heuristics.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
