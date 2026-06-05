@@ -1,40 +1,37 @@
 {
-  "timestamp": "2026-06-03T21:40:00Z",
+  "timestamp": "2026-06-05T06:05:00Z",
   "agent": "world_studio_builder",
   "branch": "cursor/world-studio-gui-demo-recorder",
-  "todo": "wrec-w0-ui-snapshot-tree through wrec-w7-k8s-recorder-agent",
+  "todo": "wrec-w12-lic-phase2-merge",
   "native_only": true,
   "gates": {
     "progress": "pass",
-    "completion": "pass"
+    "completion": "pending_lic_phase2_merge",
+    "phase2_merge": "pr_open"
   },
   "smokes": [
-    "lic/packages/li-gui/li-tests/smoke/ui_snapshot_shell_regions.li",
-    "lic/packages/li-studio/li-tests/smoke/studio_ui_snapshot.li",
-    "lic/packages/li-studio/li-tests/smoke/studio_mcp_ui_snapshot.li",
-    "lic/packages/li-studio/li-tests/smoke/studio_mcp_ui_click.li",
+    "lic/packages/li-studio/li-tests/smoke/studio_ui_session.li",
+    "lic/packages/li-studio/li-tests/smoke/studio_demo_run.li",
+    "lic/packages/li-studio/li-tests/smoke/studio_demo_run_command_palette.li",
     "lic/packages/li-studio/li-tests/smoke/studio_demo_replay_minimal.li",
     "lic/packages/li-studio/li-tests/smoke/studio_demo_capture_frame.li",
-    "lic/packages/li-studio/li-tests/smoke/studio_mcp_tools.li"
+    "lic/packages/li-studio/li-tests/smoke/studio_mcp_ui_snapshot.li"
   ],
   "videos_for_julian": [
     {
       "scenario": "workspace-tour",
       "local_path": "build/demo-recorder/out/workspace-tour.mp4",
-      "duration_s": 10.0,
-      "note": "Native headless PPM via studio_vertical_capture_ppm → ffmpeg H.264"
+      "note": "Replay via studio_demo_replay_to_frames after lic#869 merge"
     },
     {
       "scenario": "command-palette",
       "local_path": "build/demo-recorder/out/command-palette.mp4",
-      "duration_s": 10.0,
-      "note": "Manifest in git; MP4 binary not committed"
+      "note": "Visual gate: palette open after cmd_k"
     },
     {
       "scenario": "agent-invoke",
       "local_path": "build/demo-recorder/out/agent-invoke.mp4",
-      "duration_s": 10.0,
-      "note": "300 frames @ 30fps from native capture-smoke.ppm"
+      "note": "Agent chrome state change on send"
     }
   ],
   "north_star_fit": {
@@ -42,5 +39,11 @@
     "ph_ids": ["PH-UX", "WP-AG-03", "WP-UX-09"]
   },
   "pr": "https://github.com/li-langverse/studio/pull/68",
-  "lic_pr": "https://github.com/li-langverse/lic/pull/773"
+  "lic_pr": "https://github.com/li-langverse/lic/pull/869",
+  "lic_phase2_merge": {
+    "branch": "cursor/world-studio-gui-demo-recorder-phase2",
+    "rebased_onto": "origin/main",
+    "commits": ["f151561", "d36edee"],
+    "status": "pr_open_awaiting_merge"
+  }
 }

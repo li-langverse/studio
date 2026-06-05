@@ -40,7 +40,7 @@ todos:
     status: done
   - id: wrec-w12-lic-phase2-merge
     content: "W12 — Merge lic phase2 (runtime + MCP ui tools) to main; open/merge PR from cursor/world-studio-gui-demo-recorder-phase2"
-    status: pending
+    status: done
 isProject: false
 ---
 
