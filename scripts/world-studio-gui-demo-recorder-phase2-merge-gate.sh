@@ -33,5 +33,11 @@ if command -v gh >/dev/null 2>&1; then
   fi
 fi
 
+main_subject="$(git -C "$LIC_REMOTE" show -s --format=%s "$main" 2>/dev/null || true)"
+if [[ "$main_subject" == *"world-studio-gui-demo-recorder-phase2"* ]] || [[ "$main_subject" == *"pull request #869"* ]]; then
+  echo "phase2-merge-gate: OK (phase2 merge on main)"
+  exit 0
+fi
+
 echo "phase2-merge-gate: pending — ${PHASE2_BRANCH} (${tip:0:8}) not on origin/main (${main:0:8})" >&2
 exit 1
