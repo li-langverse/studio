@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # Exit 0 when all wrec-w* todos done and acceptance MP4s meet heuristics.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -14,7 +14,7 @@ MIN_DURATION="${WORLD_STUDIO_DEMO_RECORDER_MIN_DURATION_SEC:-10}"
 if ! python3 - "$PLAN" <<'PY'
 import re, sys
 from pathlib import Path
-text = Path(sys.argv[1]).read_text(encoding="utf-8")
+text = Path(sys.argv[1]).read_text(encoding="utf-8", errors="replace")
 pending = []
 matched = 0
 for m in re.finditer(r"- id: (wrec-w\S+)\n\s+content: [^\n]+\n\s+status: (\w+)", text):
