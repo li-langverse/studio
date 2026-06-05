@@ -28,7 +28,11 @@ COMPETITIVE = resolve_competitive_bench()
 
 def resolve_repo_path(rel: str) -> Path:
     rel_path = Path(rel)
-    candidates = [ROOT / rel_path]
+    candidates: list[Path] = [ROOT / rel_path]
+    # Standalone studio repo: packages/li-studio/{bench,...} → repo root.
+    studio_prefix = Path("packages/li-studio")
+    if len(rel_path.parts) >= 2 and rel_path.parts[:2] == studio_prefix.parts:
+        candidates.append(ROOT / Path(*rel_path.parts[2:]))
     lic_root = os.environ.get("LIC_ROOT")
     if lic_root:
         candidates.append(Path(lic_root) / rel_path)
@@ -37,7 +41,7 @@ def resolve_repo_path(rel: str) -> Path:
     for candidate in candidates:
         if candidate.is_file():
             return candidate
-    return ROOT / rel_path
+    return candidates[0]
 
 
 def fail(msg: str) -> None:
