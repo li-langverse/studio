@@ -1,0 +1,9 @@
+{
+  "pass": false,
+  "todo_id": "aimd-w0-audit-spec",
+  "tier": "planning",
+  "notes": "Sprint bootstrapped — gates and K8s handoff; hero demo script stub until W1–W5 land.",
+  "wps_touched": ["W0"],
+  "smokes_run": [],
+  "hero_scenario": "data/world-studio-aimd-demo-loop/hero-scenario.json"
+}

@@ -1,0 +1,31 @@
+{
+  "name": "aimd-hero-echem-interface",
+  "profile": "sim_scientific",
+  "description": "Electrochemistry AIMD interface — 5000-step batch for launch hero demo",
+  "native_only": true,
+  "algo_id": 433,
+  "algo_name": "echem_aimd_interface",
+  "vertical_id": "echem_aimd",
+  "steps": 5000,
+  "temperature_k": 300,
+  "potential_v": 0.0,
+  "batch": {
+    "headless": true,
+    "show_steps_in_ui": false,
+    "checkpoint": "final_only"
+  },
+  "gpu": {
+    "prefer_gpu": true,
+    "fallback_cpu_stub": true
+  },
+  "viz": {
+    "particle_tier": 1,
+    "capture_final_frame": true,
+    "out_ppm": "build/aimd-demo/out/final-frame.ppm"
+  },
+  "acceptance": {
+    "min_unique_colors": 48,
+    "min_steps": 5000,
+    "max_energy_drift": 0.01
+  }
+}
