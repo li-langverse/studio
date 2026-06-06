@@ -4,10 +4,10 @@ overview: GPU-accelerated AIMD simulation as launch hero demo — agent configur
 todos:
   - id: aimd-w0-audit-spec
     content: "W0 — Gap audit, hero scenario spec, gate scaffolding, cross-links to WP-ECHEM-09"
-    status: pending
+    status: done
   - id: aimd-w1-agent-mcp-flow
     content: "W1 — Agent chat/MCP flow: sim_scientific profile + AIMD scenario configure (algo, steps, temperature, potential)"
-    status: pending
+    status: done
   - id: aimd-w2-batch-compute
     content: "W2 — Headless batch AIMD runner ~5000 steps (decouple from 64-step interactive sim_scientific_tick_at cap)"
     status: pending

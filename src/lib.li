@@ -274,6 +274,47 @@ extern proc li_rt_studio_mcp_tool_name(tool_id: int) raises IO, Alloc -> str
   ensures result != ""
   decreases tool_id
 
+# aimd-w1 — AIMD hero scenario session (RT-backed for MCP + agent chat configure).
+extern proc li_rt_studio_aimd_scenario_configured() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+
+extern proc li_rt_studio_aimd_scenario_steps() -> int
+  requires true
+  ensures result >= 0
+  decreases 0
+
+extern proc li_rt_studio_aimd_scenario_temperature_k() -> int
+  requires true
+  ensures result >= 0
+  decreases 0
+
+extern proc li_rt_studio_aimd_scenario_potential_mv() -> int
+  requires true
+  ensures result >= -1000000
+  ensures result <= 1000000
+  decreases 0
+
+extern proc li_rt_studio_aimd_scenario_algo_id() -> int
+  requires true
+  ensures result >= 0
+  decreases 0
+
+extern proc li_rt_studio_aimd_scenario_configure(steps: int, temperature_k: int, potential_mv: int, algo_id: int) -> int
+  requires steps >= 1
+  requires temperature_k >= 1
+  requires algo_id >= 1
+  ensures result >= 0
+  ensures result <= 1
+  decreases steps
+
+extern proc li_rt_studio_aimd_scenario_reset() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+
 # wsv-w0/w5 — Li CPU raster PPM writer (no C paint_fb mirror as product truth).
 extern proc li_rt_studio_headless_raster_ppm(path: str, width: int, height: int, profile_id: int, cmd_count: int, cpu_pixels: int, digest: int) -> int raises IO, Alloc
   requires width >= 8
@@ -2298,12 +2339,26 @@ def studio_mcp_ui_session_stop() -> int
 =
   return 21
 
-def studio_mcp_tool_count() -> int
+def studio_mcp_aimd_configure_scenario() -> int
   requires true
-  ensures result == 21
+  ensures result == 22
   decreases 0
 =
-  return 21
+  return 22
+
+def studio_mcp_aimd_get_scenario() -> int
+  requires true
+  ensures result == 23
+  decreases 0
+=
+  return 23
+
+def studio_mcp_tool_count() -> int
+  requires true
+  ensures result == 23
+  decreases 0
+=
+  return 23
 
 def studio_mcp_tool_id_valid(tool_id: int) -> int
   requires true
@@ -2354,6 +2409,10 @@ def studio_mcp_tool_id_valid(tool_id: int) -> int
   if tool_id == studio_mcp_ui_session_start():
     return 1
   if tool_id == studio_mcp_ui_session_stop():
+    return 1
+  if tool_id == studio_mcp_aimd_configure_scenario():
+    return 1
+  if tool_id == studio_mcp_aimd_get_scenario():
     return 1
   return 0
 
@@ -2911,6 +2970,149 @@ def studio_mcp_export_mask_valid(mask: int) -> int
     return 1
   return 0
 
+# aimd-w1 — AIMD hero scenario (WP-ECHEM-09 interface; batch compute in W2).
+type StudioAimdScenario = object
+  public configured: int
+  public steps: int
+  public temperature_k: int
+  public potential_mv: int
+  public algo_id: int
+
+def studio_aimd_algo_echem_interface() -> int
+  requires true
+  ensures result == 433
+  decreases 0
+=
+  return 433
+
+def studio_aimd_default_temperature_k() -> int
+  requires true
+  ensures result == 300
+  decreases 0
+=
+  return 300
+
+def studio_aimd_default_steps() -> int
+  requires true
+  ensures result == 5000
+  decreases 0
+=
+  return 5000
+
+def studio_aimd_scenario_none() -> StudioAimdScenario
+  requires true
+  ensures result.configured == 0
+  ensures result.steps == 0
+  decreases 0
+=
+  var out: StudioAimdScenario
+  out.configured = 0
+  out.steps = 0
+  out.temperature_k = 0
+  out.potential_mv = 0
+  out.algo_id = 0
+  return out
+
+def studio_aimd_scenario_default() -> StudioAimdScenario
+  requires true
+  ensures result.steps == studio_aimd_default_steps()
+  ensures result.temperature_k == studio_aimd_default_temperature_k()
+  ensures result.algo_id == studio_aimd_algo_echem_interface()
+  decreases 0
+=
+  var out: StudioAimdScenario = studio_aimd_scenario_none()
+  out.steps = studio_aimd_default_steps()
+  out.temperature_k = studio_aimd_default_temperature_k()
+  out.potential_mv = 0
+  out.algo_id = studio_aimd_algo_echem_interface()
+  return out
+
+def studio_aimd_scenario_valid(steps: int, temperature_k: int, algo_id: int) -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases steps
+=
+  if steps < 1:
+    return 0
+  if steps > 1000000:
+    return 0
+  if temperature_k < 1:
+    return 0
+  if temperature_k > 10000:
+    return 0
+  if algo_id != studio_aimd_algo_echem_interface():
+    return 0
+  return 1
+
+def studio_aimd_scenario_configure(steps: int, temperature_k: int, potential_mv: int, algo_id: int) -> StudioAimdScenario raises IO
+  requires steps >= 1
+  requires temperature_k >= 1
+  requires algo_id >= 1
+  ensures result.steps == steps
+  ensures result.temperature_k == temperature_k
+  ensures result.algo_id == algo_id
+  decreases steps
+=
+  var out: StudioAimdScenario = studio_aimd_scenario_none()
+  if studio_aimd_scenario_valid(steps, temperature_k, algo_id) != 1:
+    return out
+  if li_rt_studio_aimd_scenario_configure(steps, temperature_k, potential_mv, algo_id) != 1:
+    return out
+  out.configured = 1
+  out.steps = steps
+  out.temperature_k = temperature_k
+  out.potential_mv = potential_mv
+  out.algo_id = algo_id
+  return out
+
+def studio_aimd_scenario_get() -> StudioAimdScenario raises IO
+  requires true
+  ensures result.configured >= 0
+  ensures result.configured <= 1
+  decreases 0
+=
+  var out: StudioAimdScenario = studio_aimd_scenario_none()
+  if li_rt_studio_aimd_scenario_configured() != 1:
+    return out
+  out.configured = 1
+  out.steps = li_rt_studio_aimd_scenario_steps()
+  out.temperature_k = li_rt_studio_aimd_scenario_temperature_k()
+  out.potential_mv = li_rt_studio_aimd_scenario_potential_mv()
+  out.algo_id = li_rt_studio_aimd_scenario_algo_id()
+  return out
+
+def studio_aimd_scenario_checksum(scenario: StudioAimdScenario) -> int
+  requires scenario.configured >= 0
+  requires scenario.configured <= 1
+  ensures result >= 0
+  decreases scenario.steps
+=
+  if scenario.configured != 1:
+    return 0
+  var mix: int = scenario.steps
+  mix = mix + scenario.temperature_k * 17
+  mix = mix + scenario.algo_id * 31
+  mix = mix + scenario.potential_mv
+  return mix
+
+def studio_agent_aimd_pipeline_steps() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_agent_aimd_tool_id_at(step_index: int) -> int
+  requires step_index >= 0
+  requires step_index < studio_agent_aimd_pipeline_steps()
+  ensures studio_mcp_tool_id_valid(result) == 1
+  decreases step_index
+=
+  if step_index == 0:
+    return studio_mcp_sim_set_profile()
+  return studio_mcp_aimd_configure_scenario()
+
 def studio_mcp_tool_dispatch(tool_id: int) -> StudioAgentToolRequest raises IO
   requires true
   ensures result.tool_id == tool_id
@@ -2924,6 +3126,24 @@ def studio_mcp_tool_dispatch_arg(tool_id: int, arg: int) -> StudioAgentToolReque
   decreases tool_id
 =
   return studio_mcp_tool_dispatch_mode_arg(studio_mode_agent(), tool_id, arg)
+
+def studio_mcp_tool_dispatch_aimd_configure(steps: int, temperature_k: int, potential_mv: int, algo_id: int) -> StudioAgentToolRequest raises IO
+  requires steps >= 1
+  requires temperature_k >= 1
+  requires algo_id >= 1
+  ensures result.tool_id == studio_mcp_aimd_configure_scenario()
+  decreases steps
+=
+  var out: StudioAgentToolRequest = studio_agent_tool_request_none()
+  out.tool_id = studio_mcp_aimd_configure_scenario()
+  var scen: StudioAimdScenario = studio_aimd_scenario_configure(steps, temperature_k, potential_mv, algo_id)
+  if scen.configured != 1:
+    out.status = studio_mcp_tool_status_failed()
+    out.result_code = studio_mcp_tool_result_err_io()
+    return out
+  out.status = studio_mcp_tool_status_ok()
+  out.result_code = scen.steps
+  return out
 
 def studio_mcp_tool_dispatch_mode_arg(mode: int, tool_id: int, arg: int) -> StudioAgentToolRequest raises IO
   requires true
@@ -3057,6 +3277,27 @@ def studio_mcp_tool_dispatch_mode_arg(mode: int, tool_id: int, arg: int) -> Stud
     out.result_code = li_rt_studio_viewport_display_set_biomol_style(style)
     out.status = studio_mcp_tool_status_ok()
     return out
+  if tool_id == studio_mcp_aimd_configure_scenario():
+    var aimd_steps: int = arg
+    if aimd_steps < 1:
+      aimd_steps = studio_aimd_default_steps()
+    var aimd_cfg: StudioAimdScenario = studio_aimd_scenario_configure(aimd_steps, studio_aimd_default_temperature_k(), 0, studio_aimd_algo_echem_interface())
+    if aimd_cfg.configured != 1:
+      out.status = studio_mcp_tool_status_failed()
+      out.result_code = studio_mcp_tool_result_err_io()
+      return out
+    out.status = studio_mcp_tool_status_ok()
+    out.result_code = aimd_cfg.steps
+    return out
+  if tool_id == studio_mcp_aimd_get_scenario():
+    var aimd_get: StudioAimdScenario = studio_aimd_scenario_get()
+    if aimd_get.configured != 1:
+      out.status = studio_mcp_tool_status_failed()
+      out.result_code = studio_mcp_tool_result_err_io()
+      return out
+    out.status = studio_mcp_tool_status_ok()
+    out.result_code = aimd_get.steps
+    return out
   out.status = studio_mcp_tool_status_failed()
   out.result_code = studio_mcp_tool_result_err_io()
   return out
@@ -3188,7 +3429,11 @@ def studio_mcp_server_tool_id_at(index: int) -> int
     return studio_mcp_demo_record_finish()
   if index == 19:
     return studio_mcp_ui_session_start()
-  return studio_mcp_ui_session_stop()
+  if index == 20:
+    return studio_mcp_ui_session_stop()
+  if index == 21:
+    return studio_mcp_aimd_configure_scenario()
+  return studio_mcp_aimd_get_scenario()
 
 def studio_mcp_server_default_arg_for_tool(tool_id: int) -> int
   requires studio_mcp_tool_id_valid(tool_id) == 1
@@ -3215,6 +3460,8 @@ def studio_mcp_server_default_arg_for_tool(tool_id: int) -> int
     return scene_md_tier_1k()
   if tool_id == studio_mcp_set_biomol_style():
     return studio_biomol_style_cartoon()
+  if tool_id == studio_mcp_aimd_configure_scenario():
+    return studio_aimd_default_steps()
   return 0
 
 def studio_mcp_server_reply_ok(method: int) -> StudioMcpServerReply
@@ -3962,10 +4209,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 55
+  ensures result == 56
   decreases 0
 =
-  return 55
+  return 56
 
 def studio_shell_widget_tree_version() -> int
   requires true
@@ -4871,6 +5118,10 @@ def studio_mode_mcp_tool_allowed(mode: int, tool_id: int) -> int
     if tool_id == studio_mcp_lic_check():
       return 1
     if tool_id == studio_mcp_sim_set_profile():
+      return 1
+    if tool_id == studio_mcp_aimd_configure_scenario():
+      return 1
+    if tool_id == studio_mcp_aimd_get_scenario():
       return 1
     return 0
   if tool_id == studio_mcp_world_scaffold():

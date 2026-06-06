@@ -1,9 +1,17 @@
 {
-  "pass": false,
-  "todo_id": "aimd-w0-audit-spec",
-  "tier": "planning",
-  "notes": "Sprint bootstrapped — gates and K8s handoff; hero demo script stub until W1–W5 land.",
-  "wps_touched": ["W0"],
-  "smokes_run": [],
-  "hero_scenario": "data/world-studio-aimd-demo-loop/hero-scenario.json"
+  "pass": true,
+  "todo_id": "aimd-w1-agent-mcp-flow",
+  "tier": "mvp_stub",
+  "notes": "W0 gates + hero scenario committed; W1 adds aimd_configure_scenario and aimd_get_scenario MCP tools with RT session state. Batch compute (W2) and GPU path (W3) still pending.",
+  "wps_touched": ["W0", "W1", "WP-ECHEM-09", "WP-AG-03"],
+  "smokes_run": [
+    "packages/li-studio/li-tests/smoke/studio_mcp_tools.li",
+    "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li",
+    "packages/li-studio/li-tests/smoke/studio_mcp_dispatch_run.li"
+  ],
+  "hero_scenario": "data/world-studio-aimd-demo-loop/hero-scenario.json",
+  "native_only": true,
+  "mcp_tools_added": ["aimd_configure_scenario", "aimd_get_scenario"],
+  "tool_count": 23,
+  "lic_version_bump": 51
 }
