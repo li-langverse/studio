@@ -1,0 +1,23 @@
+import studio
+
+def main() -> int raises IO, Alloc
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 55:
+    return 1
+  if studio_typography_fx_acceptance_capture_count() != 4:
+    return 2
+  var path: str = "/tmp/studio-typography-fx-w7-acceptance.ppm"
+  if studio_typography_fx_capture_ppm(studio_typography_fx_capture_mode_game(), path, 640, 360) != 1:
+    return 10
+  if studio_typography_fx_capture_ppm(studio_typography_fx_capture_mode_game(), path, 1280, 720) != 1:
+    return 11
+  if studio_typography_fx_capture_ppm(studio_typography_fx_capture_mode_inspector(), path, 480, 640) != 1:
+    return 12
+  if studio_typography_fx_capture_ppm(studio_typography_fx_capture_mode_palette(), path, 1280, 720) != 1:
+    return 13
+  if studio_vertical_capture_ppm_auto(studio_profile_game(), 1, path, 640, 360) != 1:
+    return 20
+  return 0

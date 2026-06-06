@@ -28,13 +28,13 @@ def main() -> int
     return 10
   var shell: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 1)
   var dock_frame: PaintFrame = paint_frame_new()
-  studio_paint_dock(dock_frame, shell.dock, shell.hover)
+  studio_paint_dock(dock_frame, shell.dock, shell.hover, shell.motion)
   if dock_frame.cmd_count != studio_paint_dock_cmds():
     return 11
   if dock_frame.last_kind != paint_op_draw_glyphs():
     return 12
   var out_frame: PaintFrame = paint_frame_new()
-  studio_paint_outliner(out_frame, shell.outliner, shell.hover)
+  studio_paint_outliner(out_frame, shell.outliner, shell.hover, shell.motion)
   if out_frame.cmd_count != studio_paint_outliner_cmds(shell.outliner.node_count):
     return 13
   return 0

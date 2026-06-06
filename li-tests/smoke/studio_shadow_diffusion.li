@@ -1,0 +1,41 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 53:
+    return 1
+  if li_std_ui_version() < 10:
+    return 2
+  if studio_fx_blur_sigma_px() != 3.0:
+    return 3
+  if studio_fx_blur_radius_px() != 6.0:
+    return 4
+  if studio_fx_blur_passes() != 2:
+    return 5
+  if studio_paint_panel_shadow_cmds() != 3:
+    return 6
+  if studio_paint_panel_shadow_diffused_cmds() != 6:
+    return 7
+  if studio_paint_panel_shadow_diffused_cmds() <= studio_paint_panel_shadow_cmds():
+    return 8
+  var panel: Rect = rect_make(8.0, 8.0, 120.0, 80.0)
+  var flat: PaintFrame = paint_frame_new()
+  studio_paint_panel_shadow(flat, panel)
+  if flat.cmd_count != 3:
+    return 9
+  var diffused: PaintFrame = paint_frame_new()
+  studio_paint_panel_shadow_diffused(diffused, panel)
+  if diffused.cmd_count != 6:
+    return 10
+  if diffused.last_kind != paint_op_layer_blur():
+    return 11
+  var r: int = blur_kernel_radius_from_sigma(studio_fx_blur_sigma_px())
+  if blur_kernel_weight_sum(r) < 0.999:
+    return 12
+  if blur_kernel_weight_sum(r) > 1.001:
+    return 13
+  return 0

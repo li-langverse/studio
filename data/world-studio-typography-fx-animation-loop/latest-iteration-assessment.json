@@ -1,0 +1,36 @@
+{
+  "timestamp": "2026-06-03T07:50:00Z",
+  "iteration_status": "wtfx_w7_complete",
+  "todo": "wtfx-w7-acceptance",
+  "wave": "W7",
+  "wps": ["GUI-LIBRARY-PLAN typography/FX", "WP-UX-01", "WP-UX-15"],
+  "native_only": true,
+  "gates": {
+    "world_studio_typography_fx_animation_gates": "pass",
+    "world_studio_typography_fx_animation_completion_gate": "pass",
+    "lic_check_smokes": "skipped_host_no_lic",
+    "png_capture": "headless_raster_fallback_python"
+  },
+  "smokes": [
+    "studio/li-tests/smoke/studio_typography_fx_w7_acceptance.li"
+  ],
+  "screenshots": [
+    "docs/demo/media/native-verticals/png/typography-fx-game-1280x720.png",
+    "docs/demo/media/native-verticals/png/typography-fx-game.png",
+    "docs/demo/media/native-verticals/png/typography-fx-inspector-panel.png",
+    "docs/demo/media/native-verticals/png/typography-fx-palette-overlay.png"
+  ],
+  "north_star_fit": "gaming PH-UX — provable typography/FX/motion sprint complete: Li test matrix, tokenized opacity/shadows/blur, easing transitions, acceptance captures",
+  "pr": "https://github.com/li-langverse/studio/pull/67",
+  "lic_pr": "https://github.com/li-langverse/lic/pull/742",
+  "agent_run_note": "world_studio_builder: W7 acceptance — studio_typography_fx_capture_ppm + four typography-fx PNGs; completion gate green; li_std_studio_version 55",
+  "code_implementer_verification": {
+    "run_id": "code_implementer-1780776455103",
+    "timestamp": "2026-06-06T20:10:00Z",
+    "merge_state": "CLEAN",
+    "commits_behind_main": 0,
+    "studio_ci": "all_green (check, native-sdl-capture, native-wgpu-bench, wgpu-swapchain-*, installer-matrix)",
+    "local_gates": "world-studio-typography-fx-animation-gates.sh exit 0 (token verify ok; lic smokes deferred — no local lic build)",
+    "lic_pr_742": "build-and-test green; wgpu-swapchain-gpu-runner infra blocked_runner (linker) — not studio PR blocker"
+  }
+}

@@ -28,13 +28,13 @@ def main() -> int
     return 5
   shell.hover.timeline_play_btn = 1
   var frame: PaintFrame = paint_frame_new()
-  studio_paint_timeline(frame, shell.timeline, shell.hover)
+  studio_paint_timeline(frame, shell.timeline, shell.hover, shell.motion)
   if frame.cmd_count != studio_paint_timeline_cmds():
     return 6
   var dock_frame: PaintFrame = paint_frame_new()
   shell.hover = studio_shell_hover_new()
   shell.hover.dock_slot = 1
-  studio_paint_dock(dock_frame, shell.dock, shell.hover)
+  studio_paint_dock(dock_frame, shell.dock, shell.hover, shell.motion)
   if dock_frame.cmd_count != studio_paint_dock_cmds():
     return 7
   return 0

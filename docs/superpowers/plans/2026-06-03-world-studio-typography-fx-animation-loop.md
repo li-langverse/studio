@@ -4,28 +4,28 @@ overview: Goal-directed sprint — harden the typography engine with a real Li t
 todos:
   - id: wtfx-w0-typography-tests
     content: "W0 — Typography engine: metrics invariants + expanded li-tests (atlas, shaping, line height, truncation)"
-    status: pending
+    status: done
   - id: wtfx-w1-typography-raster
     content: "W1 — Typography raster: glyph run bounds, subpixel advances, baseline alignment across shell regions"
-    status: pending
+    status: done
   - id: wtfx-w2-opacity-compositing
     content: "W2 — Opacity: Color.a math + source-over compositing in CPU raster (PaintCmd + blit path)"
-    status: pending
+    status: done
   - id: wtfx-w3-shadow-math
     content: "W3 — Shadows: tokenized multi-layer elevation as pure functions; smokes prove offset/alpha falloff"
-    status: pending
+    status: done
   - id: wtfx-w4-diffusion-blur
     content: "W4 — Diffusion: separable Gaussian/box blur on shadow layers (sigma from tokens); bounded cost"
-    status: pending
+    status: done
   - id: wtfx-w5-motion-core
     content: "W5 — Motion core: frame clock, easing library, tween structs with requires/ensures"
-    status: pending
+    status: done
   - id: wtfx-w6-shell-transitions
     content: "W6 — Shell transitions: panel/hover/overlay animate from [motion] tokens (respect reduced-motion)"
-    status: pending
+    status: done
   - id: wtfx-w7-acceptance
     content: "W7 — Acceptance: FX demo screenshots + completion gate; plan YAML all done"
-    status: pending
+    status: done
 isProject: false
 ---
 
@@ -53,12 +53,12 @@ Update each iteration. Mark **DONE** only when every `wtfx-w*` in that phase is 
 
 | Phase | Scope | WPs | Status |
 |-------|-------|-----|--------|
-| **P0** | Typography tests + metrics engine | W0–W1 | pending |
-| **P1** | Opacity + compositing | W2 | pending |
-| **P2** | Shadows + diffusion (mathematical FX) | W3–W4 | pending |
-| **P3** | Motion + easing + animation clock | W5 | pending |
-| **P4** | Shell integration (transitions) | W6 | pending |
-| **P5** | Acceptance (screenshots + gates) | W7 | pending |
+| **P0** | Typography tests + metrics engine | W0–W1 | DONE |
+| **P1** | Opacity + compositing | W2 | DONE |
+| **P2** | Shadows + diffusion (mathematical FX) | W3–W4 | DONE |
+| **P3** | Motion + easing + animation clock | W5 | DONE |
+| **P4** | Shell integration (transitions) | W6 | DONE |
+| **P5** | Acceptance (screenshots + gates) | W7 | DONE |
 
 ---
 

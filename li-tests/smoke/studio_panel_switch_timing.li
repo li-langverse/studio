@@ -1,0 +1,26 @@
+import studio
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 54:
+    return 1
+  if li_std_gui_version() < 14:
+    return 2
+  var compose: StudioShellCompose = studio_compose_shell(1920.0, 1080.0, 2, 1, 1)
+  if compose.motion.panel_t != 1.0:
+    return 3
+  var timing: PanelSwitchTiming = studio_panel_switch_inspector(compose, 42.0)
+  if gui_panel_switch_within_budget(timing) != 1:
+    return 4
+  if compose.motion.panel_t != 0.0:
+    return 5
+  studio_motion_tick(compose, 50.0)
+  if compose.motion.panel_t <= 0.0:
+    return 6
+  var slow: PanelSwitchTiming = studio_panel_switch_timeline(compose, 150.0)
+  if gui_panel_switch_within_budget(slow) != 0:
+    return 7
+  return 0

@@ -30,7 +30,7 @@ def main() -> int
   if top.last_kind != paint_op_draw_image():
     return 9
   var tl: PaintFrame = paint_frame_new()
-  studio_paint_timeline(tl, shell.timeline, shell.hover)
+  studio_paint_timeline(tl, shell.timeline, shell.hover, shell.motion)
   if tl.cmd_count != studio_paint_timeline_cmds():
     return 10
   if tl.last_kind != paint_op_draw_image():

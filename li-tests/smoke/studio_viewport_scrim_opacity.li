@@ -1,0 +1,32 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 51:
+    return 1
+  if li_std_ui_version() < 9:
+    return 2
+  if studio_fx_opacity_scrim() != 0.55:
+    return 3
+  if studio_viewport_overlay_scrim_alpha() != studio_fx_opacity_scrim():
+    return 4
+  var scrim: Color = studio_viewport_overlay_scrim_color()
+  if scrim.a != studio_fx_opacity_scrim():
+    return 5
+  var bg: Color = studio_color_bg_primary()
+  var composite: Color = paint_raster_fill_pixel(bg, scrim)
+  if composite.a <= bg.a:
+    return 6
+  if composite.r >= bg.r:
+    return 7
+  var layout: StudioShellLayout = layout_studio_shell_adaptive(1280.0, 720.0)
+  var overlay: StudioViewportErrorOverlay = studio_compose_viewport_error_overlay(layout, studio_err_gpu())
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_viewport_error(frame, overlay)
+  if frame.cmd_count < 1:
+    return 8
+  return 0

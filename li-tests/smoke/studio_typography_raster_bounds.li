@@ -1,0 +1,44 @@
+import studio
+import ui
+
+def main() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 50:
+    return 1
+  if li_std_ui_version() < 8:
+    return 2
+  var layout: StudioShellLayout = layout_studio_shell_adaptive(1280.0, 720.0)
+  var compose: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 0)
+  var face: FontAtlasFace = font_atlas_face_new(font_face_inter())
+  var topbar_frame: PaintFrame = paint_frame_new()
+  studio_paint_topbar_profile(topbar_frame, layout.topbar, studio_profile_game())
+  if topbar_frame.last_kind != paint_op_draw_glyphs():
+    return 3
+  if text_layout_rect_inside(topbar_frame.last_rect, layout.topbar, 1.0) != 1:
+    return 4
+  var dock_frame: PaintFrame = paint_frame_new()
+  studio_paint_dock(dock_frame, compose.dock, compose.hover, compose.motion)
+  if dock_frame.last_kind != paint_op_draw_glyphs():
+    return 5
+  if text_layout_rect_inside(dock_frame.last_rect, compose.dock.rect, 2.0) != 1:
+    return 6
+  var insp_frame: PaintFrame = paint_frame_new()
+  studio_paint_inspector_field_glyphs(insp_frame, compose.inspector)
+  if insp_frame.last_kind != paint_op_draw_glyphs():
+    return 7
+  if text_layout_rect_inside(insp_frame.last_rect, compose.inspector.rect, 2.0) != 1:
+    return 8
+  var chip: Rect = studio_profile_chip_rect_at(layout.topbar.x, layout.topbar.y, layout.topbar.w, layout.topbar.h, studio_profile_game())
+  var prof_cp: int = studio_profile_label_first_codepoint(studio_profile_game())
+  var prof_cnt: int = studio_profile_label_glyph_count(studio_profile_game())
+  var glyph_dest: Rect = studio_paint_glyph_text_rect(chip, prof_cp, prof_cnt, studio_typography_body_px())
+  if text_layout_rect_inside(glyph_dest, chip, 1.0) != 1:
+    return 9
+  var cmd: PaintCmd = paint_cmd_draw_glyphs_run(glyph_dest, font_face_inter(), studio_color_text_primary(), prof_cp, prof_cnt)
+  var expected_w: float = text_metrics_advance_run_px(face, prof_cp, prof_cnt)
+  if paint_cmd_glyph_run_used_width(cmd) != expected_w:
+    return 10
+  return 0

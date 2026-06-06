@@ -631,22 +631,20 @@ def studio_paint_glyph_run_cmds() -> int
 =
   return 1
 
-def studio_paint_glyph_text_rect(anchor: Rect, glyph_count: int) -> Rect
-  requires anchor.w >= 8.0
-  requires anchor.h >= studio_typography_glyph_line_height_px()
+def studio_paint_glyph_text_rect(anchor: Rect, first_codepoint: int, glyph_count: int, size_px: float) -> Rect
+  requires anchor.w >= 0.0
+  requires anchor.h >= size_px
+  requires size_px > 0.0
   requires glyph_count >= 1
   requires glyph_count <= 32
-  ensures result.w >= 8.0
-  ensures result.h == studio_typography_glyph_line_height_px()
+  requires font_atlas_codepoint_supported(first_codepoint) == 1
+  ensures result.w > 0.0
+  ensures result.h > 0.0
+  ensures text_layout_rect_inside(result, anchor, 1.0) == 1
   decreases glyph_count
 =
-  var pad: float = studio_spacing_rhythm_px()
-  var lh: float = studio_typography_glyph_line_height_px()
-  var y: float = anchor.y + (anchor.h - lh) / 2.0
-  var w: float = anchor.w - pad - pad
-  if w < 8.0:
-    w = 8.0
-  return rect_make(anchor.x + pad, y, w, lh)
+  var face: FontAtlasFace = font_atlas_face_new(font_face_inter())
+  return text_layout_glyph_dest_in_anchor(anchor, face, size_px, first_codepoint, glyph_count)
 
 def studio_paint_glyph_text(frame: var PaintFrame, anchor: Rect, first_codepoint: int, glyph_count: int, color: Color) -> unit
   requires frame.cmd_count >= 0
@@ -657,7 +655,19 @@ def studio_paint_glyph_text(frame: var PaintFrame, anchor: Rect, first_codepoint
   ensures frame.last_kind == paint_op_draw_glyphs()
   decreases glyph_count
 =
-  var dest: Rect = studio_paint_glyph_text_rect(anchor, glyph_count)
+  var dest: Rect = studio_paint_glyph_text_rect(anchor, first_codepoint, glyph_count, studio_typography_body_px())
+  paint_frame_push(frame, paint_cmd_draw_glyphs_run(dest, font_face_inter(), color, first_codepoint, glyph_count))
+
+def studio_paint_glyph_caption_text(frame: var PaintFrame, anchor: Rect, first_codepoint: int, glyph_count: int, color: Color) -> unit
+  requires frame.cmd_count >= 0
+  requires glyph_count >= 1
+  requires glyph_count <= 32
+  requires font_atlas_codepoint_supported(first_codepoint) == 1
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_glyph_run_cmds()
+  ensures frame.last_kind == paint_op_draw_glyphs()
+  decreases glyph_count
+=
+  var dest: Rect = studio_paint_glyph_text_rect(anchor, first_codepoint, glyph_count, studio_typography_caption_px())
   paint_frame_push(frame, paint_cmd_draw_glyphs_run(dest, font_face_inter(), color, first_codepoint, glyph_count))
 
 def studio_outliner_label_first_codepoint(label_id: int) -> int
@@ -922,7 +932,7 @@ def studio_spacing_rhythm_px() -> float
 =
   return studio_spacing_unit_px() * 2.0
 
-# WSV W2 — tokenized elevation shadows (studio-design-tokens [elevation]).
+# WSV W2 / wtfx-w3 — tokenized elevation shadows (studio-design-tokens [elevation]).
 def studio_elevation_shadow_layer_count() -> int
   requires true
   ensures result == 3
@@ -960,6 +970,27 @@ def studio_elevation_shadow_alpha_falloff() -> float
 =
   return 0.45
 
+def studio_elevation_shadow_r() -> float
+  requires true
+  ensures result == 0.0
+  decreases 0
+=
+  return 0.0
+
+def studio_elevation_shadow_g() -> float
+  requires true
+  ensures result == 0.0
+  decreases 0
+=
+  return 0.0
+
+def studio_elevation_shadow_b() -> float
+  requires true
+  ensures result == 0.0
+  decreases 0
+=
+  return 0.0
+
 def studio_elevation_depth_panel() -> int
   requires true
   ensures result == 0
@@ -974,13 +1005,95 @@ def studio_elevation_depth_raised() -> int
 =
   return 1
 
+type StudioShadowParams = object
+  public layer_count: int
+  public offset_base_px: float
+  public spread_px: float
+  public alpha_base: float
+  public alpha_falloff: float
+  public shadow_r: float
+  public shadow_g: float
+  public shadow_b: float
+  public depth_boost_px: float
+
+def studio_shadow_params(depth: int) -> StudioShadowParams
+  requires depth >= studio_elevation_depth_panel()
+  requires depth <= studio_elevation_depth_raised()
+  ensures result.layer_count == studio_elevation_shadow_layer_count()
+  ensures result.offset_base_px == studio_elevation_shadow_offset_base_px()
+  ensures result.spread_px == studio_elevation_shadow_spread_px()
+  ensures result.alpha_base == studio_elevation_shadow_alpha_base()
+  ensures result.alpha_falloff == studio_elevation_shadow_alpha_falloff()
+  ensures result.shadow_r == studio_elevation_shadow_r()
+  ensures result.shadow_g == studio_elevation_shadow_g()
+  ensures result.shadow_b == studio_elevation_shadow_b()
+  decreases depth
+=
+  var p: StudioShadowParams
+  p.layer_count = studio_elevation_shadow_layer_count()
+  p.offset_base_px = studio_elevation_shadow_offset_base_px()
+  p.spread_px = studio_elevation_shadow_spread_px()
+  p.alpha_base = studio_elevation_shadow_alpha_base()
+  p.alpha_falloff = studio_elevation_shadow_alpha_falloff()
+  p.shadow_r = studio_elevation_shadow_r()
+  p.shadow_g = studio_elevation_shadow_g()
+  p.shadow_b = studio_elevation_shadow_b()
+  p.depth_boost_px = 0.0
+  if depth == studio_elevation_depth_raised():
+    p.depth_boost_px = studio_spacing_unit_px()
+  return p
+
+def studio_shadow_layer_alpha(params: StudioShadowParams, layer: int) -> float
+  requires layer >= 0
+  requires layer < params.layer_count
+  ensures result >= 0.08
+  ensures result <= params.alpha_base
+  decreases layer
+=
+  var scale: float = 1.0
+  if layer == 1:
+    scale = params.alpha_falloff
+  if layer == 2:
+    scale = params.alpha_falloff * params.alpha_falloff
+  return params.alpha_base * scale
+
+def studio_shadow_layer_offset_px(params: StudioShadowParams, layer: int) -> float
+  requires layer >= 0
+  requires layer < params.layer_count
+  ensures result >= params.offset_base_px
+  decreases layer
+=
+  var layer_step: float = params.spread_px / studio_int_as_float(params.layer_count)
+  return params.offset_base_px + layer_step * studio_int_as_float(layer + 1) + params.depth_boost_px
+
+def studio_shadow_layer_rect(panel: Rect, params: StudioShadowParams, layer: int) -> Rect
+  requires panel.w >= 0.0
+  requires panel.h >= 0.0
+  requires layer >= 0
+  requires layer < params.layer_count
+  ensures result.w == panel.w
+  ensures result.h == panel.h
+  decreases layer
+=
+  var off: float = studio_shadow_layer_offset_px(params, layer)
+  return rect_make(panel.x + off, panel.y + off, panel.w, panel.h)
+
+def studio_shadow_layer_color(params: StudioShadowParams, layer: int) -> Color
+  requires layer >= 0
+  requires layer < params.layer_count
+  ensures result.a == studio_shadow_layer_alpha(params, layer)
+  decreases layer
+=
+  var alpha: float = studio_shadow_layer_alpha(params, layer)
+  return color_rgb(params.shadow_r, params.shadow_g, params.shadow_b, alpha)
+
 def studio_color_panel_shadow_alpha(alpha: float) -> Color
   requires alpha >= 0.0
   requires alpha <= 1.0
   ensures result.a == alpha
   decreases 0
 =
-  return color_rgb(0.0, 0.0, 0.0, alpha)
+  return color_rgb(studio_elevation_shadow_r(), studio_elevation_shadow_g(), studio_elevation_shadow_b(), alpha)
 
 def studio_color_panel_shadow() -> Color
   requires true
@@ -992,34 +1105,20 @@ def studio_color_panel_shadow() -> Color
 def studio_elevation_shadow_layer_alpha(layer: int) -> float
   requires layer >= 0
   requires layer < studio_elevation_shadow_layer_count()
-  ensures result >= 0.08
-  ensures result <= studio_elevation_shadow_alpha_base()
+  ensures result == studio_shadow_layer_alpha(studio_shadow_params(studio_elevation_depth_panel()), layer)
   decreases layer
 =
-  var base: float = studio_elevation_shadow_alpha_base()
-  var fall: float = studio_elevation_shadow_alpha_falloff()
-  var scale: float = 1.0
-  if layer == 1:
-    scale = fall
-  if layer == 2:
-    scale = fall * fall
-  return base * scale
+  return studio_shadow_layer_alpha(studio_shadow_params(studio_elevation_depth_panel()), layer)
 
 def studio_elevation_shadow_layer_offset_px(layer: int, depth: int) -> float
   requires layer >= 0
   requires layer < studio_elevation_shadow_layer_count()
   requires depth >= studio_elevation_depth_panel()
   requires depth <= studio_elevation_depth_raised()
-  ensures result >= studio_elevation_shadow_offset_base_px()
+  ensures result == studio_shadow_layer_offset_px(studio_shadow_params(depth), layer)
   decreases layer
 =
-  var base: float = studio_elevation_shadow_offset_base_px()
-  var spread: float = studio_elevation_shadow_spread_px()
-  var layer_step: float = spread / studio_int_as_float(studio_elevation_shadow_layer_count())
-  var depth_boost: float = 0.0
-  if depth == studio_elevation_depth_raised():
-    depth_boost = studio_spacing_unit_px()
-  return base + layer_step * studio_int_as_float(layer + 1) + depth_boost
+  return studio_shadow_layer_offset_px(studio_shadow_params(depth), layer)
 
 def studio_paint_panel_shadow_layer_rect(panel: Rect, layer: int, depth: int) -> Rect
   requires panel.w >= 0.0
@@ -1028,12 +1127,10 @@ def studio_paint_panel_shadow_layer_rect(panel: Rect, layer: int, depth: int) ->
   requires layer < studio_elevation_shadow_layer_count()
   requires depth >= studio_elevation_depth_panel()
   requires depth <= studio_elevation_depth_raised()
-  ensures result.w == panel.w
-  ensures result.h == panel.h
+  ensures result == studio_shadow_layer_rect(panel, studio_shadow_params(depth), layer)
   decreases layer
 =
-  var off: float = studio_elevation_shadow_layer_offset_px(layer, depth)
-  return rect_make(panel.x + off, panel.y + off, panel.w, panel.h)
+  return studio_shadow_layer_rect(panel, studio_shadow_params(depth), layer)
 
 def studio_paint_panel_shadow_cmds() -> int
   requires true
@@ -1052,11 +1149,12 @@ def studio_paint_panel_shadow_at_depth(frame: var PaintFrame, panel: Rect, depth
   ensures frame.last_kind == paint_op_fill_round_rect()
   decreases depth
 =
+  var params: StudioShadowParams = studio_shadow_params(depth)
   var layer: int = 0
-  while layer < studio_elevation_shadow_layer_count():
-    var shadow_rect: Rect = studio_paint_panel_shadow_layer_rect(panel, layer, depth)
-    var alpha: float = studio_elevation_shadow_layer_alpha(layer)
-    paint_frame_push(frame, paint_cmd_fill_round(shadow_rect, studio_color_panel_shadow_alpha(alpha), studio_default_panel_radius_px()))
+  while layer < params.layer_count:
+    var shadow_rect: Rect = studio_shadow_layer_rect(panel, params, layer)
+    var col: Color = studio_shadow_layer_color(params, layer)
+    paint_frame_push(frame, paint_cmd_fill_round(shadow_rect, col, studio_default_panel_radius_px()))
     layer = layer + 1
 
 def studio_paint_panel_shadow(frame: var PaintFrame, panel: Rect) -> unit
@@ -1068,6 +1166,45 @@ def studio_paint_panel_shadow(frame: var PaintFrame, panel: Rect) -> unit
   decreases 0
 =
   studio_paint_panel_shadow_at_depth(frame, panel, studio_elevation_depth_panel())
+
+def studio_paint_panel_shadow_diffused_cmds() -> int
+  requires true
+  ensures result == studio_elevation_shadow_layer_count() * 2
+  decreases 0
+=
+  return studio_elevation_shadow_layer_count() * 2
+
+def studio_paint_panel_shadow_diffused_at_depth(frame: var PaintFrame, panel: Rect, depth: int) -> unit
+  requires frame.cmd_count >= 0
+  requires panel.w >= 0.0
+  requires panel.h >= 0.0
+  requires depth >= studio_elevation_depth_panel()
+  requires depth <= studio_elevation_depth_raised()
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_panel_shadow_diffused_cmds()
+  ensures frame.last_kind == paint_op_layer_blur()
+  decreases depth
+=
+  var params: StudioShadowParams = studio_shadow_params(depth)
+  var sigma: float = studio_fx_blur_sigma_px()
+  var radius: float = studio_fx_blur_radius_px()
+  var passes: int = studio_fx_blur_passes()
+  var layer: int = 0
+  while layer < params.layer_count:
+    var shadow_rect: Rect = studio_shadow_layer_rect(panel, params, layer)
+    var col: Color = studio_shadow_layer_color(params, layer)
+    paint_frame_push(frame, paint_cmd_fill_round(shadow_rect, col, studio_default_panel_radius_px()))
+    paint_frame_push_layer_blur(frame, shadow_rect, sigma, radius, passes)
+    layer = layer + 1
+
+def studio_paint_panel_shadow_diffused(frame: var PaintFrame, panel: Rect) -> unit
+  requires frame.cmd_count >= 0
+  requires panel.w >= 0.0
+  requires panel.h >= 0.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_panel_shadow_diffused_cmds()
+  ensures frame.last_kind == paint_op_layer_blur()
+  decreases 0
+=
+  studio_paint_panel_shadow_diffused_at_depth(frame, panel, studio_elevation_depth_panel())
 
 def studio_paint_elevated_panel_shadow_cmds() -> int
   requires true
@@ -1227,12 +1364,55 @@ def studio_timeline_play_icon_content_rect(btn: Rect) -> Rect
   return studio_icon_content_rect(btn, studio_density_timeline_play_icon_inset_px())
 
 # WSV W4 — viewport overlay polish (HUD chips, error/empty overlays, menu chips).
-def studio_viewport_overlay_scrim_alpha() -> float
+# wtfx-w2 — scrim alpha from [fx] opacity_scrim (source-over compositing in li-ui paint_raster).
+def studio_fx_opacity_disabled() -> float
+  requires true
+  ensures result == 0.38
+  decreases 0
+=
+  return 0.38
+
+def studio_fx_opacity_scrim() -> float
   requires true
   ensures result == 0.55
   decreases 0
 =
   return 0.55
+
+def studio_fx_opacity_hover_delta() -> float
+  requires true
+  ensures result == 0.08
+  decreases 0
+=
+  return 0.08
+
+def studio_fx_blur_sigma_px() -> float
+  requires true
+  ensures result == 3.0
+  decreases 0
+=
+  return 3.0
+
+def studio_fx_blur_radius_px() -> float
+  requires true
+  ensures result == 6.0
+  decreases 0
+=
+  return 6.0
+
+def studio_fx_blur_passes() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_viewport_overlay_scrim_alpha() -> float
+  requires true
+  ensures result == studio_fx_opacity_scrim()
+  decreases 0
+=
+  return studio_fx_opacity_scrim()
 
 def studio_viewport_hud_chip_height_px() -> float
   requires true
@@ -1264,10 +1444,10 @@ def studio_viewport_biomol_chip_width_px() -> float
 
 def studio_viewport_overlay_scrim_color() -> Color
   requires true
-  ensures result.a == studio_viewport_overlay_scrim_alpha()
+  ensures result.a == studio_fx_opacity_scrim()
   decreases 0
 =
-  return color_rgb(0.0, 0.0, 0.0, studio_viewport_overlay_scrim_alpha())
+  return color_with_alpha(color_rgb(0.0, 0.0, 0.0, 1.0), studio_fx_opacity_scrim())
 
 def studio_viewport_error_retry_label_first_codepoint() -> int
   requires true
@@ -1439,7 +1619,233 @@ def studio_shell_sync_hover(compose: var StudioShellCompose, input: InputState) 
     h.timeline_play_btn = 1
   if rect_contains(compose.timeline.playhead_rect, px, py) == 1:
     h.timeline_playhead = 1
+  var prev: StudioShellHoverState = compose.hover
   compose.hover = h
+  studio_motion_sync_hover_target(compose, prev)
+
+# wtfx-w6 — token-driven shell transitions (panel / hover / palette overlay).
+type StudioMotionState = object
+  public panel_t: float
+  public hover_t: float
+  public overlay_t: float
+  public hover_target: int
+
+def studio_motion_new() -> StudioMotionState
+  requires true
+  ensures result.panel_t == 1.0
+  ensures result.hover_t == 0.0
+  ensures result.overlay_t == 0.0
+  ensures result.hover_target == 0
+  decreases 0
+=
+  var m: StudioMotionState
+  m.panel_t = 1.0
+  m.hover_t = 0.0
+  m.overlay_t = 0.0
+  m.hover_target = 0
+  return m
+
+def studio_motion_advance_t(t: float, dt_ms: float, duration_ms: float) -> float
+  requires t >= 0.0
+  requires t <= 1.0
+  requires dt_ms >= 0.0
+  requires duration_ms > 0.0
+  ensures result >= 0.0
+  ensures result <= 1.0
+  decreases 0
+=
+  var step: float = dt_ms / duration_ms
+  var next: float = t + step
+  if next > 1.0:
+    return 1.0
+  return next
+
+def studio_motion_step_toward(current: float, target: float, dt_ms: float, duration_ms: float) -> float
+  requires current >= 0.0
+  requires current <= 1.0
+  requires target >= 0.0
+  requires target <= 1.0
+  requires dt_ms >= 0.0
+  requires duration_ms > 0.0
+  ensures result >= 0.0
+  ensures result <= 1.0
+  decreases 0
+=
+  if current == target:
+    return current
+  if current < target:
+    var up: float = studio_motion_advance_t(current, dt_ms, duration_ms)
+    if up > target:
+      return target
+    return up
+  var down_step: float = dt_ms / duration_ms
+  var down: float = current - down_step
+  if down < target:
+    return target
+  return down
+
+def studio_motion_eased_t(t: float) -> float
+  requires t >= 0.0
+  requires t <= 1.0
+  ensures result >= 0.0
+  ensures result <= 1.0
+  decreases 0
+=
+  return easing_apply(t, gui_animation_easing_default_id())
+
+def studio_motion_hover_target_from_hover(hover: StudioShellHoverState) -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+=
+  if hover.dock_slot != studio_hover_dock_none():
+    return 1
+  if hover.outliner_row != studio_hover_outliner_none():
+    return 1
+  if hover.timeline_play_btn == 1:
+    return 1
+  if hover.timeline_playhead == 1:
+    return 1
+  return 0
+
+def studio_motion_sync_hover_target(compose: var StudioShellCompose, prev: StudioShellHoverState) -> unit
+  requires true
+  ensures compose.motion.hover_target >= 0
+  ensures compose.motion.hover_target <= 1
+  decreases 0
+=
+  var target: int = studio_motion_hover_target_from_hover(compose.hover)
+  var prev_target: int = studio_motion_hover_target_from_hover(prev)
+  if target != prev_target:
+    compose.motion.hover_target = target
+
+def studio_motion_panel_begin(compose: var StudioShellCompose) -> unit
+  requires true
+  ensures compose.motion.panel_t == 0.0
+  decreases 0
+=
+  if motion_reduced() == 1:
+    compose.motion.panel_t = 1.0
+    return
+  compose.motion.panel_t = 0.0
+
+def studio_motion_tick(compose: var StudioShellCompose, dt_ms: float) -> unit
+  requires dt_ms >= 0.0
+  requires compose.motion.panel_t >= 0.0
+  requires compose.motion.panel_t <= 1.0
+  requires compose.motion.hover_t >= 0.0
+  requires compose.motion.hover_t <= 1.0
+  requires compose.motion.overlay_t >= 0.0
+  ensures compose.motion.panel_t >= 0.0
+  ensures compose.motion.panel_t <= 1.0
+  ensures compose.motion.hover_t >= 0.0
+  ensures compose.motion.hover_t <= 1.0
+  ensures compose.motion.overlay_t >= 0.0
+  ensures compose.motion.overlay_t <= 1.0
+  decreases 0
+=
+  if motion_reduced() == 1:
+    compose.motion.panel_t = 1.0
+    if compose.motion.hover_target == 1:
+      compose.motion.hover_t = 1.0
+    if compose.motion.hover_target == 0:
+      compose.motion.hover_t = 0.0
+    if compose.palette.is_open == studio_palette_open_flag():
+      compose.motion.overlay_t = 1.0
+    if compose.palette.is_open == studio_palette_closed_flag():
+      compose.motion.overlay_t = 0.0
+    return
+  var panel_ms: float = studio_panel_transition_ms()
+  if compose.motion.panel_t < 1.0:
+    compose.motion.panel_t = studio_motion_advance_t(compose.motion.panel_t, dt_ms, panel_ms)
+  var hover_ms: float = studio_hover_transition_ms()
+  var hover_target_f: float = 0.0
+  if compose.motion.hover_target == 1:
+    hover_target_f = 1.0
+  compose.motion.hover_t = studio_motion_step_toward(compose.motion.hover_t, hover_target_f, dt_ms, hover_ms)
+  var overlay_target_f: float = 0.0
+  if compose.palette.is_open == studio_palette_open_flag():
+    overlay_target_f = 1.0
+  compose.motion.overlay_t = studio_motion_step_toward(compose.motion.overlay_t, overlay_target_f, dt_ms, panel_ms)
+
+def studio_motion_hover_overlay_alpha(motion: StudioMotionState) -> float
+  requires motion.hover_t >= 0.0
+  requires motion.hover_t <= 1.0
+  requires motion.hover_target >= 0
+  requires motion.hover_target <= 1
+  ensures result >= 0.0
+  ensures result <= studio_fx_opacity_hover_delta()
+  decreases 0
+=
+  if motion.hover_target == 0:
+    if motion.hover_t <= 0.0:
+      return 0.0
+  var eased: float = studio_motion_eased_t(motion.hover_t)
+  return studio_fx_opacity_hover_delta() * eased
+
+def studio_motion_hover_fill(base: Color, motion: StudioMotionState) -> Color
+  requires base.a >= 0.0
+  requires base.a <= 1.0
+  requires motion.hover_t >= 0.0
+  requires motion.hover_t <= 1.0
+  ensures result.a >= 0.0
+  ensures result.a <= 1.0
+  decreases 0
+=
+  var da: float = studio_motion_hover_overlay_alpha(motion)
+  if da <= 0.0:
+    return base
+  return color_over(base, color_with_alpha(studio_color_hover_surface(), da))
+
+def studio_motion_palette_scrim_alpha(motion: StudioMotionState) -> float
+  requires motion.overlay_t >= 0.0
+  requires motion.overlay_t <= 1.0
+  ensures result >= 0.0
+  ensures result <= studio_fx_opacity_scrim()
+  decreases 0
+=
+  var eased: float = studio_motion_eased_t(motion.overlay_t)
+  return studio_fx_opacity_scrim() * eased
+
+def studio_motion_focus_ring_alpha(motion: StudioMotionState) -> float
+  requires motion.panel_t >= 0.0
+  requires motion.panel_t <= 1.0
+  ensures result >= 0.0
+  ensures result <= 1.0
+  decreases 0
+=
+  return studio_motion_eased_t(motion.panel_t)
+
+def studio_motion_shell_smoke() -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 8
+  decreases 0
+=
+  if li_std_studio_version() < 55:
+    return 1
+  if studio_panel_transition_ms() != 100.0:
+    return 2
+  if studio_hover_transition_ms() != 200.0:
+    return 3
+  if studio_fx_opacity_hover_delta() != 0.08:
+    return 4
+  var compose: StudioShellCompose = studio_compose_shell(1280.0, 720.0, 0, 1, 1)
+  compose.motion.hover_target = 1
+  compose.motion.hover_t = 0.5
+  var mid_alpha: float = studio_motion_hover_overlay_alpha(compose.motion)
+  if mid_alpha <= 0.0:
+    return 5
+  if mid_alpha >= studio_fx_opacity_hover_delta():
+    return 6
+  studio_motion_panel_begin(compose)
+  if compose.motion.panel_t != 0.0:
+    return 7
+  studio_motion_tick(compose, 50.0)
+  if compose.motion.panel_t <= 0.0:
+    return 8
+  return 0
 
 # W1 — glyph pipeline entry (bitmap atlas + paint_cmd_draw_glyphs_run).
 def studio_paint_glyph_pipeline_ok() -> int
@@ -3556,10 +3962,10 @@ def studio_compose_shell_drug_litl(w: float, h: float, tick: int, has_selection:
 
 def li_std_studio_version() -> int
   requires true
-  ensures result == 50
+  ensures result == 55
   decreases 0
 =
-  return 50
+  return 55
 
 def studio_shell_widget_tree_version() -> int
   requires true
@@ -3619,6 +4025,7 @@ def studio_shell_attach_widget_tree(compose: var StudioShellCompose) -> unit
   decreases compose.dock.active_slot
 =
   compose.hover = studio_shell_hover_new()
+  compose.motion = studio_motion_new()
   studio_shell_layout_widget_tree(compose)
 
 def studio_shell_sync_widget_tree_from_reactive(compose: var StudioShellCompose) -> unit
@@ -4514,6 +4921,7 @@ def studio_shell_apply_mode(compose: var StudioShellCompose, mode: int) -> unit
   studio_reactive_resync_mode(compose, mode)
   var region: int = studio_mode_primary_region(mode)
   var _timing: PanelSwitchTiming = gui_panel_switch_to(compose.panel, region, 0.0)
+  studio_motion_panel_begin(compose)
   studio_reactive_flush_mode_regions(compose)
 
 def studio_shell_handle_mode_trigger(compose: var StudioShellCompose, trigger: int) raises IO -> int
@@ -4598,6 +5006,7 @@ type StudioShellCompose = object
   public widget_tree_layout: ShellWidgetTreeLayout
   public widget_tree_active: int
   public hover: StudioShellHoverState
+  public motion: StudioMotionState
 
 
 def studio_reactive_shell_new(task_state: int, palette_open: int, mode: int, playhead_pct: float) -> StudioReactiveShell
@@ -4929,8 +5338,10 @@ def studio_paint_focus_ring_for_panel(frame: var PaintFrame, compose: StudioShel
 =
   if studio_paint_focus_ring_cmds(compose.panel.active_region) == 0:
     return
+  var ring_alpha: float = studio_motion_focus_ring_alpha(compose.motion)
+  var ring_color: Color = color_with_alpha(studio_color_focus_ring(), ring_alpha)
   var region_rect: Rect = studio_region_rect_for_focus(compose.layout, compose.panel.active_region)
-  studio_paint_focus_ring(frame, region_rect)
+  paint_frame_push(frame, paint_cmd_stroke_round(region_rect, ring_color, 2.0, studio_radius_sm_px()))
 
 def studio_paint_shell_loading_cmds() -> int
   requires true
@@ -7731,7 +8142,7 @@ def studio_paint_outliner_cmds(node_count: int) -> int
 =
   return studio_paint_elevated_panel_shadow_cmds() + node_count * studio_paint_outliner_row_cmds()
 
-def studio_paint_outliner_row(frame: var PaintFrame, row: Rect, selected: int, label_id: int, hovered: int) -> unit
+def studio_paint_outliner_row(frame: var PaintFrame, row: Rect, selected: int, label_id: int, hovered: int, motion: StudioMotionState) -> unit
   requires frame.cmd_count >= 0
   requires selected >= 0
   requires selected <= 1
@@ -7739,6 +8150,8 @@ def studio_paint_outliner_row(frame: var PaintFrame, row: Rect, selected: int, l
   requires hovered <= 1
   requires label_id >= studio_outliner_label_root()
   requires label_id <= studio_outliner_label_mesh()
+  requires motion.hover_t >= 0.0
+  requires motion.hover_t <= 1.0
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_outliner_row_cmds()
   decreases label_id
 =
@@ -7750,7 +8163,7 @@ def studio_paint_outliner_row(frame: var PaintFrame, row: Rect, selected: int, l
     return
   var row_fill: Color = studio_color_bg_elevated()
   if hovered == 1:
-    row_fill = studio_color_hover_surface()
+    row_fill = studio_motion_hover_fill(row_fill, motion)
   paint_frame_push(frame, paint_cmd_fill_round(row, row_fill, studio_radius_sm_px()))
   paint_frame_push(frame, paint_cmd_stroke_round(row, studio_color_border(), 1.0, studio_radius_sm_px()))
   var cp0: int = studio_outliner_label_first_codepoint(label_id)
@@ -7760,10 +8173,12 @@ def studio_paint_outliner_row(frame: var PaintFrame, row: Rect, selected: int, l
     label_color = studio_color_text_primary()
   studio_paint_glyph_text(frame, row, cp0, cnt0, label_color)
 
-def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose, hover: StudioShellHoverState) -> unit
+def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose, hover: StudioShellHoverState, motion: StudioMotionState) -> unit
   requires frame.cmd_count >= 0
   requires outliner.node_count >= 0
   requires outliner.node_count <= studio_outliner_max_nodes()
+  requires motion.hover_t >= 0.0
+  requires motion.hover_t <= 1.0
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_outliner_cmds(outliner.node_count)
   decreases outliner.node_count
 =
@@ -7772,17 +8187,17 @@ def studio_paint_outliner(frame: var PaintFrame, outliner: StudioOutlinerCompose
     var sel0: int = 0
     if outliner.selected_node == outliner.node0.id:
       sel0 = 1
-    studio_paint_outliner_row(frame, outliner.row0_rect, sel0, outliner.node0.label_id, studio_shell_hover_outliner_row_is(hover, 0))
+    studio_paint_outliner_row(frame, outliner.row0_rect, sel0, outliner.node0.label_id, studio_shell_hover_outliner_row_is(hover, 0), motion)
   if outliner.node_count > 1:
     var sel1: int = 0
     if outliner.selected_node == outliner.node1.id:
       sel1 = 1
-    studio_paint_outliner_row(frame, outliner.row1_rect, sel1, outliner.node1.label_id, studio_shell_hover_outliner_row_is(hover, 1))
+    studio_paint_outliner_row(frame, outliner.row1_rect, sel1, outliner.node1.label_id, studio_shell_hover_outliner_row_is(hover, 1), motion)
   if outliner.node_count > 2:
     var sel2: int = 0
     if outliner.selected_node == outliner.node2.id:
       sel2 = 1
-    studio_paint_outliner_row(frame, outliner.row2_rect, sel2, outliner.node2.label_id, studio_shell_hover_outliner_row_is(hover, 2))
+    studio_paint_outliner_row(frame, outliner.row2_rect, sel2, outliner.node2.label_id, studio_shell_hover_outliner_row_is(hover, 2), motion)
 
 def studio_paint_dock_cmds() -> int
   requires true
@@ -8226,7 +8641,7 @@ def studio_paint_viewport_menu(frame: var PaintFrame, menu: StudioViewportMenuCo
   studio_paint_viewport_chip(frame, menu.particle_btn, studio_color_accent_amber(), studio_viewport_menu_particle_label_first_codepoint(), studio_viewport_menu_particle_label_glyph_count(), studio_color_text_primary())
   studio_paint_viewport_chip(frame, menu.biomol_btn, studio_color_accent_violet(), studio_viewport_menu_biomol_label_first_codepoint(), studio_viewport_menu_biomol_label_glyph_count(), studio_color_text_primary())
 
-def studio_paint_dock_slot(frame: var PaintFrame, dock: StudioDockCompose, slot: int, hovered: int) -> unit
+def studio_paint_dock_slot(frame: var PaintFrame, dock: StudioDockCompose, slot: int, hovered: int, motion: StudioMotionState) -> unit
   requires frame.cmd_count >= 0
   requires slot >= 0
   requires slot < studio_dock_slot_count()
@@ -8234,6 +8649,8 @@ def studio_paint_dock_slot(frame: var PaintFrame, dock: StudioDockCompose, slot:
   requires dock.active_slot < studio_dock_slot_count()
   requires hovered >= 0
   requires hovered <= 1
+  requires motion.hover_t >= 0.0
+  requires motion.hover_t <= 1.0
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_dock_slot_cmds(0)
   decreases slot
 =
@@ -8247,7 +8664,7 @@ def studio_paint_dock_slot(frame: var PaintFrame, dock: StudioDockCompose, slot:
   if is_active == 0:
     var slot_fill: Color = studio_color_bg_elevated()
     if hovered == 1:
-      slot_fill = studio_color_hover_surface()
+      slot_fill = studio_motion_hover_fill(slot_fill, motion)
     paint_frame_push(frame, paint_cmd_fill_round(slot_rect, slot_fill, studio_radius_sm_px()))
     paint_frame_push(frame, paint_cmd_stroke_round(slot_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
   var icon_id: int = icon_atlas_image_for_dock_slot(slot)
@@ -8260,29 +8677,33 @@ def studio_paint_dock_slot(frame: var PaintFrame, dock: StudioDockCompose, slot:
     icon_tint = studio_color_text_primary()
   paint_frame_push(frame, paint_cmd_draw_image(icon_dest, icon_id, icon_src, icon_tint))
 
-def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose, hover: StudioShellHoverState) -> unit
+def studio_paint_dock(frame: var PaintFrame, dock: StudioDockCompose, hover: StudioShellHoverState, motion: StudioMotionState) -> unit
   requires frame.cmd_count >= 0
   requires dock.active_slot >= 0
   requires dock.active_slot < icon_atlas_slot_count()
+  requires motion.hover_t >= 0.0
+  requires motion.hover_t <= 1.0
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_dock_cmds()
   ensures frame.last_kind == paint_op_draw_glyphs()
   decreases dock.active_slot
 =
   studio_paint_panel_shadow(frame, dock.rect)
   paint_frame_push(frame, paint_cmd_fill_gradient(dock.rect, studio_color_bg_primary(), studio_color_bg_elevated()))
-  studio_paint_dock_slot(frame, dock, 0, studio_shell_hover_dock_slot_is(hover, 0))
-  studio_paint_dock_slot(frame, dock, 1, studio_shell_hover_dock_slot_is(hover, 1))
-  studio_paint_dock_slot(frame, dock, 2, studio_shell_hover_dock_slot_is(hover, 2))
-  studio_paint_dock_slot(frame, dock, 3, studio_shell_hover_dock_slot_is(hover, 3))
-  studio_paint_dock_slot(frame, dock, 4, studio_shell_hover_dock_slot_is(hover, 4))
+  studio_paint_dock_slot(frame, dock, 0, studio_shell_hover_dock_slot_is(hover, 0), motion)
+  studio_paint_dock_slot(frame, dock, 1, studio_shell_hover_dock_slot_is(hover, 1), motion)
+  studio_paint_dock_slot(frame, dock, 2, studio_shell_hover_dock_slot_is(hover, 2), motion)
+  studio_paint_dock_slot(frame, dock, 3, studio_shell_hover_dock_slot_is(hover, 3), motion)
+  studio_paint_dock_slot(frame, dock, 4, studio_shell_hover_dock_slot_is(hover, 4), motion)
   var active_rect: Rect = studio_dock_slot_rect_at(dock.rect.x, dock.rect.y, dock.rect.w, dock.rect.h, dock.active_slot)
   var dock_label_rect: Rect = rect_make(dock.rect.x, active_rect.y + active_rect.h + studio_spacing_unit_px(), dock.rect.w, studio_typography_caption_line_height_px())
   var cap_cp: int = studio_dock_slot_caption_first_codepoint(dock.active_slot)
   var cap_cnt: int = studio_dock_slot_caption_glyph_count(dock.active_slot)
-  studio_paint_glyph_text(frame, dock_label_rect, cap_cp, cap_cnt, studio_color_text_muted())
+  studio_paint_glyph_caption_text(frame, dock_label_rect, cap_cp, cap_cnt, studio_color_text_muted())
 
-def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose, hover: StudioShellHoverState) -> unit
+def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose, hover: StudioShellHoverState, motion: StudioMotionState) -> unit
   requires frame.cmd_count >= 0
+  requires motion.hover_t >= 0.0
+  requires motion.hover_t <= 1.0
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_timeline_cmds()
   ensures frame.last_kind == paint_op_stroke_round_rect()
   decreases 0
@@ -8300,7 +8721,7 @@ def studio_paint_timeline(frame: var PaintFrame, timeline: StudioTimelineCompose
   paint_frame_push(frame, paint_cmd_stroke_round(timeline.playhead_rect, playhead_ring, 1.0, studio_radius_sm_px()))
   var play_fill: Color = studio_color_bg_elevated()
   if hover.timeline_play_btn == 1:
-    play_fill = studio_color_hover_surface()
+    play_fill = studio_motion_hover_fill(play_fill, motion)
   paint_frame_push(frame, paint_cmd_fill_round(timeline.play_btn_rect, play_fill, studio_radius_sm_px()))
   paint_frame_push(frame, paint_cmd_stroke_round(timeline.play_btn_rect, studio_color_border(), 1.0, studio_radius_sm_px()))
   var play_icon_id: int = icon_atlas_image_for_dock_slot(3)
@@ -8390,9 +8811,10 @@ def studio_paint_compose_panels(frame: var PaintFrame, dock: StudioDockCompose, 
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_compose_panels_count(inspector.has_selection)
   decreases 0
 =
-  studio_paint_dock(frame, dock, studio_shell_hover_new())
-  studio_paint_outliner(frame, outliner, studio_shell_hover_new())
-  studio_paint_timeline(frame, timeline, studio_shell_hover_new())
+  var motion0: StudioMotionState = studio_motion_new()
+  studio_paint_dock(frame, dock, studio_shell_hover_new(), motion0)
+  studio_paint_outliner(frame, outliner, studio_shell_hover_new(), motion0)
+  studio_paint_timeline(frame, timeline, studio_shell_hover_new(), motion0)
   studio_paint_inspector(frame, inspector)
 
 def studio_paint_compose_panels_count(has_selection: int) -> int
@@ -8478,9 +8900,9 @@ def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose
   ensures frame.cmd_count == studio_shell_chrome_count_for_compose(compose)
   decreases compose.agent.task_state
 =
-  studio_paint_dock(frame, compose.dock, compose.hover)
-  studio_paint_outliner(frame, compose.outliner, compose.hover)
-  studio_paint_timeline(frame, compose.timeline, compose.hover)
+  studio_paint_dock(frame, compose.dock, compose.hover, compose.motion)
+  studio_paint_outliner(frame, compose.outliner, compose.hover, compose.motion)
+  studio_paint_timeline(frame, compose.timeline, compose.hover, compose.motion)
   studio_paint_inspector(frame, compose.inspector)
   paint_frame_push(frame, paint_cmd_fill_gradient(compose.layout.topbar, studio_color_bg_primary(), studio_color_bg_elevated()))
   var prof0: int = compose.config.active_profile
@@ -8498,17 +8920,41 @@ def studio_paint_shell_chrome(frame: var PaintFrame, compose: StudioShellCompose
       studio_paint_viewport_profile_preview(frame, compose.layout.viewport, prof0)
       studio_paint_viewport_menu(frame, compose.viewport_menu)
   studio_paint_agent(frame, compose.agent)
-  paint_studio_palette(frame, compose.palette)
+  studio_paint_palette_motion(frame, compose.palette, compose.motion)
   studio_paint_focus_ring_for_panel(frame, compose)
 
-def studio_paint_palette_overlay(frame: var PaintFrame, palette: StudioCommandPaletteCompose) -> unit
+def studio_paint_palette_motion(frame: var PaintFrame, palette: StudioCommandPaletteCompose, motion: StudioMotionState) -> unit
   requires frame.cmd_count >= 0
   requires palette.is_open >= studio_palette_closed_flag()
   requires palette.is_open <= studio_palette_open_flag()
+  requires motion.overlay_t >= 0.0
+  requires motion.overlay_t <= 1.0
   ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_palette_cmds(palette.is_open)
   decreases palette.is_open
 =
-  paint_studio_palette(frame, palette)
+  if palette.is_open == studio_palette_closed_flag():
+    if motion.overlay_t <= 0.0:
+      return
+  if palette.is_open == studio_palette_closed_flag():
+    var fade_scrim: Color = color_with_alpha(color_rgb(0.051, 0.067, 0.090, 1.0), studio_motion_palette_scrim_alpha(motion))
+    paint_frame_push(frame, paint_cmd_fill(palette.backdrop_rect, fade_scrim))
+    return
+  var scrim_a: float = studio_motion_palette_scrim_alpha(motion)
+  var scrim: Color = color_with_alpha(color_rgb(0.051, 0.067, 0.090, 1.0), scrim_a)
+  paint_frame_push(frame, paint_cmd_fill(palette.backdrop_rect, scrim))
+  paint_frame_push(frame, paint_cmd_fill(palette.panel_rect, studio_color_bg_elevated()))
+  paint_frame_push(frame, paint_cmd_stroke(palette.search_rect, studio_color_accent_cyan(), 1.0))
+
+def studio_paint_palette_overlay(frame: var PaintFrame, palette: StudioCommandPaletteCompose, motion: StudioMotionState) -> unit
+  requires frame.cmd_count >= 0
+  requires palette.is_open >= studio_palette_closed_flag()
+  requires palette.is_open <= studio_palette_open_flag()
+  requires motion.overlay_t >= 0.0
+  requires motion.overlay_t <= 1.0
+  ensures frame.cmd_count == old(frame.cmd_count) + studio_paint_palette_cmds(palette.is_open)
+  decreases palette.is_open
+=
+  studio_paint_palette_motion(frame, palette, motion)
 
 def studio_shell_frame(w: float, h: float) -> PaintFrame
   requires w > 0.0
@@ -8582,21 +9028,25 @@ def studio_agent_chrome_ok(agent: StudioAgentChromeCompose) -> int
       return 0
   return 1
 
-def studio_panel_switch_inspector(panel: var GuiPanelState, elapsed_ms: float) -> PanelSwitchTiming
+def studio_panel_switch_inspector(compose: var StudioShellCompose, elapsed_ms: float) -> PanelSwitchTiming
   requires elapsed_ms >= 0.0
-  requires panel.switch_count >= 0
-  ensures panel.active_region == studio_region_inspector()
+  requires compose.panel.switch_count >= 0
+  ensures compose.panel.active_region == studio_region_inspector()
   decreases 0
 =
-  return gui_panel_switch_to(panel, studio_region_inspector(), elapsed_ms)
+  var timing: PanelSwitchTiming = gui_panel_switch_to(compose.panel, studio_region_inspector(), elapsed_ms)
+  studio_motion_panel_begin(compose)
+  return timing
 
-def studio_panel_switch_timeline(panel: var GuiPanelState, elapsed_ms: float) -> PanelSwitchTiming
+def studio_panel_switch_timeline(compose: var StudioShellCompose, elapsed_ms: float) -> PanelSwitchTiming
   requires elapsed_ms >= 0.0
-  requires panel.switch_count >= 0
-  ensures panel.active_region == studio_region_timeline()
+  requires compose.panel.switch_count >= 0
+  ensures compose.panel.active_region == studio_region_timeline()
   decreases 0
 =
-  return gui_panel_switch_to(panel, studio_region_timeline(), elapsed_ms)
+  var timing: PanelSwitchTiming = gui_panel_switch_to(compose.panel, studio_region_timeline(), elapsed_ms)
+  studio_motion_panel_begin(compose)
+  return timing
 
 def studio_compose_ok(compose: StudioShellCompose) -> int
   requires true
@@ -8647,6 +9097,7 @@ def studio_palette_apply_action(compose: var StudioShellCompose, action_id: int)
   var region: int = gui_studio_palette_region_for_action(action_id)
   if region >= studio_region_dock():
     var _timing: PanelSwitchTiming = gui_panel_switch_to(compose.panel, region, 0.0)
+    studio_motion_panel_begin(compose)
     return 1
   return 0
 
@@ -9127,6 +9578,90 @@ def studio_vertical_capture_ppm_auto(profile_id: int, frame_id: int, path: str, 
 =
   return studio_vertical_capture_ppm(profile_id, frame_id, path, width, height)
 
+# wtfx-w7 — acceptance capture modes (game hover frame, inspector card, palette scrim).
+def studio_typography_fx_capture_mode_game() -> int
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  return 0
+
+def studio_typography_fx_capture_mode_inspector() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_typography_fx_capture_mode_palette() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_typography_fx_demo_compose(mode: int) -> StudioShellCompose
+  requires mode >= studio_typography_fx_capture_mode_game()
+  requires mode <= studio_typography_fx_capture_mode_palette()
+  ensures studio_compose_ok(result) == 1
+  decreases mode
+=
+  if mode == studio_typography_fx_capture_mode_inspector():
+    var insp: StudioShellCompose = studio_compose_shell_drug_litl(1280.0, 720.0, 2, 1)
+    studio_shell_demo_apply_profile(insp, studio_profile_sim_drug_design())
+    studio_viewport_display_prepare_for_profile(studio_profile_sim_drug_design())
+    insp.scene_entity_count = 1
+    insp.viewport_empty.empty_visible = 0
+    studio_attach_viewport_shell(insp)
+    insp.motion.panel_t = 1.0
+    return insp
+  if mode == studio_typography_fx_capture_mode_palette():
+    var pal: StudioShellCompose = studio_vertical_demo_compose(studio_profile_game(), 2, 0)
+    pal.motion.overlay_t = 0.5
+    studio_motion_tick(pal, studio_panel_transition_ms() * 0.5)
+    return pal
+  var game: StudioShellCompose = studio_vertical_demo_compose(studio_profile_game(), 1, 0)
+  game.motion.hover_target = 1
+  game.motion.hover_t = 0.5
+  studio_motion_tick(game, studio_hover_transition_ms() * 0.25)
+  return game
+
+def studio_typography_fx_capture_ppm(mode: int, path: str, width: int, height: int) -> int raises IO, Alloc
+  requires mode >= studio_typography_fx_capture_mode_game()
+  requires mode <= studio_typography_fx_capture_mode_palette()
+  requires width >= 64
+  requires height >= 64
+  requires path != ""
+  ensures result >= 0
+  ensures result <= 1
+  decreases mode
+=
+  var compose: StudioShellCompose = studio_typography_fx_demo_compose(mode)
+  var frame: PaintFrame = paint_frame_new()
+  studio_paint_shell_chrome(frame, compose)
+  if frame.cmd_count <= 0:
+    return 2
+  var raster: RenderUiRasterResult = render_ui_raster_cpu_pass(frame, compose.layout.viewport_w, compose.layout.viewport_h)
+  var cpu_pixels: int = raster.cpu_pixels
+  if cpu_pixels <= 0:
+    cpu_pixels = frame.cmd_count
+  var profile_id: int = studio_profile_game()
+  if mode == studio_typography_fx_capture_mode_inspector():
+    profile_id = studio_profile_sim_drug_design()
+  var digest: int = studio_headless_golden_digest(profile_id, mode, width, height, frame.cmd_count, cpu_pixels, frame.last_kind)
+  digest = digest + mode * 7919 + 55
+  var wrote: int = li_rt_studio_headless_raster_ppm(path, width, height, profile_id, frame.cmd_count, cpu_pixels, digest)
+  if wrote != 1:
+    return 3
+  return 1
+
+def studio_typography_fx_acceptance_capture_count() -> int
+  requires true
+  ensures result == 4
+  decreases 0
+=
+  return 4
+
 def studio_product_visual_acceptance_vertical_count() -> int
   requires true
   ensures result == 7
@@ -9348,6 +9883,7 @@ def studio_shell_host_frame(compose: var StudioShellCompose, frame_id: int) -> i
   studio_viewport_error_sync_render(compose)
   var _vp_err: int = studio_shell_handle_viewport_error_pointer(compose, input)
   studio_shell_sync_hover(compose, input)
+  studio_motion_tick(compose, 16.0)
   var vp: ViewportRegion = gui_viewport_region_from_layout(compose.layout)
   var _presented: LigPresentFrame = studio_shell_host_present_loop_tick(vp.w, vp.h, frame_id)
   if _presented.presented != 1:
@@ -9667,7 +10203,7 @@ def studio_ui_key_tag(compose: var StudioShellCompose, key_tag: int) -> int
   var input: InputState = studio_ui_key_from_tag(key_tag)
   return studio_handle_studio_key(compose, input)
 
-def studio_motion_tick(compose: var StudioShellCompose, dt_ms: int) -> unit
+def studio_demo_recorder_motion_tick(compose: var StudioShellCompose, dt_ms: int) -> unit
   requires compose.layout.viewport_w > 0.0
   requires dt_ms >= 0
   ensures true
@@ -9689,7 +10225,7 @@ def studio_ui_wait_frames(compose: var StudioShellCompose, n: int) -> unit
 =
   var left: int = n
   while left > 0
-    studio_motion_tick(compose, 16)
+    studio_demo_recorder_motion_tick(compose, 16)
     left = left - 1
 
 def studio_demo_recorder_version() -> int
