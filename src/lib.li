@@ -315,6 +315,17 @@ extern proc li_rt_studio_aimd_scenario_reset() -> int
   ensures result == 0
   decreases 0
 
+extern proc li_rt_studio_aimd_batch_steps_from_env() -> int
+  requires true
+  ensures result >= 64
+  decreases 0
+
+extern proc li_rt_studio_aimd_batch_write_json(path: str, steps: int, ok: int, checksum: float, energy_drift: float, gpu_path: int) -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases steps
+
 # wsv-w0/w5 — Li CPU raster PPM writer (no C paint_fb mirror as product truth).
 extern proc li_rt_studio_headless_raster_ppm(path: str, width: int, height: int, profile_id: int, cmd_count: int, cpu_pixels: int, digest: int) -> int raises IO, Alloc
   requires width >= 8
@@ -3095,6 +3106,28 @@ def studio_aimd_scenario_checksum(scenario: StudioAimdScenario) -> int
   mix = mix + scenario.algo_id * 31
   mix = mix + scenario.potential_mv
   return mix
+
+def studio_aimd_batch_run(steps: int) -> AimdBatchResult
+  requires steps >= 1
+  ensures result.steps == steps
+  decreases steps
+=
+  return echem_aimd_batch_run(steps)
+
+def studio_aimd_batch_steps_from_env() -> int raises IO
+  requires true
+  ensures result >= 64
+  decreases 0
+=
+  return li_rt_studio_aimd_batch_steps_from_env()
+
+def studio_aimd_batch_write_json(path: str, batch: AimdBatchResult) -> int raises IO
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases batch.steps
+=
+  return li_rt_studio_aimd_batch_write_json(path, batch.steps, batch.ok, batch.checksum, batch.energy_drift, batch.gpu_path)
 
 def studio_agent_aimd_pipeline_steps() -> int
   requires true

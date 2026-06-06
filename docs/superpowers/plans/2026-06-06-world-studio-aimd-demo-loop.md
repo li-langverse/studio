@@ -10,7 +10,7 @@ todos:
     status: done
   - id: aimd-w2-batch-compute
     content: "W2 — Headless batch AIMD runner ~5000 steps (decouple from 64-step interactive sim_scientific_tick_at cap)"
-    status: pending
+    status: done
   - id: aimd-w3-gpu-path
     content: "W3 — GPU AIMD compute path (science_gpu compile_open_ok, chem_dft batch kernel; stub→real ladder documented)"
     status: pending

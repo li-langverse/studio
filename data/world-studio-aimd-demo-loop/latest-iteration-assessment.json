@@ -1,17 +1,21 @@
 {
   "pass": true,
-  "todo_id": "aimd-w1-agent-mcp-flow",
+  "todo_id": "aimd-w2-batch-compute",
   "tier": "mvp_stub",
-  "notes": "W0 gates + hero scenario committed; W1 adds aimd_configure_scenario and aimd_get_scenario MCP tools with RT session state. Batch compute (W2) and GPU path (W3) still pending.",
-  "wps_touched": ["W0", "W1", "WP-ECHEM-09", "WP-AG-03"],
+  "notes": "W2 adds echem_aimd_batch_run(steps) headless path in li-sim-scientific (no 64-step cap), algo 433 registry, batch smokes + studio-aimd-batch-run.sh writing batch-result.json. GPU path (W3) and final viz (W4) still pending.",
+  "wps_touched": ["W2", "WP-ECHEM-09", "WP-SCI-03"],
   "smokes_run": [
-    "packages/li-studio/li-tests/smoke/studio_mcp_tools.li",
-    "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li",
-    "packages/li-studio/li-tests/smoke/studio_mcp_dispatch_run.li"
+    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_interface_smoke.li",
+    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li",
+    "li-tests/composable/import_echem_aimd_smoke.li",
+    "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li"
   ],
+  "batch_runner": "scripts/studio-aimd-batch-run.sh",
+  "batch_steps_demo": 5000,
+  "batch_checksum_sample": 6.16703701019,
+  "gpu_path": 0,
   "hero_scenario": "data/world-studio-aimd-demo-loop/hero-scenario.json",
   "native_only": true,
-  "mcp_tools_added": ["aimd_configure_scenario", "aimd_get_scenario"],
-  "tool_count": 23,
-  "lic_version_bump": 51
+  "lic_version_bump": 51,
+  "li_sim_scientific_version": 4
 }
