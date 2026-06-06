@@ -10203,7 +10203,7 @@ def studio_ui_key_tag(compose: var StudioShellCompose, key_tag: int) -> int
   var input: InputState = studio_ui_key_from_tag(key_tag)
   return studio_handle_studio_key(compose, input)
 
-def studio_motion_tick(compose: var StudioShellCompose, dt_ms: int) -> unit
+def studio_demo_recorder_motion_tick(compose: var StudioShellCompose, dt_ms: int) -> unit
   requires compose.layout.viewport_w > 0.0
   requires dt_ms >= 0
   ensures true
@@ -10225,7 +10225,7 @@ def studio_ui_wait_frames(compose: var StudioShellCompose, n: int) -> unit
 =
   var left: int = n
   while left > 0
-    studio_motion_tick(compose, 16)
+    studio_demo_recorder_motion_tick(compose, 16)
     left = left - 1
 
 def studio_demo_recorder_version() -> int
