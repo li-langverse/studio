@@ -8,7 +8,7 @@ def main() -> int raises IO
 =
   if li_std_studio_version() < 10:
     return 1
-  if studio_mcp_tool_count() != 11:
+  if studio_mcp_tool_count() != 23:
     return 2
   if studio_mcp_tool_from_name("studio_set_viewport_background") != studio_mcp_set_viewport_background():
     return 3

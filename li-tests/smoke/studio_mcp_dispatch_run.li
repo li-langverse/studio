@@ -7,7 +7,7 @@ def main() -> int
 =
   if li_std_studio_version() < 20:
     return 1
-  if studio_mcp_tool_count() != 11:
+  if studio_mcp_tool_count() != 23:
     return 2
   var scaffold: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_world_scaffold(), studio_profile_sim_scientific())
   if scaffold.status != studio_mcp_tool_status_ok():

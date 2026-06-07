@@ -7,7 +7,7 @@ def main() -> int
 =
   if li_std_studio_version() < 6:
     return 1
-  if studio_mcp_tool_count() != 11:
+  if studio_mcp_tool_count() != 23:
     return 2
   if studio_mcp_tool_from_name("am_export_print") != studio_mcp_am_export_print():
     return 3
