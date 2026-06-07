@@ -320,7 +320,7 @@ extern proc li_rt_studio_aimd_batch_steps_from_env() -> int
   ensures result >= 64
   decreases 0
 
-extern proc li_rt_studio_aimd_batch_write_json(path: str, steps: int, ok: int, checksum: float, energy_drift: float, gpu_path: int) -> int
+extern proc li_rt_studio_aimd_batch_write_json(path: str, steps: int, ok: int, checksum: float, energy_drift: float, gpu_path: int) -> int raises IO, Alloc
   requires true
   ensures result >= 0
   ensures result <= 1
@@ -3121,7 +3121,7 @@ def studio_aimd_batch_steps_from_env() -> int raises IO
 =
   return li_rt_studio_aimd_batch_steps_from_env()
 
-def studio_aimd_batch_write_json(path: str, batch: AimdBatchResult) -> int raises IO
+def studio_aimd_batch_write_json(path: str, batch: AimdBatchResult) -> int raises IO, Alloc
   requires true
   ensures result >= 0
   ensures result <= 1
