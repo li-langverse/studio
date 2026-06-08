@@ -24,9 +24,9 @@ Build on WP-ECHEM-09 (`echem_aimd_interface`), `sim_scientific` profile, demo-re
 
 | WP | Deliverable | Status |
 |----|-------------|--------|
-| W0 | Gap audit, hero scenario JSON, gate scaffolding | pending |
-| W1 | Agent chat → MCP AIMD configure flow | pending |
-| W2 | Batch headless ~5000-step AIMD runner (bypass 64-step interactive cap) | pending |
+| W0 | Gap audit, hero scenario JSON, gate scaffolding | done |
+| W1 | Agent chat → MCP AIMD configure flow | done |
+| W2 | Batch headless ~5000-step AIMD runner (bypass 64-step interactive cap) | done |
 | W3 | GPU path (science_gpu + chem DFT kernel; stub→real ladder) | pending |
 | W4 | Final-state viewport visualization | pending |
 | W5 | End-to-end demo script + trace manifest | pending |
@@ -45,10 +45,7 @@ cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 ## Completion gate
 
 ```bash
-./scripts/world-studio-aimd-demo-gates.sh
 ./scripts/world-studio-aimd-demo-completion-gate.sh
-# W5+: also
-./scripts/studio-aimd-hero-demo.sh
 ```
 
 ## Deliverables (every iteration)
