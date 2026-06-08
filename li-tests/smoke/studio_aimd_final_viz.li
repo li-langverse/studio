@@ -1,0 +1,35 @@
+import sim.scientific
+import studio
+
+# W4 — AIMD batch final-state viewport viz + headless PPM (unique_colors >= 48, particle tier > 0).
+def main() -> int raises IO, Alloc
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 57:
+    return 1
+  var steps: int = echem_aimd_batch_smoke_steps()
+  if steps < 64:
+    return 2
+  var batch: AimdBatchResult = echem_aimd_batch_run(steps)
+  if batch.ok != 1:
+    return 3
+  if batch.checksum <= 0.0:
+    return 4
+  var tier: int = studio_aimd_tier_for_batch(batch)
+  if tier < 0:
+    return 5
+  var pipe: VizPipelineState = studio_aimd_load_final_state(batch)
+  if pipe.source_count < 1:
+    return 6
+  if pipe.profile_id != viz_profile_sim_scientific():
+    return 7
+  if studio_aimd_sync_final_viewport(batch) != 1:
+    return 8
+  var path: str = "/tmp/studio-aimd-final-viz.ppm"
+  if studio_aimd_final_viz_ok(batch, path, 1280, 720) != 1:
+    return 9
+  if studio_aimd_final_viz_color_budget_ok(batch, 100, 1280, 720) != 1:
+    return 10
+  return 0

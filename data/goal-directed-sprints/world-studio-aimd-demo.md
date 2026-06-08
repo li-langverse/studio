@@ -28,7 +28,7 @@ Build on WP-ECHEM-09 (`echem_aimd_interface`), `sim_scientific` profile, demo-re
 | W1 | Agent chat → MCP AIMD configure flow | done |
 | W2 | Batch headless ~5000-step AIMD runner (bypass 64-step interactive cap) | done |
 | W3 | GPU path (science_gpu + chem DFT kernel; stub→real ladder) | done |
-| W4 | Final-state viewport visualization | pending |
+| W4 | Final-state viewport visualization | done |
 | W5 | End-to-end demo script + trace manifest | pending |
 | W6 | Completion gate + K8s verified | pending |
 

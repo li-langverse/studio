@@ -1,21 +1,20 @@
 {
   "pass": true,
-  "todo_id": "aimd-w3-gpu-path",
+  "todo_id": "aimd-w4-final-viz",
   "tier": "mvp_gpu_stub",
-  "notes": "W3 wires echem_aimd_batch_run to chem_dft_energy_kernel_hartree each MD step; gpu_path=1 when chem_dft_gpu_path_tier() selects kernel scaffold (PH-SCI-GPU-16 compile_open_ok). Honest stub tier: mini STO-3G radial grid, not full DFT-per-step GPU execution. W4 final viz and W5 E2E still pending.",
-  "wps_touched": ["W3", "WP-ECHEM-09", "PH-SCI-GPU-16"],
+  "notes": "W4 adds studio_aimd_load_final_state, sync_final_viewport, compose_final_shell, capture_final_ppm via headless raster AIMD digest marker (profile 6, digest>=10M). Particle-field PPM targets unique_colors>=48 via color_budget_ok + C aimd_render_particle_field. W5 E2E hero script and W6 completion gate still pending.",
+  "wps_touched": ["W4", "WP-SCI-04", "WP-ECHEM-09"],
   "smokes_run": [
-    "packages/li-chem/li-tests/smoke/chem_gpu_dft_energy.li",
+    "packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li",
     "packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li",
-    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_interface_smoke.li",
     "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li"
   ],
   "batch_runner": "scripts/studio-aimd-batch-run.sh",
-  "batch_steps_demo": 5000,
+  "final_frame_path": "build/aimd-demo/out/final-frame.ppm",
+  "min_unique_colors": 48,
   "gpu_path": 1,
-  "gpu_gate": "scripts/ph-sci-gpu-chem-gates.sh",
   "hero_scenario": "data/world-studio-aimd-demo-loop/hero-scenario.json",
   "native_only": true,
-  "lic_version_bump": 52,
-  "li_sim_scientific_version": 4
+  "lic_version_bump": 57,
+  "li_std_studio_version": 57
 }

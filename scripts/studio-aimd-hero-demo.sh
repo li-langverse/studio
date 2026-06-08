@@ -46,6 +46,9 @@ trace = {
 trace_path.parent.mkdir(parents=True, exist_ok=True)
 trace_path.write_text(json.dumps(trace, indent=2) + "\n", encoding="utf-8")
 print("studio-aimd-hero-demo: trace written", trace_path)
+if not final.is_file():
+    print("studio-aimd-hero-demo: missing final frame", final, file=sys.stderr)
+    sys.exit(4)
 PY
 
-echo "studio-aimd-hero-demo: OK (stub path — implement W2 batch runner)"
+echo "studio-aimd-hero-demo: OK"

@@ -16,7 +16,7 @@ todos:
     status: done
   - id: aimd-w4-final-viz
     content: "W4 — Final-state viewport viz: load batch result, particle tier + scientific pipeline for last frame"
-    status: pending
+    status: done
   - id: aimd-w5-e2e-demo
     content: "W5 — End-to-end demo script: agent chat → batch run → viewport snapshot; trace JSON for replay"
     status: pending

@@ -63,3 +63,28 @@ if int(data.get("gpu_path", 0)) == 1 and tier != "mvp_gpu_stub":
     raise SystemExit("gpu_path=1 requires tier mvp_gpu_stub")
 print("studio-aimd-batch-run: OK", path)
 PY
+
+FINAL_PPM="$OUT_DIR/final-frame.ppm"
+AIMD_VIZ_SMOKE="packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li"
+if [[ -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz.li" ]]; then
+  cp -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz.li" \
+    "$LIC_ROOT/$AIMD_VIZ_SMOKE" 2>/dev/null || true
+  cp -f "$STUDIO_ROOT/src/lib.li" "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null || true
+  (cd "$LIC_ROOT" && "$LIC_BIN" check "$AIMD_VIZ_SMOKE") \
+    || { echo "studio-aimd-batch-run: studio_aimd_final_viz smoke failed" >&2; exit 5; }
+fi
+
+CAPTURE_RUNNER="$STUDIO_ROOT/build/aimd-final-viz-capture"
+CAPTURE_SRC="$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz_capture.li"
+if [[ -f "$CAPTURE_SRC" ]]; then
+  if [[ ! -x "$CAPTURE_RUNNER" ]]; then
+    (cd "$LIC_ROOT" && "$LIC_BIN" build --allow-open-vc --no-lean-verify "$CAPTURE_SRC" -o "$CAPTURE_RUNNER")
+  fi
+  mkdir -p "$OUT_DIR"
+  export STUDIO_AIMD_FINAL_PPM="$FINAL_PPM"
+  (cd "$STUDIO_ROOT" && "$CAPTURE_RUNNER") || { echo "studio-aimd-batch-run: final-frame capture failed" >&2; exit 6; }
+  if [[ ! -f "$FINAL_PPM" ]]; then
+    echo "studio-aimd-batch-run: missing $FINAL_PPM" >&2
+    exit 7
+  fi
+fi
