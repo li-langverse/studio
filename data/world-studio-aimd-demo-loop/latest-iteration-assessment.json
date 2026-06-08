@@ -7,14 +7,16 @@
   "notes": "W6 re-verification pass (world_studio_builder-1780935888833): all aimd-w0..w6 todos done; progress + completion gates + hero demo exit 0; gpu_path=1 via science_gpu compile_open_ok (20/20); final-frame PPM unique_colors≥28505 (≥48); 5000 batch steps checksum=6.16703701019. K8s cluster verify deferred to homelab ops.",
   "ci_verified": {
     "pr": 76,
-    "run_id": "27151616890",
-    "checks_passed": 2,
-    "checks_pending": 3,
+    "run_id": "27151822708",
+    "checks_passed": 5,
     "checks": [
       "check",
+      "native-sdl-capture",
+      "native-wgpu-bench",
+      "wgpu-swapchain-readback",
       "wgpu-swapchain-gpu-runner"
     ],
-    "merge_state": "MERGEABLE"
+    "merge_state": "CLEAN"
   },
   "wps_touched": [
     "W6",
