@@ -10,6 +10,20 @@
     "fps": {"type": "integer", "minimum": 1},
     "hold_ms_default": {"type": "integer", "minimum": 0},
     "native_only": {"type": "boolean"},
+    "description": {"type": "string"},
+    "aimd": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "steps": {"type": "integer", "minimum": 64},
+        "temperature_k": {"type": "number"},
+        "potential_v": {"type": "number"},
+        "algo_id": {"type": "integer"},
+        "algo_name": {"type": "string"},
+        "headless_batch": {"type": "boolean"},
+        "show_steps_in_ui": {"type": "boolean"}
+      }
+    },
     "steps": {
       "type": "array",
       "items": {
@@ -21,7 +35,9 @@
           "ui_key": {"type": "string"},
           "ui_click": {"type": "string"},
           "ui_set_value": {"type": "object"},
-          "capture": {"type": "string"}
+          "mcp_configure": {"type": "string"},
+          "aimd_run_batch": {"type": "boolean"},
+          "capture": {"type": "string", "enum": ["frame", "final_frame"]}
         }
       }
     }

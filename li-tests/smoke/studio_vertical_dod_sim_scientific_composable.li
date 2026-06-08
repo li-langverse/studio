@@ -1,0 +1,12 @@
+import studio
+
+def main() -> int raises Alloc, IO
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 31:
+    return 1
+  if studio_vertical_dod_sim_scientific_composable_ok() != 1:
+    return 2
+  return 0

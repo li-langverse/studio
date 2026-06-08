@@ -13,16 +13,16 @@ todos:
     status: done
   - id: aimd-w3-gpu-path
     content: "W3 — GPU AIMD compute path (science_gpu compile_open_ok, chem_dft batch kernel; stub→real ladder documented)"
-    status: pending
+    status: done
   - id: aimd-w4-final-viz
     content: "W4 — Final-state viewport viz: load batch result, particle tier + scientific pipeline for last frame"
-    status: pending
+    status: done
   - id: aimd-w5-e2e-demo
     content: "W5 — End-to-end demo script: agent chat → batch run → viewport snapshot; trace JSON for replay"
-    status: pending
+    status: done
   - id: aimd-w6-completion-gate
     content: "W6 — Completion gate, hero manifest, K8s handoff verified; all acceptance smokes green"
-    status: pending
+    status: done
 isProject: false
 ---
 
@@ -105,13 +105,13 @@ Plan todos must not claim real AIMD until W3 pilot gate passes. Document tier in
 
 | Phase | Scope | WPs | Status |
 |-------|-------|-----|--------|
-| **P0** | Audit + spec + gates | W0 | pending |
-| **P1** | Agent MCP configure flow | W1 | pending |
-| **P2** | Batch 5000-step compute | W2 | pending |
-| **P3** | GPU path | W3 | pending |
-| **P4** | Final-state visualization | W4 | pending |
-| **P5** | E2E demo script | W5 | pending |
-| **P6** | Completion + K8s | W6 | pending |
+| **P0** | Audit + spec + gates | W0 | done |
+| **P1** | Agent MCP configure flow | W1 | done |
+| **P2** | Batch 5000-step compute | W2 | done |
+| **P3** | GPU path | W3 | done |
+| **P4** | Final-state visualization | W4 | done |
+| **P5** | E2E demo script | W5 | done |
+| **P6** | Completion + K8s | W6 | done |
 
 ---
 

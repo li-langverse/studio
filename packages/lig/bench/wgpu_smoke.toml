@@ -1,0 +1,27 @@
+# PH-HW HW-1 — wgpu present smoke hook (lig.present).
+# CI: compile smokes on all targets; native surface on aarch64-apple-darwin when LIG_HOST_PRESENT=1.
+
+[wgpu_smoke]
+hook_version = 2
+backend = "wgpu"
+package = "lig"
+import = "lig.present"
+status = "host_or_stub"
+native_device = false
+surface_ok = false
+surface_ok_when_host_present = true
+native_pixel_source_paint_blit = 2
+
+[ci]
+x86_64_linux = "lic check packages/lig/li-tests/smoke/wgpu_smoke.li — stub surface_ok=0"
+aarch64_darwin = "LIG_HOST_PRESENT=1 lic check — surface_ok=1 when SDL/wgpu host linked"
+notes = "No wgpu-rs in-tree; runtime mock + deploy/studio-demo/native/studio_shell_present_host.c"
+
+[wgpu_swapchain]
+hook_version = 2
+readback_fn = "lig_wgpu_swapchain_readback_run"
+status = "blocked_runner"
+runner_gpu_required = true
+env_enable = "LIG_WGPU_SWAPCHAIN"
+gpu_runner_env = "LIG_GPU_RUNNER"
+notes = "swapchain_pass when LIG_WGPU_SWAPCHAIN=1 + LIG_GPU_RUNNER=1 + LIG_HOST_PRESENT=1; probe via lig_swapchain_bench_probe.c"

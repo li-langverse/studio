@@ -13,10 +13,12 @@ ok() { echo "OK: $*"; }
 PLAN="$STUDIO_ROOT/docs/superpowers/plans/2026-06-06-world-studio-aimd-demo-loop.md"
 GOAL="$STUDIO_ROOT/data/goal-directed-sprints/world-studio-aimd-demo.md"
 HERO="$STUDIO_ROOT/data/world-studio-aimd-demo-loop/hero-scenario.json"
+DEMO_JSON="$STUDIO_ROOT/data/demo-scripts/aimd-hero.demo.json"
 
 [[ -f "$PLAN" ]] || fail "missing plan"
 [[ -f "$GOAL" ]] || fail "missing goal"
 [[ -f "$HERO" ]] || fail "missing hero scenario"
+[[ -f "$DEMO_JSON" ]] || fail "missing aimd-hero.demo.json (W5)"
 
 resolve_lic_bin() {
   resolve_lic 2>/dev/null || command -v lic 2>/dev/null || true
@@ -57,15 +59,16 @@ for s in \
   "$LIC_ROOT/li-tests/composable/import_echem_aimd_smoke.li" \
   "$STUDIO_ROOT/li-tests/smoke/studio_mcp_aimd_configure.li" \
   "$LIC_ROOT/packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li" \
-  "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz.li"; do
+  "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz.li" \
+  "$STUDIO_ROOT/li-tests/smoke/studio_aimd_hero_e2e.li"; do
   run_smoke "$s"
 done
 
-# Optional GPU gate when lic scripts exist
+# W3 GPU path — chem DFT kernel + science_gpu PH-SCI-GPU-16
 if [[ -x "$LIC_ROOT/scripts/ph-sci-gpu-chem-gates.sh" ]]; then
-  bash "$LIC_ROOT/scripts/ph-sci-gpu-chem-gates.sh" || warn "ph-sci-gpu-chem-gates.sh failed (GPU path optional for early WPs)"
+  bash "$LIC_ROOT/scripts/ph-sci-gpu-chem-gates.sh" || fail "ph-sci-gpu-chem-gates.sh failed (W3 GPU path)"
 else
-  warn "ph-sci-gpu-chem-gates.sh not found — W3 GPU gate deferred"
+  fail "ph-sci-gpu-chem-gates.sh not found — W3 GPU gate required"
 fi
 
 ok "world-studio-aimd-demo progress gates finished"

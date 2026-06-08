@@ -1,0 +1,36 @@
+import sim.scientific
+import studio
+
+# W5 — E2E hero pipeline: MCP configure → batch run → final viz (in-process; no UI step replay).
+def main() -> int raises IO, Alloc
+  requires true
+  ensures result == 0
+  decreases 0
+=
+  if li_std_studio_version() < 57:
+    return 1
+  if li_rt_studio_aimd_scenario_reset() != 0:
+    return 2
+  var steps: int = studio_aimd_hero_demo_steps()
+  if echem_aimd_batch_steps_valid(steps) != 1:
+    return 3
+  if studio_aimd_hero_configure(steps, 300, 0, studio_aimd_algo_echem_interface()) != 1:
+    return 4
+  var batch: AimdBatchResult = echem_aimd_batch_run(steps)
+  if batch.ok != 1:
+    return 5
+  if batch.steps != steps:
+    return 6
+  if batch.checksum <= 0.0:
+    return 7
+  var expect_gpu: int = echem_aimd_batch_gpu_path_select()
+  if batch.gpu_path != expect_gpu:
+    return 8
+  if studio_aimd_sync_final_viewport(batch) != 1:
+    return 9
+  var path: str = "/tmp/studio-aimd-hero-e2e.ppm"
+  if studio_aimd_final_viz_ok(batch, path, 1280, 720) != 1:
+    return 10
+  if studio_aimd_final_viz_color_budget_ok(batch, 100, 1280, 720) != 1:
+    return 11
+  return 0
