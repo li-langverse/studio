@@ -1,21 +1,21 @@
 {
   "pass": true,
-  "verified_at": "2026-06-08T22:00:00Z",
-  "agent_run": "world_studio_builder-1780950279083",
+  "verified_at": "2026-06-08T22:30:00Z",
+  "agent_run": "world_studio_builder-1780950415016",
   "todo_id": "aimd-w6-completion-gate",
   "tier": "mvp_gpu_stub",
-  "notes": "W6 maintenance re-verification (world_studio_builder-1780950279083): all aimd-w0..w6 todos done; progress + completion gates exit 0; studio-aimd-hero-demo.sh green; gpu_path=1; 5000 batch steps checksum=6.16703701019; final-frame PPM unique_colors≥48 (28505 observed). PR #78 open with CI green; K8s cluster verify deferred to homelab ops.",
+  "notes": "W6 maintenance re-verification (world_studio_builder-1780950415016): all aimd-w0..w6 todos done; progress + completion gates exit 0; studio-aimd-hero-demo.sh green; gpu_path=1; 5000 batch steps checksum=6.16703701019; final-frame PPM unique_colors≥48 (28505 observed). PR #78 open; CI check green (native-sdl-capture in progress at verify time). K8s cluster verify deferred to homelab ops.",
   "ci_verified": {
     "pr": 78,
     "state": "OPEN",
     "url": "https://github.com/li-langverse/studio/pull/78",
-    "checks_pending": false,
+    "checks_pending": true,
     "checks": [
       "CI/check SUCCESS",
-      "Studio UI/UX native capture/native-sdl-capture SUCCESS",
       "Studio UI/UX native capture/native-wgpu-bench SUCCESS",
       "Studio UI/UX native capture/wgpu-swapchain-readback SUCCESS",
-      "Studio UI/UX native capture/wgpu-swapchain-gpu-runner SUCCESS"
+      "Studio UI/UX native capture/wgpu-swapchain-gpu-runner SUCCESS",
+      "Studio UI/UX native capture/native-sdl-capture IN_PROGRESS"
     ]
   },
   "wps_touched": [
