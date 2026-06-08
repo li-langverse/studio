@@ -1,16 +1,22 @@
 {
   "pass": true,
-  "verified_at": "2026-06-08T17:00:00Z",
-  "agent_run": "world_studio_builder-1780936402771",
+  "verified_at": "2026-06-08T18:30:00Z",
+  "agent_run": "world_studio_builder-1780936537583",
   "todo_id": "aimd-w6-completion-gate",
   "tier": "mvp_gpu_stub",
-  "notes": "W6 re-verification pass (world_studio_builder-1780936402771): all aimd-w0..w6 todos done; progress + completion gates + hero demo exit 0; gpu_path=1 via science_gpu compile_open_ok (20/20); final-frame PPM unique_colors≥28505 (≥48); 5000 batch steps checksum=6.16703701019. Merged main; PR #77 conflict resolved. K8s cluster verify deferred to homelab ops.",
+  "notes": "W6 verification pass (world_studio_builder-1780936537583): all aimd-w0..w6 todos done; progress + completion gates + hero demo exit 0; gpu_path=1 via science_gpu compile_open_ok (20/20); final-frame PPM unique_colors≥28505 (≥48); 5000 batch steps checksum=6.16703701019. PR #77 CI all green. K8s cluster verify deferred to homelab ops.",
   "ci_verified": {
     "pr": 77,
-    "run_id": null,
-    "checks_passed": 0,
-    "checks_pending": 5,
-    "checks": [],
+    "run_id": 27152215711,
+    "checks_passed": 5,
+    "checks_pending": 0,
+    "checks": [
+      "check",
+      "native-sdl-capture",
+      "native-wgpu-bench",
+      "wgpu-swapchain-gpu-runner",
+      "wgpu-swapchain-readback"
+    ],
     "merge_state": "MERGEABLE"
   },
   "wps_touched": [
