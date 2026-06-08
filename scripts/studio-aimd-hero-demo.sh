@@ -45,6 +45,7 @@ export STUDIO_AIMD_BATCH_STEPS="$STEPS"
 if [[ ! -x "$HERO_RUNNER" ]]; then
   (cd "$LIC_ROOT" && studio_lic_build "$HERO_RUNNER_SRC" "$HERO_RUNNER" \
     "$LIC_BIN" build --allow-open-vc --no-lean-verify "$HERO_RUNNER_SRC" -o "$HERO_RUNNER")
+  chmod +x "$HERO_RUNNER" 2>/dev/null || true
 fi
 
 (cd "$STUDIO_ROOT" && "$HERO_RUNNER") || { echo "studio-aimd-hero-demo: hero runner failed" >&2; exit 4; }
