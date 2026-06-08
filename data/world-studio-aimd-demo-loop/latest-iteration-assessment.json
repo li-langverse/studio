@@ -1,5 +1,7 @@
 {
   "pass": true,
+  "verified_at": "2026-06-08T04:34:00Z",
+  "agent_run": "world_studio_builder-1780893269488",
   "todo_id": "aimd-w6-completion-gate",
   "tier": "mvp_gpu_stub",
   "notes": "W6 completion gate green: all aimd-w0..w6 todos done; progress + completion gates exit 0; studio-aimd-hero-demo.sh orchestrates MCP configure → 5000-step headless batch → final-frame.ppm (≥48 unique colors); gpu_path=1 via science_gpu compile_open_ok; native_only=true. K8s handoff: deploy via li-cursor-agents deploy-world-studio-aimd-demo-k8s.ps1 (worker li-world-studio-aimd-demo); cluster verify deferred to ops homelab.",
@@ -33,5 +35,11 @@
     "reason": "homelab kubeconfig not available in agent workspace; gates + hero demo prove readiness"
   },
   "lic_version_bump": 57,
-  "li_std_studio_version": 57
+  "li_std_studio_version": 57,
+  "north_star_fit": {
+    "domain": "scientific computing / electrochemistry AIMD",
+    "ph_ids": ["PH-SCI-GPU-16", "WP-ECHEM-09", "WP-AG-03"],
+    "proof": "lic check smokes + science_gpu compile_open_ok (20/20)",
+    "native_only": true
+  }
 }
