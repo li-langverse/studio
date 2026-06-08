@@ -1,17 +1,24 @@
 {
   "pass": true,
-  "verified_at": "2026-06-08T23:45:00Z",
-  "agent_run": "world_studio_builder-1780910147530",
+  "verified_at": "2026-06-08T10:30:00Z",
+  "agent_run": "code_implementer-14527277",
   "todo_id": "aimd-w6-completion-gate",
   "tier": "mvp_gpu_stub",
-  "notes": "W6 re-verification pass (1780910147530): all aimd-w0..w6 todos remain done; progress + completion gates exit 0 (science_gpu 20/20); studio-aimd-hero-demo.sh green (5000-step headless batch → final-frame.ppm, unique_colors≥48); gpu_path=1 via science_gpu compile_open_ok. PR #72 open; K8s cluster verify remains deferred to homelab ops.",
-  "wps_touched": ["W6", "W5", "WP-ECHEM-09", "WP-AG-03", "WP-SCI-04"],
+  "notes": "W6 re-verification pass (1780914527277): all aimd-w0..w6 todos remain done; CI green on PR #73 (check + native capture); gpu_path=1 via science_gpu compile_open_ok. K8s cluster verify remains deferred to homelab ops.",
+  "wps_touched": [
+    "W6",
+    "W5",
+    "WP-ECHEM-09",
+    "WP-AG-03",
+    "WP-SCI-04"
+  ],
   "smokes_run": [
     "packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li",
     "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li",
     "packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li",
     "packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li",
     "packages/li-sim-scientific/li-tests/smoke/echem_aimd_interface_smoke.li",
+    "packages/li-studio/li-tests/smoke/studio_mcp_tools.li",
     "packages/li-studio/li-tests/smoke/studio_vertical_dod_sim_scientific_composable.li"
   ],
   "gates": {
@@ -40,8 +47,13 @@
   "li_std_studio_version": 57,
   "north_star_fit": {
     "domain": "scientific computing / electrochemistry AIMD",
-    "ph_ids": ["PH-SCI-GPU-16", "WP-ECHEM-09", "WP-AG-03"],
+    "ph_ids": [
+      "PH-SCI-GPU-16",
+      "WP-ECHEM-09",
+      "WP-AG-03"
+    ],
     "proof": "lic check smokes + science_gpu compile_open_ok (20/20)",
     "native_only": true
-  }
+  },
+  "checksum": 6.16703701019
 }
