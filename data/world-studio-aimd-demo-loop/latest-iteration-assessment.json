@@ -1,10 +1,10 @@
 {
   "pass": true,
-  "verified_at": "2026-06-08T19:45:00Z",
-  "agent_run": "world_studio_builder-1780894759852",
+  "verified_at": "2026-06-08T20:15:00Z",
+  "agent_run": "world_studio_builder-1780894888405",
   "todo_id": "aimd-w6-completion-gate",
   "tier": "mvp_gpu_stub",
-  "notes": "W6 re-verification pass (1780894759852): all aimd-w0..w6 todos done; progress + completion gates exit 0; studio-aimd-hero-demo.sh green (5000-step headless batch → final-frame.ppm 5582 unique colors); gpu_path=1 via science_gpu compile_open_ok (20/20). PR #71 open on cursor/world-studio-aimd-demo. K8s cluster verify deferred to homelab ops.",
+  "notes": "W6 re-verification pass (1780894888405): all aimd-w0..w6 todos done; progress + completion gates exit 0; studio-aimd-hero-demo.sh green (5000-step headless batch → final-frame.ppm 28505 unique colors); gpu_path=1 via science_gpu compile_open_ok (20/20). PR #71 open on cursor/world-studio-aimd-demo. K8s cluster verify deferred to homelab ops.",
   "wps_touched": ["W6", "W5", "WP-ECHEM-09", "WP-AG-03", "WP-SCI-04"],
   "smokes_run": [
     "packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li",
@@ -25,6 +25,7 @@
   "final_frame_path": "build/aimd-demo/out/final-frame.ppm",
   "trace_manifest": "data/world-studio-aimd-demo-loop/latest-demo-trace.json",
   "min_unique_colors": 48,
+  "unique_colors_observed": 28505,
   "gpu_path": 1,
   "steps": 5000,
   "hero_scenario": "data/world-studio-aimd-demo-loop/hero-scenario.json",
