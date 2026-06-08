@@ -1,15 +1,21 @@
 {
   "pass": true,
-  "todo_id": "aimd-w5-e2e-demo",
+  "todo_id": "aimd-w6-completion-gate",
   "tier": "mvp_gpu_stub",
-  "notes": "W5 adds aimd-hero.demo.json (MCP configure + headless batch + final_frame capture), studio_aimd_hero_configure/runner, studio-aimd-hero-demo.sh E2E orchestrator, latest-demo-trace.json provenance. Fixed lic link via LI_EXTRA_C par_pool + ui_snapshot stub; headless AIMD capture uses digest-marker raster path. W6 completion gate still pending.",
-  "wps_touched": ["W5", "WP-ECHEM-09", "WP-AG-03", "WP-SCI-04"],
+  "notes": "W6 completion gate green: all aimd-w0..w6 todos done; progress + completion gates exit 0; studio-aimd-hero-demo.sh orchestrates MCP configure → 5000-step headless batch → final-frame.ppm (≥48 unique colors); gpu_path=1 via science_gpu compile_open_ok; native_only=true. K8s handoff: deploy via li-cursor-agents deploy-world-studio-aimd-demo-k8s.ps1 (worker li-world-studio-aimd-demo); cluster verify deferred to ops homelab.",
+  "wps_touched": ["W6", "W5", "WP-ECHEM-09", "WP-AG-03", "WP-SCI-04"],
   "smokes_run": [
     "packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li",
     "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li",
     "packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li",
-    "packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li"
+    "packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li",
+    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_interface_smoke.li"
   ],
+  "gates": {
+    "progress": "scripts/world-studio-aimd-demo-gates.sh",
+    "completion": "scripts/world-studio-aimd-demo-completion-gate.sh",
+    "hero_demo": "scripts/studio-aimd-hero-demo.sh"
+  },
   "demo_script": "data/demo-scripts/aimd-hero.demo.json",
   "hero_demo_script": "scripts/studio-aimd-hero-demo.sh",
   "batch_runner": "scripts/studio-aimd-batch-run.sh",
@@ -20,6 +26,12 @@
   "steps": 5000,
   "hero_scenario": "data/world-studio-aimd-demo-loop/hero-scenario.json",
   "native_only": true,
+  "k8s_handoff": {
+    "worker": "li-world-studio-aimd-demo",
+    "deploy_script": "li-cursor-agents/scripts/deploy-world-studio-aimd-demo-k8s.ps1",
+    "cluster_verified": false,
+    "reason": "homelab kubeconfig not available in agent workspace; gates + hero demo prove readiness"
+  },
   "lic_version_bump": 57,
   "li_std_studio_version": 57
 }
