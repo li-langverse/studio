@@ -35,6 +35,7 @@ export STUDIO_AIMD_BATCH_STEPS="$STEPS"
 if [[ ! -x "$RUNNER" ]]; then
   (cd "$LIC_ROOT" && studio_lic_build "$RUNNER_SRC" "$RUNNER" \
     "$LIC_BIN" build --allow-open-vc --no-lean-verify "$RUNNER_SRC" -o "$RUNNER")
+  chmod +x "$RUNNER" 2>/dev/null || true
 fi
 
 export STUDIO_AIMD_BATCH_OUT="$BATCH_JSON"
@@ -81,6 +82,7 @@ if [[ -f "$CAPTURE_SRC" ]]; then
   if [[ ! -x "$CAPTURE_RUNNER" ]]; then
     (cd "$LIC_ROOT" && studio_lic_build "$CAPTURE_SRC" "$CAPTURE_RUNNER" \
       "$LIC_BIN" build --allow-open-vc --no-lean-verify "$CAPTURE_SRC" -o "$CAPTURE_RUNNER")
+    chmod +x "$CAPTURE_RUNNER" 2>/dev/null || true
   fi
   mkdir -p "$OUT_DIR"
   export STUDIO_AIMD_FINAL_PPM="$FINAL_PPM"
