@@ -1,10 +1,10 @@
 {
   "pass": true,
-  "verified_at": "2026-06-08T14:19:29Z",
-  "agent_run": "world_studio_builder-1780928329208",
+  "verified_at": "2026-06-08T14:21:43Z",
+  "agent_run": "world_studio_builder-1780928453849",
   "todo_id": "aimd-w6-completion-gate",
   "tier": "mvp_gpu_stub",
-  "notes": "W6 re-verification pass (1780928329208): all aimd-w0..w6 todos done; progress + completion gates + hero demo exit 0; gpu_path=1 via science_gpu compile_open_ok (20/20); final-frame PPM unique_colors=28505; 5000 batch steps checksum=6.16703701019. K8s cluster verify deferred to homelab ops.",
+  "notes": "W6 re-verification pass (1780928453849): all aimd-w0..w6 todos done; progress + completion gates + hero demo exit 0; gpu_path=1 via science_gpu compile_open_ok (20/20); final-frame PPM unique_colors=28505; 5000 batch steps checksum=6.16703701019. K8s cluster verify deferred to homelab ops.",
   "wps_touched": [
     "W6",
     "W5",
