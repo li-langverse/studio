@@ -19,7 +19,7 @@ todos:
     status: done
   - id: aimd-w5-e2e-demo
     content: "W5 — End-to-end demo script: agent chat → batch run → viewport snapshot; trace JSON for replay"
-    status: pending
+    status: done
   - id: aimd-w6-completion-gate
     content: "W6 — Completion gate, hero manifest, K8s handoff verified; all acceptance smokes green"
     status: pending

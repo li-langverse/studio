@@ -33,7 +33,8 @@ export STUDIO_AIMD_BATCH_STEPS="$STEPS"
   || { echo "studio-aimd-batch-run: echem_aimd_batch_smoke failed" >&2; exit 2; }
 
 if [[ ! -x "$RUNNER" ]]; then
-  (cd "$LIC_ROOT" && "$LIC_BIN" build --allow-open-vc --no-lean-verify "$RUNNER_SRC" -o "$RUNNER")
+  (cd "$LIC_ROOT" && studio_lic_build "$RUNNER_SRC" "$RUNNER" \
+    "$LIC_BIN" build --allow-open-vc --no-lean-verify "$RUNNER_SRC" -o "$RUNNER")
 fi
 
 export STUDIO_AIMD_BATCH_OUT="$BATCH_JSON"
@@ -78,7 +79,8 @@ CAPTURE_RUNNER="$STUDIO_ROOT/build/aimd-final-viz-capture"
 CAPTURE_SRC="$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz_capture.li"
 if [[ -f "$CAPTURE_SRC" ]]; then
   if [[ ! -x "$CAPTURE_RUNNER" ]]; then
-    (cd "$LIC_ROOT" && "$LIC_BIN" build --allow-open-vc --no-lean-verify "$CAPTURE_SRC" -o "$CAPTURE_RUNNER")
+    (cd "$LIC_ROOT" && studio_lic_build "$CAPTURE_SRC" "$CAPTURE_RUNNER" \
+      "$LIC_BIN" build --allow-open-vc --no-lean-verify "$CAPTURE_SRC" -o "$CAPTURE_RUNNER")
   fi
   mkdir -p "$OUT_DIR"
   export STUDIO_AIMD_FINAL_PPM="$FINAL_PPM"

@@ -82,3 +82,31 @@ resolve_lic() {
   fi
   return 1
 }
+
+# Older lic binaries omit li_par_pool.c from the link line; LI_EXTRA_C restores parallel runtime.
+studio_lic_extra_c() {
+  local extras=()
+  if [[ -f "$LIC_ROOT/runtime/li_par_pool.c" ]]; then
+    extras+=("$LIC_ROOT/runtime/li_par_pool.c")
+  fi
+  if [[ -f "$STUDIO_ROOT/runtime/li_rt_ui_snapshot_stub.c" ]]; then
+    extras+=("$STUDIO_ROOT/runtime/li_rt_ui_snapshot_stub.c")
+  fi
+  if [[ ${#extras[@]} -gt 0 ]]; then
+    local IFS=' '
+    echo "${extras[*]}"
+  fi
+}
+
+studio_lic_build() {
+  local src="$1"
+  local out="$2"
+  shift 2
+  local extra_c
+  extra_c="$(studio_lic_extra_c)"
+  if [[ -n "$extra_c" ]]; then
+    LI_EXTRA_C="$extra_c" "$@"
+  else
+    "$@"
+  fi
+}

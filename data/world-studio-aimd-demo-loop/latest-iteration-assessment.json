@@ -1,18 +1,23 @@
 {
   "pass": true,
-  "todo_id": "aimd-w4-final-viz",
+  "todo_id": "aimd-w5-e2e-demo",
   "tier": "mvp_gpu_stub",
-  "notes": "W4 adds studio_aimd_load_final_state, sync_final_viewport, compose_final_shell, capture_final_ppm via headless raster AIMD digest marker (profile 6, digest>=10M). Particle-field PPM targets unique_colors>=48 via color_budget_ok + C aimd_render_particle_field. W5 E2E hero script and W6 completion gate still pending.",
-  "wps_touched": ["W4", "WP-SCI-04", "WP-ECHEM-09"],
+  "notes": "W5 adds aimd-hero.demo.json (MCP configure + headless batch + final_frame capture), studio_aimd_hero_configure/runner, studio-aimd-hero-demo.sh E2E orchestrator, latest-demo-trace.json provenance. Fixed lic link via LI_EXTRA_C par_pool + ui_snapshot stub; headless AIMD capture uses digest-marker raster path. W6 completion gate still pending.",
+  "wps_touched": ["W5", "WP-ECHEM-09", "WP-AG-03", "WP-SCI-04"],
   "smokes_run": [
-    "packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li",
+    "packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li",
+    "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li",
     "packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li",
-    "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li"
+    "packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li"
   ],
+  "demo_script": "data/demo-scripts/aimd-hero.demo.json",
+  "hero_demo_script": "scripts/studio-aimd-hero-demo.sh",
   "batch_runner": "scripts/studio-aimd-batch-run.sh",
   "final_frame_path": "build/aimd-demo/out/final-frame.ppm",
+  "trace_manifest": "data/world-studio-aimd-demo-loop/latest-demo-trace.json",
   "min_unique_colors": 48,
   "gpu_path": 1,
+  "steps": 5000,
   "hero_scenario": "data/world-studio-aimd-demo-loop/hero-scenario.json",
   "native_only": true,
   "lic_version_bump": 57,

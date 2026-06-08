@@ -1,0 +1,30 @@
+{
+  "$schema": "./schema.demo.json",
+  "name": "aimd-hero",
+  "profile": "sim_scientific",
+  "description": "Agent configures electrochemistry AIMD via chat/MCP; headless 5000-step batch; final viewport capture (no step-by-step MD replay).",
+  "size": [1280, 720],
+  "fps": 30,
+  "hold_ms_default": 600,
+  "native_only": true,
+  "aimd": {
+    "steps": 5000,
+    "temperature_k": 300,
+    "potential_v": 0.0,
+    "algo_id": 433,
+    "algo_name": "echem_aimd_interface",
+    "headless_batch": true,
+    "show_steps_in_ui": false
+  },
+  "steps": [
+    {"wait_ms": 400},
+    {"mcp_configure": "sim_scientific+aimd_5000"},
+    {"wait_ms": 300},
+    {"ui_click": "shell.agent.send_button"},
+    {"wait_ms": 800},
+    {"capture": "frame"},
+    {"aimd_run_batch": true},
+    {"wait_ms": 200},
+    {"capture": "final_frame"}
+  ]
+}
