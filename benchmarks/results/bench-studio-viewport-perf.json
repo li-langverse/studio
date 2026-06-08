@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-06-02T08:09:33Z",
+  "generated_at": "2026-06-08T06:04:50Z",
   "registry_path": "benchmarks/competitive/studio-ui.toml",
   "registry_schema": "li_studio_ui_bench_v1",
   "registry_version": 2,
-  "load_ms": 0.2,
+  "load_ms": 0.21,
   "viewport_fps_target": 60,
   "panel_switch_ms_target": 100,
   "studio_load_ms_target": 2000,
@@ -96,7 +96,7 @@
     },
     "studio_load_ms": {
       "target": 2000,
-      "value": 0.2,
+      "value": 0.21,
       "unit": "ms",
       "meets_target": true,
       "honest_simulate": true
@@ -184,7 +184,7 @@
     "honest_blocked": true,
     "meets_target": false,
     "native_pixels": false,
-    "env_active": false,
+    "env_active": true,
     "gpu_runner": false,
     "hook_version": 2,
     "readback_fn": "lig_wgpu_swapchain_readback_run",
