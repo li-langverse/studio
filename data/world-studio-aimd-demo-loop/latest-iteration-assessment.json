@@ -1,17 +1,18 @@
 {
   "pass": true,
-  "verified_at": "2026-06-08T12:00:00Z",
-  "agent_run": "world_studio_builder-1780894520944",
+  "verified_at": "2026-06-08T18:30:00Z",
+  "agent_run": "world_studio_builder-1780894630058",
   "todo_id": "aimd-w6-completion-gate",
   "tier": "mvp_gpu_stub",
-  "notes": "W6 completion gate re-verified (agent pass 1780894520944): all aimd-w0..w6 todos done; progress + completion gates exit 0; studio-aimd-hero-demo.sh orchestrates MCP configure → 5000-step headless batch → final-frame.ppm (≥48 unique colors); gpu_path=1 via science_gpu compile_open_ok (20/20); native_only=true. PR #71 open on cursor/world-studio-aimd-demo. K8s handoff: deploy via li-cursor-agents deploy-world-studio-aimd-demo-k8s.ps1 (worker li-world-studio-aimd-demo); cluster verify deferred to ops homelab.",
+  "notes": "W6 re-verification pass (1780894630058): all aimd-w0..w6 todos done; progress + completion gates exit 0; studio-aimd-hero-demo.sh green (5000-step headless batch → final-frame.ppm ≥48 unique colors); gpu_path=1 via science_gpu compile_open_ok (20/20); added missing baseline smoke studio_vertical_dod_sim_scientific_composable.li to eliminate gate WARN. PR #71 open on cursor/world-studio-aimd-demo. K8s cluster verify deferred to homelab ops.",
   "wps_touched": ["W6", "W5", "WP-ECHEM-09", "WP-AG-03", "WP-SCI-04"],
   "smokes_run": [
     "packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li",
     "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li",
     "packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li",
     "packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li",
-    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_interface_smoke.li"
+    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_interface_smoke.li",
+    "packages/li-studio/li-tests/smoke/studio_vertical_dod_sim_scientific_composable.li"
   ],
   "gates": {
     "progress": "scripts/world-studio-aimd-demo-gates.sh",
