@@ -56,7 +56,10 @@ if int(data.get("ok", 0)) != 1:
     raise SystemExit("batch ok != 1")
 if float(data.get("checksum", 0)) <= 0:
     raise SystemExit("batch checksum invalid")
-if data.get("tier") != "mvp_stub":
-    raise SystemExit("batch tier must be mvp_stub for W2")
+tier = data.get("tier", "")
+if tier not in ("mvp_stub", "mvp_gpu_stub"):
+    raise SystemExit(f"batch tier must be mvp_stub or mvp_gpu_stub, got {tier!r}")
+if int(data.get("gpu_path", 0)) == 1 and tier != "mvp_gpu_stub":
+    raise SystemExit("gpu_path=1 requires tier mvp_gpu_stub")
 print("studio-aimd-batch-run: OK", path)
 PY

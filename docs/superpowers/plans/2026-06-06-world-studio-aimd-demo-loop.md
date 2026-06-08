@@ -13,7 +13,7 @@ todos:
     status: done
   - id: aimd-w3-gpu-path
     content: "W3 — GPU AIMD compute path (science_gpu compile_open_ok, chem_dft batch kernel; stub→real ladder documented)"
-    status: pending
+    status: done
   - id: aimd-w4-final-viz
     content: "W4 — Final-state viewport viz: load batch result, particle tier + scientific pipeline for last frame"
     status: pending

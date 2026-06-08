@@ -1,21 +1,21 @@
 {
   "pass": true,
-  "todo_id": "aimd-w2-batch-compute",
-  "tier": "mvp_stub",
-  "notes": "W2 adds echem_aimd_batch_run(steps) headless path in li-sim-scientific (no 64-step cap), algo 433 registry, batch smokes + studio-aimd-batch-run.sh writing batch-result.json. GPU path (W3) and final viz (W4) still pending.",
-  "wps_touched": ["W2", "WP-ECHEM-09", "WP-SCI-03"],
+  "todo_id": "aimd-w3-gpu-path",
+  "tier": "mvp_gpu_stub",
+  "notes": "W3 wires echem_aimd_batch_run to chem_dft_energy_kernel_hartree each MD step; gpu_path=1 when chem_dft_gpu_path_tier() selects kernel scaffold (PH-SCI-GPU-16 compile_open_ok). Honest stub tier: mini STO-3G radial grid, not full DFT-per-step GPU execution. W4 final viz and W5 E2E still pending.",
+  "wps_touched": ["W3", "WP-ECHEM-09", "PH-SCI-GPU-16"],
   "smokes_run": [
-    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_interface_smoke.li",
+    "packages/li-chem/li-tests/smoke/chem_gpu_dft_energy.li",
     "packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li",
-    "li-tests/composable/import_echem_aimd_smoke.li",
+    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_interface_smoke.li",
     "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li"
   ],
   "batch_runner": "scripts/studio-aimd-batch-run.sh",
   "batch_steps_demo": 5000,
-  "batch_checksum_sample": 6.16703701019,
-  "gpu_path": 0,
+  "gpu_path": 1,
+  "gpu_gate": "scripts/ph-sci-gpu-chem-gates.sh",
   "hero_scenario": "data/world-studio-aimd-demo-loop/hero-scenario.json",
   "native_only": true,
-  "lic_version_bump": 51,
+  "lic_version_bump": 52,
   "li_sim_scientific_version": 4
 }

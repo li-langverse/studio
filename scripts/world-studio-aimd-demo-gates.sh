@@ -61,11 +61,11 @@ for s in \
   run_smoke "$s"
 done
 
-# Optional GPU gate when lic scripts exist
+# W3 GPU path — chem DFT kernel + science_gpu PH-SCI-GPU-16
 if [[ -x "$LIC_ROOT/scripts/ph-sci-gpu-chem-gates.sh" ]]; then
-  bash "$LIC_ROOT/scripts/ph-sci-gpu-chem-gates.sh" || warn "ph-sci-gpu-chem-gates.sh failed (GPU path optional for early WPs)"
+  bash "$LIC_ROOT/scripts/ph-sci-gpu-chem-gates.sh" || fail "ph-sci-gpu-chem-gates.sh failed (W3 GPU path)"
 else
-  warn "ph-sci-gpu-chem-gates.sh not found — W3 GPU gate deferred"
+  fail "ph-sci-gpu-chem-gates.sh not found — W3 GPU gate required"
 fi
 
 ok "world-studio-aimd-demo progress gates finished"
