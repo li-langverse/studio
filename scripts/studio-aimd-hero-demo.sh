@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Hero demo orchestrator (W5): MCP configure → batch run → final frame capture + trace manifest.
+# Hero demo orchestrator (W5): configure → batch run → final frame capture + trace manifest.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export STUDIO_ROOT="$ROOT"
@@ -10,50 +10,26 @@ DEMO_JSON="$STUDIO_ROOT/data/demo-scripts/aimd-hero.demo.json"
 SCENARIO="$STUDIO_ROOT/data/world-studio-aimd-demo-loop/hero-scenario.json"
 OUT_DIR="$STUDIO_ROOT/build/aimd-demo/out"
 TRACE="$STUDIO_ROOT/data/world-studio-aimd-demo-loop/latest-demo-trace.json"
-HERO_RUNNER="$STUDIO_ROOT/build/aimd-hero-runner"
-HERO_RUNNER_SRC="$STUDIO_ROOT/li-tests/smoke/studio_aimd_hero_runner.li"
-AIMD_VIZ_SMOKE="packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li"
+E2E_SMOKE="packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li"
 
 [[ -f "$DEMO_JSON" ]] || { echo "studio-aimd-hero-demo: missing $DEMO_JSON" >&2; exit 1; }
 [[ -f "$SCENARIO" ]] || { echo "studio-aimd-hero-demo: missing $SCENARIO" >&2; exit 1; }
 mkdir -p "$OUT_DIR"
 
-LIC_BIN=""
 LIC_BIN="$(resolve_lic 2>/dev/null || true)"
 [[ -n "$LIC_BIN" && -x "$LIC_BIN" ]] || { echo "studio-aimd-hero-demo: lic not found" >&2; exit 2; }
 
-# Sync studio sources into lic package tree for smokes.
 cp -f "$STUDIO_ROOT/src/lib.li" "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null || true
-for smoke in studio_aimd_hero_e2e.li studio_aimd_hero_runner.li studio_aimd_final_viz.li; do
+for smoke in studio_aimd_hero_e2e.li studio_aimd_hero_runner.li studio_aimd_final_viz.li studio_mcp_aimd_configure.li; do
   if [[ -f "$STUDIO_ROOT/li-tests/smoke/$smoke" ]]; then
     cp -f "$STUDIO_ROOT/li-tests/smoke/$smoke" "$LIC_ROOT/packages/li-studio/li-tests/smoke/$smoke" 2>/dev/null || true
   fi
 done
 
-(cd "$LIC_ROOT" && "$LIC_BIN" check "$AIMD_VIZ_SMOKE") \
-  || { echo "studio-aimd-hero-demo: studio_aimd_hero_e2e smoke failed" >&2; exit 3; }
+bash "$STUDIO_ROOT/scripts/studio-aimd-batch-run.sh" "$SCENARIO" "$OUT_DIR" || exit 3
 
-STEPS="$(python3 - "$SCENARIO" <<'PY'
-import json, sys
-from pathlib import Path
-data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-print(int(data.get("steps", 5000)))
-PY
-)"
-export STUDIO_AIMD_BATCH_STEPS="$STEPS"
-
-if [[ ! -x "$HERO_RUNNER" ]]; then
-  (cd "$LIC_ROOT" && studio_lic_build "$HERO_RUNNER_SRC" "$HERO_RUNNER" \
-    "$LIC_BIN" build --allow-open-vc --no-lean-verify "$HERO_RUNNER_SRC" -o "$HERO_RUNNER")
-  chmod +x "$HERO_RUNNER" 2>/dev/null || true
-fi
-
-(cd "$STUDIO_ROOT" && "$HERO_RUNNER") || { echo "studio-aimd-hero-demo: hero runner failed" >&2; exit 4; }
-
-FINAL_PPM="$OUT_DIR/final-frame.ppm"
-BATCH_JSON="$OUT_DIR/batch-result.json"
-[[ -f "$BATCH_JSON" ]] || { echo "studio-aimd-hero-demo: missing $BATCH_JSON" >&2; exit 5; }
-[[ -f "$FINAL_PPM" ]] || { echo "studio-aimd-hero-demo: missing $FINAL_PPM" >&2; exit 6; }
+(cd "$LIC_ROOT" && "$LIC_BIN" check "$E2E_SMOKE" --workspace=packages/li.toml) \
+  || { echo "studio-aimd-hero-demo: studio_aimd_hero_e2e smoke failed" >&2; exit 4; }
 
 python3 - "$DEMO_JSON" "$SCENARIO" "$OUT_DIR" "$TRACE" <<'PY'
 import json, sys

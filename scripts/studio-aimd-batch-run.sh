@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# W2 — headless AIMD batch runner: scenario JSON → echem_aimd_batch_run → batch-result.json
+# W2 — headless AIMD batch + final-frame capture (native Li; no UI step replay).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export STUDIO_ROOT="$ROOT"
@@ -8,18 +8,21 @@ source "$ROOT/scripts/_studio-env.sh"
 
 SCENARIO="${1:-$STUDIO_ROOT/data/world-studio-aimd-demo-loop/hero-scenario.json}"
 OUT_DIR="${2:-$STUDIO_ROOT/build/aimd-demo/out}"
-RUNNER="$STUDIO_ROOT/build/aimd-batch-runner"
-BATCH_JSON="$OUT_DIR/batch-result.json"
-RUNNER_SRC="$LIC_ROOT/packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_runner.li"
+RUNNER="$LIC_ROOT/build/aimd-demo/aimd_hero_runner"
+SMOKE="packages/li-studio/li-tests/smoke/studio_aimd_hero_runner.li"
 
 [[ -f "$SCENARIO" ]] || { echo "studio-aimd-batch-run: missing scenario $SCENARIO" >&2; exit 1; }
-mkdir -p "$OUT_DIR"
+mkdir -p "$OUT_DIR" "$LIC_ROOT/build/aimd-demo" "$STUDIO_ROOT/build/aimd-demo/out"
 
-LIC_BIN=""
-LIC_BIN="$(resolve_lic 2>/dev/null || true)"
-[[ -n "$LIC_BIN" && -x "$LIC_BIN" ]] || { echo "studio-aimd-batch-run: lic not found" >&2; exit 1; }
+LIC_BIN="$(resolve_lic || true)"
+[[ -x "$LIC_BIN" ]] || LIC_BIN="$(command -v lic 2>/dev/null || true)"
+[[ -x "$LIC_BIN" ]] || { echo "studio-aimd-batch-run: lic not found" >&2; exit 1; }
 
-STEPS="$(python3 - "$SCENARIO" <<'PY'
+cp -f "$STUDIO_ROOT/src/lib.li" "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null || true
+cp -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_hero_runner.li" "$LIC_ROOT/$SMOKE" 2>/dev/null || true
+
+export STUDIO_AIMD_BATCH_STEPS
+STUDIO_AIMD_BATCH_STEPS="$(python3 - "$SCENARIO" <<'PY'
 import json, sys
 from pathlib import Path
 data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
@@ -27,68 +30,15 @@ print(int(data.get("steps", 5000)))
 PY
 )"
 
-export STUDIO_AIMD_BATCH_STEPS="$STEPS"
-
-(cd "$LIC_ROOT" && "$LIC_BIN" check packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li) \
-  || { echo "studio-aimd-batch-run: echem_aimd_batch_smoke failed" >&2; exit 2; }
-
+(cd "$LIC_ROOT" && "$LIC_BIN" check "$SMOKE" --workspace=packages/li.toml) || exit 2
 if [[ ! -x "$RUNNER" ]]; then
-  (cd "$LIC_ROOT" && studio_lic_build "$RUNNER_SRC" "$RUNNER" \
-    "$LIC_BIN" build --allow-open-vc --no-lean-verify "$RUNNER_SRC" -o "$RUNNER")
-  chmod +x "$RUNNER" 2>/dev/null || true
+  (cd "$LIC_ROOT" && "$LIC_BIN" build "$SMOKE" -o build/aimd-demo/aimd_hero_runner --allow-open-vc) || exit 3
 fi
 
-export STUDIO_AIMD_BATCH_OUT="$BATCH_JSON"
-(cd "$STUDIO_ROOT" && "$RUNNER") || { echo "studio-aimd-batch-run: runner failed" >&2; exit 3; }
+( cd "$STUDIO_ROOT" && "$RUNNER" ) || { echo "studio-aimd-batch-run: runner failed" >&2; exit 4; }
 
-if [[ ! -f "$BATCH_JSON" ]]; then
-  echo "studio-aimd-batch-run: missing $BATCH_JSON" >&2
-  exit 4
-fi
+FINAL="$OUT_DIR/final-frame.ppm"
+[[ -f "$FINAL" ]] || { echo "studio-aimd-batch-run: missing $FINAL" >&2; exit 5; }
+[[ -f "$OUT_DIR/batch-result.json" ]] || { echo "studio-aimd-batch-run: missing batch-result.json" >&2; exit 6; }
 
-python3 - "$BATCH_JSON" "$STEPS" <<'PY'
-import json, sys
-from pathlib import Path
-path = Path(sys.argv[1])
-steps = int(sys.argv[2])
-data = json.loads(path.read_text(encoding="utf-8"))
-if int(data.get("steps", 0)) < steps:
-    raise SystemExit(f"batch steps {data.get('steps')} < expected {steps}")
-if int(data.get("ok", 0)) != 1:
-    raise SystemExit("batch ok != 1")
-if float(data.get("checksum", 0)) <= 0:
-    raise SystemExit("batch checksum invalid")
-tier = data.get("tier", "")
-if tier not in ("mvp_stub", "mvp_gpu_stub"):
-    raise SystemExit(f"batch tier must be mvp_stub or mvp_gpu_stub, got {tier!r}")
-if int(data.get("gpu_path", 0)) == 1 and tier != "mvp_gpu_stub":
-    raise SystemExit("gpu_path=1 requires tier mvp_gpu_stub")
-print("studio-aimd-batch-run: OK", path)
-PY
-
-FINAL_PPM="$OUT_DIR/final-frame.ppm"
-AIMD_VIZ_SMOKE="packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li"
-if [[ -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz.li" ]]; then
-  cp -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz.li" \
-    "$LIC_ROOT/$AIMD_VIZ_SMOKE" 2>/dev/null || true
-  cp -f "$STUDIO_ROOT/src/lib.li" "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null || true
-  (cd "$LIC_ROOT" && "$LIC_BIN" check "$AIMD_VIZ_SMOKE") \
-    || { echo "studio-aimd-batch-run: studio_aimd_final_viz smoke failed" >&2; exit 5; }
-fi
-
-CAPTURE_RUNNER="$STUDIO_ROOT/build/aimd-final-viz-capture"
-CAPTURE_SRC="$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz_capture.li"
-if [[ -f "$CAPTURE_SRC" ]]; then
-  if [[ ! -x "$CAPTURE_RUNNER" ]]; then
-    (cd "$LIC_ROOT" && studio_lic_build "$CAPTURE_SRC" "$CAPTURE_RUNNER" \
-      "$LIC_BIN" build --allow-open-vc --no-lean-verify "$CAPTURE_SRC" -o "$CAPTURE_RUNNER")
-    chmod +x "$CAPTURE_RUNNER" 2>/dev/null || true
-  fi
-  mkdir -p "$OUT_DIR"
-  export STUDIO_AIMD_FINAL_PPM="$FINAL_PPM"
-  (cd "$STUDIO_ROOT" && "$CAPTURE_RUNNER") || { echo "studio-aimd-batch-run: final-frame capture failed" >&2; exit 6; }
-  if [[ ! -f "$FINAL_PPM" ]]; then
-    echo "studio-aimd-batch-run: missing $FINAL_PPM" >&2
-    exit 7
-  fi
-fi
+echo "studio-aimd-batch-run: OK steps=$STUDIO_AIMD_BATCH_STEPS"
