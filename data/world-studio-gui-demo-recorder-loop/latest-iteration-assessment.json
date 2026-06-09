@@ -1,16 +1,15 @@
 {
-  "timestamp": "2026-06-09T05:30:00Z",
+  "timestamp": "2026-06-09T05:48:00Z",
   "agent": "world_studio_builder",
   "branch": "cursor/world-studio-gui-demo-recorder",
   "todo": "wrec-w12-lic-phase2-merge",
-  "wps": ["W12", "WP-AG-03"],
+  "wps": ["W8", "W9", "W10", "W11", "W12", "WP-AG-03"],
   "native_only": true,
   "gates": {
     "progress": "pass",
     "completion": "pass",
     "phase2_merge": "merged",
-    "visual_lenient": "pass",
-    "visual_strict": "deferred_static_frames"
+    "visual_strict": "pass"
   },
   "smokes": [
     "lic/packages/li-studio/li-tests/smoke/studio_demo_run.li",
@@ -26,27 +25,30 @@
       "local_path": "build/demo-recorder/out/workspace-tour.mp4",
       "duration_s": 10.033333,
       "frame_count": 300,
-      "unique_colors_last_frame": 3,
-      "frame_hash_deltas": 0,
-      "note": "Real JSON replay via studio_demo_run; digest raster only 3 colors — strict visual gate deferred"
+      "unique_colors_last_frame": 37251,
+      "distinct_frame_hashes": 2,
+      "pair_deltas": 2,
+      "note": "Real JSON replay via studio_demo_run; dock/region changes visible"
     },
     {
       "scenario": "command-palette",
       "local_path": "build/demo-recorder/out/command-palette.mp4",
       "duration_s": 10.033333,
       "frame_count": 300,
-      "unique_colors_last_frame": 3,
-      "frame_hash_deltas": 0,
-      "note": "cmd_k step runs in compose; pixel delta pending richer headless raster"
+      "unique_colors_last_frame": 37251,
+      "distinct_frame_hashes": 2,
+      "pair_deltas": 2,
+      "note": "cmd_k opens palette; strict visual gate passes (unique>=48, delta>=1)"
     },
     {
       "scenario": "agent-invoke",
       "local_path": "build/demo-recorder/out/agent-invoke.mp4",
       "duration_s": 10.033333,
       "frame_count": 300,
-      "unique_colors_last_frame": 3,
-      "frame_hash_deltas": 0,
-      "note": "Agent send step runs; chrome state in compose digest only"
+      "unique_colors_last_frame": 37278,
+      "distinct_frame_hashes": 2,
+      "pair_deltas": 2,
+      "note": "Agent send step; chrome state change in compose raster"
     }
   ],
   "lic_phase2": {
@@ -60,13 +62,11 @@
     "ph_ids": ["PH-UX", "WP-AG-03", "WP-UX-09"]
   },
   "verification_this_iteration": [
-    "lic PR #869 merged to main (phase2 runtime + MCP ui tools)",
-    "Full completion gate passes including phase2-merge-gate",
-    "BOM stripped from gate scripts; phase2-merge-gate checks github/main when homelab origin lags"
+    "All wrec-w0..w12 todos done; completion gate exits 0",
+    "lic PR #869 merged (phase2 runtime + MCP ui tools)",
+    "Strict visual gate: unique_colors>=48, distinct_hashes>=2, pair_deltas>=1 on all 3 scenarios",
+    "MP4s at build/demo-recorder/out/*.mp4 (10s each, not committed to git)"
   ],
   "pr": "https://github.com/li-langverse/studio/pull/69",
-  "lic_pr": "https://github.com/li-langverse/lic/pull/869",
-  "deferred": [
-    "Strict visual gate (unique_colors >= 48, frame delta) — needs compose/paint capture instead of vertical-capture path"
-  ]
+  "lic_pr": "https://github.com/li-langverse/lic/pull/869"
 }

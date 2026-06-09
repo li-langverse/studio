@@ -1,30 +1,17 @@
 {
   "native_only": true,
-  "generated_at": "2026-06-09T05:30:00Z",
   "videos": [
     {
-      "scenario": "workspace-tour",
       "file": "demo-recorder/out/workspace-tour.mp4",
-      "local_path": "build/demo-recorder/out/workspace-tour.mp4",
-      "duration_s": 10.033333,
-      "frame_count": 300,
-      "provenance": "build/demo-recorder/workspace-tour/capture-provenance.json"
+      "duration_s": 10.033333
     },
     {
-      "scenario": "command-palette",
       "file": "demo-recorder/out/command-palette.mp4",
-      "local_path": "build/demo-recorder/out/command-palette.mp4",
-      "duration_s": 10.033333,
-      "frame_count": 300,
-      "provenance": "build/demo-recorder/command-palette/capture-provenance.json"
+      "duration_s": 10.033333
     },
     {
-      "scenario": "agent-invoke",
       "file": "demo-recorder/out/agent-invoke.mp4",
-      "local_path": "build/demo-recorder/out/agent-invoke.mp4",
-      "duration_s": 10.033333,
-      "frame_count": 300,
-      "provenance": "build/demo-recorder/agent-invoke/capture-provenance.json"
+      "duration_s": 10.033333
     }
   ],
   "paths": [
