@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # Completion gate: Li World Studio runnable + installer (Windows/WSL friendly).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

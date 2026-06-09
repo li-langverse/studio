@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # Run world-studio gates on Linux via WSL Ubuntu (when available).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

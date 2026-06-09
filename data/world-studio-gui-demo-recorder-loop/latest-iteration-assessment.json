@@ -1,8 +1,9 @@
 {
-  "timestamp": "2026-06-05T08:11:51Z",
+  "timestamp": "2026-06-09T04:30:00Z",
   "agent": "world_studio_builder",
   "branch": "cursor/world-studio-gui-demo-recorder",
   "todo": "wrec-w12-lic-phase2-merge",
+  "wps": ["W12", "WP-AG-03"],
   "native_only": true,
   "gates": {
     "progress": "pass",
@@ -23,7 +24,7 @@
     {
       "scenario": "workspace-tour",
       "local_path": "build/demo-recorder/out/workspace-tour.mp4",
-      "duration_s": 10.0,
+      "duration_s": 10.033333,
       "frame_count": 300,
       "unique_colors_last_frame": 3,
       "frame_hash_deltas": 0,
@@ -32,7 +33,7 @@
     {
       "scenario": "command-palette",
       "local_path": "build/demo-recorder/out/command-palette.mp4",
-      "duration_s": 10.0,
+      "duration_s": 10.033333,
       "frame_count": 300,
       "unique_colors_last_frame": 3,
       "frame_hash_deltas": 0,
@@ -41,7 +42,7 @@
     {
       "scenario": "agent-invoke",
       "local_path": "build/demo-recorder/out/agent-invoke.mp4",
-      "duration_s": 10.0,
+      "duration_s": 10.033333,
       "frame_count": 300,
       "unique_colors_last_frame": 3,
       "frame_hash_deltas": 0,
@@ -50,16 +51,12 @@
   ],
   "north_star_fit": {
     "domain": "native Li Studio GUI control + deterministic demo replay",
-    "ph_ids": [
-      "PH-UX",
-      "WP-AG-03",
-      "WP-UX-09"
-    ]
+    "ph_ids": ["PH-UX", "WP-AG-03", "WP-UX-09"]
   },
   "verification_this_iteration": [
     "lic PR #869 merged to main (phase2 runtime + MCP ui tools)",
-    "Full completion gate passes including phase2-merge-gate (main merge subject + no SIGPIPE)",
-    "studio PR #69 ready to merge to main"
+    "Full completion gate passes including phase2-merge-gate",
+    "BOM stripped from gate scripts; resolve_lic prefers build/ over build-wsl"
   ],
   "pr": "https://github.com/li-langverse/studio/pull/69",
   "lic_pr": "https://github.com/li-langverse/lic/pull/869",
@@ -68,5 +65,8 @@
     "status": "merged",
     "pr": 869,
     "merged_at": "2026-06-05T08:07:44Z"
-  }
+  },
+  "deferred": [
+    "Strict visual gate (unique_colors >= 48, frame delta) — needs compose/paint capture instead of vertical-capture path"
+  ]
 }
