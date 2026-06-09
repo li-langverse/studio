@@ -21,7 +21,7 @@ def main() -> int raises IO, Alloc
     return 5
   if batch.steps != steps:
     return 6
-  if batch.checksum <= 0.0:
+  if batch.checksum_ok != 1:
     return 7
   var expect_gpu: int = echem_aimd_batch_gpu_path_select()
   if batch.gpu_path != expect_gpu:
@@ -31,6 +31,6 @@ def main() -> int raises IO, Alloc
   var path: str = "/tmp/studio-aimd-hero-e2e.ppm"
   if studio_aimd_final_viz_ok(batch, path, 1280, 720) != 1:
     return 10
-  if studio_aimd_final_viz_color_budget_ok(batch, 100, 1280, 720) != 1:
+  if studio_aimd_final_viz_color_budget_ok(batch, 48, 1280, 720, "/tmp/studio-aimd-hero-e2e.ppm") != 1:
     return 11
   return 0

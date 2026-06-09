@@ -290,6 +290,27 @@ extern proc li_rt_studio_aimd_scenario_get_steps() raises IO -> int
   ensures result >= 64
   decreases 0
 
+extern proc li_rt_studio_aimd_scenario_get_temperature() raises IO -> int
+  requires true
+  ensures result >= 0
+  decreases 0
+
+extern proc li_rt_studio_aimd_scenario_get_potential() raises IO -> int
+  requires true
+  ensures result >= 0
+  decreases 0
+
+extern proc li_rt_studio_aimd_scenario_get_algo() raises IO -> int
+  requires true
+  ensures result >= 0
+  decreases 0
+
+extern proc li_rt_studio_aimd_scenario_is_configured() raises IO -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases 0
+
 extern proc li_rt_studio_aimd_batch_steps_from_env() raises IO -> int
   requires true
   ensures result >= 64
@@ -2092,6 +2113,13 @@ type StudioAgentRun = object
   public check_step_done: int
   public build_step_done: int
   public used_html_mock: int
+
+type StudioAimdScenario = object
+  public configured: int
+  public steps: int
+  public temperature_k: int
+  public potential_mv: int
+  public algo_id: int
 
 def studio_agent_tool_request_none() -> StudioAgentToolRequest
   requires true
@@ -6249,6 +6277,82 @@ def studio_sim_scientific_step_hook(sim_out: var SimSessionStub, dt: float) -> i
   return sim_status_ok()
 
 # W1/W4/W5 — AIMD hero demo: MCP scenario + batch final-state viewport + headless PPM.
+def studio_agent_aimd_pipeline_steps() -> int
+  requires true
+  ensures result == 2
+  decreases 0
+=
+  return 2
+
+def studio_agent_aimd_tool_id_at(index: int) -> int
+  requires index >= 0
+  requires index < studio_agent_aimd_pipeline_steps()
+  ensures studio_mcp_tool_id_valid(result) == 1
+  decreases index
+=
+  if index == 0:
+    return studio_mcp_sim_set_profile()
+  return studio_mcp_aimd_configure_scenario()
+
+def studio_aimd_scenario_get() -> StudioAimdScenario raises IO
+  requires true
+  ensures result.steps >= 64
+  ensures result.steps <= 10000
+  decreases 0
+=
+  var out: StudioAimdScenario
+  out.configured = li_rt_studio_aimd_scenario_is_configured()
+  out.steps = li_rt_studio_aimd_scenario_get_steps()
+  out.temperature_k = li_rt_studio_aimd_scenario_get_temperature()
+  out.potential_mv = li_rt_studio_aimd_scenario_get_potential()
+  out.algo_id = li_rt_studio_aimd_scenario_get_algo()
+  return out
+
+def studio_aimd_scenario_checksum(scenario: StudioAimdScenario) -> int
+  requires scenario.steps >= 64
+  requires scenario.algo_id >= 0
+  ensures result > 0
+  decreases scenario.steps
+=
+  return scenario.steps * 17 + scenario.temperature_k * 3 + scenario.algo_id + scenario.configured * 911
+
+def studio_mcp_tool_dispatch_aimd_configure(steps: int, temperature_k: int, potential_mv: int, algo_id: int) -> StudioAgentToolRequest raises IO
+  requires steps >= 64
+  requires steps <= 10000
+  requires algo_id == algo_echem_aimd_interface()
+  ensures result.tool_id == studio_mcp_aimd_configure_scenario()
+  decreases steps
+=
+  var out: StudioAgentToolRequest = studio_agent_tool_request_none()
+  out.tool_id = studio_mcp_aimd_configure_scenario()
+  if li_rt_studio_aimd_scenario_set(steps, temperature_k, potential_mv, algo_id) != 1:
+    out.status = studio_mcp_tool_status_failed()
+    out.result_code = studio_mcp_tool_result_err_io()
+    return out
+  out.status = studio_mcp_tool_status_ok()
+  out.result_code = steps
+  return out
+
+def studio_aimd_tier_for_batch(batch: AimdBatchResult) -> int
+  requires batch.ok == 1
+  requires batch.steps >= 64
+  ensures result >= scene_md_tier_1k()
+  ensures result <= scene_md_tier_100k()
+  decreases batch.steps
+=
+  var tick: int = studio_aimd_final_tick_for_batch(batch)
+  return studio_sim_scientific_tier_for_tick(tick)
+
+def studio_aimd_load_final_state(batch: AimdBatchResult) -> VizPipelineState
+  requires batch.ok == 1
+  requires batch.steps >= 64
+  ensures result.profile_id == viz_profile_sim_scientific()
+  ensures result.source_count >= 1
+  decreases batch.steps
+=
+  var tick: int = studio_aimd_final_tick_for_batch(batch)
+  return studio_sim_scientific_viz_for_tick(tick)
+
 def studio_aimd_algo_echem_interface() -> int
   requires true
   ensures result == algo_echem_aimd_interface()

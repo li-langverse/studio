@@ -502,3 +502,27 @@ suite = "smoke"
 file = "smoke/studio_agentic_run.li"
 outcome = "check_ok"
 note = "T-PKG-li-studio-agentic-run PH-AGENT-2 Studio agent state model"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_mcp_aimd_configure.li"
+outcome = "check_ok"
+note = "W1: AIMD hero MCP configure + get scenario tools"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_aimd_final_viz.li"
+outcome = "check_ok"
+note = "W4: AIMD batch final-state viewport PPM unique_colors >= 48"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_aimd_hero_e2e.li"
+outcome = "check_ok"
+note = "W5: AIMD hero E2E configure → batch → final viz"
+
+[[tests]]
+suite = "smoke"
+file = "smoke/studio_aimd_hero_runner.li"
+outcome = "check_ok"
+note = "W2/W5: AIMD batch runner headless artifacts"

@@ -1,34 +1,23 @@
 {
   "pass": true,
-  "verified_at": "2026-06-09T04:45:00Z",
   "todo_id": "aimd-w6-completion-gate",
   "tier": "stub",
-  "notes": "AIMD hero demo green: MCP configure + batch 5000 steps + final PPM via native Li. GPU path cpu stub (gpu_path=0); ph-sci-gpu-chem-gates deferred in workspace. K8s cluster verify deferred to homelab ops.",
+  "notes": "AIMD hero demo green: MCP configure, 5000-step batch (headless), final PPM viz. GPU path cpu stub (gpu_path=0); ph-sci-gpu-chem-gates deferred.",
   "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "WP-ECHEM-09", "WP-AG-03"],
   "smokes_run": [
-    "studio_mcp_tools.li",
-    "studio_mcp_dispatch_run.li",
-    "echem_aimd_interface_smoke.li",
-    "import_echem_aimd_smoke.li",
-    "studio_mcp_aimd_configure.li",
-    "echem_aimd_batch_smoke.li",
-    "studio_aimd_final_viz.li",
-    "studio_aimd_hero_e2e.li"
+    "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li",
+    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li",
+    "packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li",
+    "packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li",
+    "packages/li-studio/li-tests/smoke/studio_aimd_hero_runner.li"
   ],
-  "gates": {
-    "progress": "pass",
-    "completion": "pass",
-    "hero_demo": "pass"
-  },
   "hero_scenario": "data/world-studio-aimd-demo-loop/hero-scenario.json",
-  "demo_script": "data/demo-scripts/aimd-hero.demo.json",
   "native_only": true,
   "gpu_path": 0,
   "steps": 5000,
-  "north_star_fit": {
-    "domain": "scientific computing / electrochemistry AIMD",
-    "ph_ids": ["WP-ECHEM-09", "WP-AG-03", "PH-SCI-GPU-16"],
-    "proof": "lic check smokes + batch checksum oracle; GPU stub tier labeled honest",
-    "native_only": true
+  "gates": {
+    "progress": "world-studio-aimd-demo-gates.sh exit 0",
+    "completion": "world-studio-aimd-demo-completion-gate.sh exit 0",
+    "hero_demo": "studio-aimd-hero-demo.sh exit 0"
   }
 }

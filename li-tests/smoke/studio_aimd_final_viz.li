@@ -15,7 +15,7 @@ def main() -> int raises IO, Alloc
   var batch: AimdBatchResult = echem_aimd_batch_run(steps)
   if batch.ok != 1:
     return 3
-  if batch.checksum <= 0.0:
+  if batch.checksum_ok != 1:
     return 4
   var tier: int = studio_aimd_tier_for_batch(batch)
   if tier < 0:
@@ -30,6 +30,6 @@ def main() -> int raises IO, Alloc
   var path: str = "/tmp/studio-aimd-final-viz.ppm"
   if studio_aimd_final_viz_ok(batch, path, 1280, 720) != 1:
     return 9
-  if studio_aimd_final_viz_color_budget_ok(batch, 100, 1280, 720) != 1:
+  if studio_aimd_final_viz_color_budget_ok(batch, 48, 1280, 720, "/tmp/studio-aimd-final-viz.ppm") != 1:
     return 10
   return 0

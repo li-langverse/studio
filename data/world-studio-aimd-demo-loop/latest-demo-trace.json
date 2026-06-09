@@ -1,17 +1,9 @@
 {
   "native_only": true,
-  "demo_script": "aimd-hero",
-  "demo_script_path": "data/demo-scripts/aimd-hero.demo.json",
   "scenario": "aimd-hero-echem-interface",
-  "profile": "sim_scientific",
   "steps": 5000,
-  "checksum": 1e-06,
+  "checksum": 0.001,
   "gpu_path": 0,
   "tier": "stub",
-  "energy_drift": 1e-06,
-  "batch_result": "aimd-demo/out/batch-result.json",
-  "final_frame": "aimd-demo/out/final-frame.ppm",
-  "configure_phase": "mcp_sim_scientific+aimd_configure_scenario",
-  "batch_headless": true,
-  "ui_step_replay": false
+  "final_frame": "aimd-demo/out/final-frame.ppm"
 }

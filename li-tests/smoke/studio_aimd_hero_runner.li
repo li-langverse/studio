@@ -32,7 +32,7 @@ def main() -> int raises IO, Alloc
   var batch: AimdBatchResult = echem_aimd_batch_run(steps)
   if batch.ok != 1:
     return 4
-  if batch.checksum <= 0.0:
+  if batch.checksum_ok != 1:
     return 5
   if li_rt_studio_aimd_batch_write_json("build/aimd-demo/out/batch-result.json", batch.steps, batch.ok, batch.checksum, batch.energy_drift, batch.gpu_path) != 1:
     return 6
