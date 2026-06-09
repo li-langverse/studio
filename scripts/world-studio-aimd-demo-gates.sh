@@ -34,12 +34,12 @@ run_smoke() {
   local rel=""
   if [[ "$path" == "$STUDIO_ROOT/li-tests/smoke/"* ]]; then
     rel="packages/li-studio/li-tests/smoke/$(basename "$path")"
-    (cd "$LIC_ROOT" && "$LIC_BIN" check "$rel") || fail "lic check $rel"
+    (cd "$LIC_ROOT" && "$LIC_BIN" check "$rel" --workspace=packages/li.toml) || fail "lic check $rel"
     return 0
   fi
   if [[ "$path" == "$LIC_ROOT/packages/"* ]]; then
     rel="${path#"$LIC_ROOT/"}"
-    (cd "$LIC_ROOT" && "$LIC_BIN" check "$rel") || fail "lic check $rel"
+    (cd "$LIC_ROOT" && "$LIC_BIN" check "$rel" --workspace=packages/li.toml) || fail "lic check $rel"
     return 0
   fi
   "$LIC_BIN" check "$path" || fail "lic check $path"

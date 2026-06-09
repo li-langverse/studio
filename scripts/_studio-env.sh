@@ -62,6 +62,7 @@ resolve_lic() {
   local c
   # Prefer native build/ over WSL cross-build (build-wsl may need newer glibc on Linux hosts).
   for c in \
+    "$LIC_ROOT/build-ninja/compiler/lic/lic" \
     "$LIC_ROOT/build/compiler/lic/lic" \
     "$LIC_ROOT/build/compiler/lic/lic.exe" \
     "$LIC_ROOT/out/compiler/lic/lic" \
