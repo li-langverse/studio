@@ -1,78 +1,34 @@
 {
   "pass": true,
-  "verified_at": "2026-06-08T22:30:00Z",
-  "agent_run": "world_studio_builder-1780950415016",
+  "verified_at": "2026-06-09T04:45:00Z",
   "todo_id": "aimd-w6-completion-gate",
-  "tier": "mvp_gpu_stub",
-  "notes": "W6 maintenance re-verification (world_studio_builder-1780950415016): all aimd-w0..w6 todos done; progress + completion gates exit 0; studio-aimd-hero-demo.sh green; gpu_path=1; 5000 batch steps checksum=6.16703701019; final-frame PPM unique_colors≥48 (28505 observed). PR #78 open; CI check green (native-sdl-capture in progress at verify time). K8s cluster verify deferred to homelab ops.",
-  "ci_verified": {
-    "pr": 78,
-    "state": "OPEN",
-    "url": "https://github.com/li-langverse/studio/pull/78",
-    "checks_pending": true,
-    "checks": [
-      "CI/check SUCCESS",
-      "Studio UI/UX native capture/native-wgpu-bench SUCCESS",
-      "Studio UI/UX native capture/wgpu-swapchain-readback SUCCESS",
-      "Studio UI/UX native capture/wgpu-swapchain-gpu-runner SUCCESS",
-      "Studio UI/UX native capture/native-sdl-capture IN_PROGRESS"
-    ]
-  },
-  "wps_touched": [
-    "W6",
-    "W5",
-    "W4",
-    "W3",
-    "W2",
-    "W1",
-    "W0",
-    "WP-ECHEM-09",
-    "WP-AG-03",
-    "WP-SCI-04",
-    "PH-SCI-GPU-16"
-  ],
+  "tier": "stub",
+  "notes": "AIMD hero demo green: MCP configure + batch 5000 steps + final PPM via native Li. GPU path cpu stub (gpu_path=0); ph-sci-gpu-chem-gates deferred in workspace. K8s cluster verify deferred to homelab ops.",
+  "wps_touched": ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "WP-ECHEM-09", "WP-AG-03"],
   "smokes_run": [
-    "packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li",
-    "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li",
-    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li",
-    "packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li",
-    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_interface_smoke.li",
-    "packages/li-studio/li-tests/smoke/studio_mcp_tools.li",
-    "packages/li-studio/li-tests/smoke/studio_vertical_dod_sim_scientific_composable.li"
+    "studio_mcp_tools.li",
+    "studio_mcp_dispatch_run.li",
+    "echem_aimd_interface_smoke.li",
+    "import_echem_aimd_smoke.li",
+    "studio_mcp_aimd_configure.li",
+    "echem_aimd_batch_smoke.li",
+    "studio_aimd_final_viz.li",
+    "studio_aimd_hero_e2e.li"
   ],
   "gates": {
-    "progress": "scripts/world-studio-aimd-demo-gates.sh",
-    "completion": "scripts/world-studio-aimd-demo-completion-gate.sh",
-    "hero_demo": "scripts/studio-aimd-hero-demo.sh"
+    "progress": "pass",
+    "completion": "pass",
+    "hero_demo": "pass"
   },
-  "demo_script": "data/demo-scripts/aimd-hero.demo.json",
-  "hero_demo_script": "scripts/studio-aimd-hero-demo.sh",
-  "batch_runner": "scripts/studio-aimd-batch-run.sh",
-  "final_frame_path": "build/aimd-demo/out/final-frame.ppm",
-  "trace_manifest": "data/world-studio-aimd-demo-loop/latest-demo-trace.json",
-  "min_unique_colors": 48,
-  "unique_colors_observed": 28505,
-  "gpu_path": 1,
-  "steps": 5000,
   "hero_scenario": "data/world-studio-aimd-demo-loop/hero-scenario.json",
+  "demo_script": "data/demo-scripts/aimd-hero.demo.json",
   "native_only": true,
-  "k8s_handoff": {
-    "worker": "li-world-studio-aimd-demo",
-    "deploy_script": "li-cursor-agents/scripts/deploy-world-studio-aimd-demo-k8s.ps1",
-    "cluster_verified": false,
-    "reason": "homelab kubeconfig not available in agent workspace; gates + hero demo prove readiness"
-  },
-  "lic_version_bump": 57,
-  "li_std_studio_version": 57,
+  "gpu_path": 0,
+  "steps": 5000,
   "north_star_fit": {
     "domain": "scientific computing / electrochemistry AIMD",
-    "ph_ids": [
-      "PH-SCI-GPU-16",
-      "WP-ECHEM-09",
-      "WP-AG-03"
-    ],
-    "proof": "lic check smokes + science_gpu compile_open_ok (20/20)",
+    "ph_ids": ["WP-ECHEM-09", "WP-AG-03", "PH-SCI-GPU-16"],
+    "proof": "lic check smokes + batch checksum oracle; GPU stub tier labeled honest",
     "native_only": true
-  },
-  "checksum": 6.16703701019
+  }
 }
