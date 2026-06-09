@@ -21,7 +21,7 @@ li-physics-runtime = { path = "../lic/packages/li-physics-runtime" }
 li-world = { path = "../lic/packages/li-world" }
 li-assets = { path = "../lic/packages/li-assets" }
 li-render = { path = "../lic/packages/li-render" }
-lig = { path = "../lic/packages/lig" }
+li-gpu = { path = "../lic/packages/li-gpu" }
 
 [[bin]]
 name = "li-studio-demo"

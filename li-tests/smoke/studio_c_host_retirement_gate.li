@@ -1,5 +1,5 @@
 import studio
-import lig.present
+import ligpu.present
 
 # WP-UX-14b — Li product path (studio_vertical_demo_frame + wgpu honesty) without C present hosts.
 def studio_vertical_demo_profile_ok(profile_id: int, frame_id: int, base_exit: int) -> int raises IO
