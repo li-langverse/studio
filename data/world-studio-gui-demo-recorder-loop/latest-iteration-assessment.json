@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-09T04:30:00Z",
+  "timestamp": "2026-06-09T05:30:00Z",
   "agent": "world_studio_builder",
   "branch": "cursor/world-studio-gui-demo-recorder",
   "todo": "wrec-w12-lic-phase2-merge",
@@ -49,6 +49,12 @@
       "note": "Agent send step runs; chrome state in compose digest only"
     }
   ],
+  "lic_phase2": {
+    "pr": "https://github.com/li-langverse/lic/pull/869",
+    "merge_commit": "739172c4f99eef834036474bc8ab197ac3627a18",
+    "merged_at": "2026-06-05T08:07:44Z",
+    "branch": "cursor/world-studio-gui-demo-recorder-phase2"
+  },
   "north_star_fit": {
     "domain": "native Li Studio GUI control + deterministic demo replay",
     "ph_ids": ["PH-UX", "WP-AG-03", "WP-UX-09"]
@@ -56,16 +62,10 @@
   "verification_this_iteration": [
     "lic PR #869 merged to main (phase2 runtime + MCP ui tools)",
     "Full completion gate passes including phase2-merge-gate",
-    "BOM stripped from gate scripts; resolve_lic prefers build/ over build-wsl"
+    "BOM stripped from gate scripts; phase2-merge-gate checks github/main when homelab origin lags"
   ],
   "pr": "https://github.com/li-langverse/studio/pull/69",
   "lic_pr": "https://github.com/li-langverse/lic/pull/869",
-  "lic_phase2_merge": {
-    "branch": "cursor/world-studio-gui-demo-recorder-phase2",
-    "status": "merged",
-    "pr": 869,
-    "merged_at": "2026-06-05T08:07:44Z"
-  },
   "deferred": [
     "Strict visual gate (unique_colors >= 48, frame delta) — needs compose/paint capture instead of vertical-capture path"
   ]

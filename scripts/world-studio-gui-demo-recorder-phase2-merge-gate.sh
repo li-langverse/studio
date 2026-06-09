@@ -13,17 +13,23 @@ if [[ ! -d "$LIC_REMOTE/.git" ]]; then
 fi
 
 git -C "$LIC_REMOTE" fetch origin main "$PHASE2_BRANCH" --prune 2>/dev/null || git -C "$LIC_REMOTE" fetch origin --prune
+git -C "$LIC_REMOTE" fetch github main "$PHASE2_BRANCH" --prune 2>/dev/null || true
 
 tip="$(git -C "$LIC_REMOTE" rev-parse "origin/${PHASE2_BRANCH}" 2>/dev/null || true)"
-main="$(git -C "$LIC_REMOTE" rev-parse origin/main 2>/dev/null || true)"
-if [[ -z "$tip" || -z "$main" ]]; then
-  echo "phase2-merge-gate: cannot resolve origin/${PHASE2_BRANCH} or origin/main" >&2
-  exit 1
+if [[ -z "$tip" ]]; then
+  tip="$(git -C "$LIC_REMOTE" rev-parse "github/${PHASE2_BRANCH}" 2>/dev/null || true)"
 fi
-
-if git -C "$LIC_REMOTE" merge-base --is-ancestor "$tip" "$main"; then
-  echo "phase2-merge-gate: OK (${PHASE2_BRANCH} merged into main)"
-  exit 0
+for main_ref in origin/main github/main; do
+  main="$(git -C "$LIC_REMOTE" rev-parse "$main_ref" 2>/dev/null || true)"
+  [[ -z "$main" || -z "$tip" ]] && continue
+  if git -C "$LIC_REMOTE" merge-base --is-ancestor "$tip" "$main"; then
+    echo "phase2-merge-gate: OK (${PHASE2_BRANCH} merged into ${main_ref#*/})"
+    exit 0
+  fi
+done
+if [[ -z "$tip" ]]; then
+  echo "phase2-merge-gate: cannot resolve ${PHASE2_BRANCH}" >&2
+  exit 1
 fi
 
 if command -v gh >/dev/null 2>&1; then
