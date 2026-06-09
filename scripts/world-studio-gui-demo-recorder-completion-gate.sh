@@ -35,6 +35,8 @@ fi
 bash "$ROOT/scripts/world-studio-gui-demo-recorder-gates.sh"
 
 if [[ -x "$ROOT/scripts/studio-demo-visual-gate.sh" ]]; then
+  export STUDIO_DEMO_STRICT_VISUAL="${STUDIO_DEMO_STRICT_VISUAL:-1}"
+  export STUDIO_DEMO_MIN_FRAME_DELTA="${STUDIO_DEMO_MIN_FRAME_DELTA:-1}"
   for scenario in workspace-tour command-palette agent-invoke; do
     frames="$OUT_DIR/../$scenario/frames"
     if [[ -d "$frames" ]]; then

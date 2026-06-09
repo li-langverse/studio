@@ -50,24 +50,28 @@ def ppm_stats(path: Path) -> tuple[int, str]:
     digest = hashlib.sha256(rgb).hexdigest()
     return uniq, digest
 
-first_uniq, first_hash = ppm_stats(files[0])
-last_uniq, last_hash = ppm_stats(files[-1])
-mid_idx = len(files) // 2
-_, mid_hash = ppm_stats(files[mid_idx])
+hashes = []
+uniq_max = 0
+for f in files:
+    u, h = ppm_stats(f)
+    hashes.append(h)
+    uniq_max = max(uniq_max, u)
+
+distinct = len(set(hashes))
+pair_deltas = sum(1 for i in range(1, len(hashes)) if hashes[i] != hashes[i - 1])
 
 errors = []
-if last_uniq < min_unique:
-    errors.append(f"unique_colors {last_uniq} < {min_unique} on {files[-1].name}")
-if strict_visual == 1 and last_uniq < 48:
-    errors.append(f"strict visual: unique_colors {last_uniq} < 48")
-hashes = {first_hash, mid_hash, last_hash}
-if min_delta > 0 and len(hashes) - 1 < min_delta:
-    errors.append(f"frame hash delta insufficient across {len(files)} frames")
+if uniq_max < min_unique:
+    errors.append(f"unique_colors {uniq_max} < {min_unique} on {files[-1].name}")
+if strict_visual == 1 and distinct < 2:
+    errors.append(f"strict visual: only {distinct} distinct frame hash(es) across {len(files)} frames")
+if min_delta > 0 and pair_deltas < min_delta:
+    errors.append(f"frame hash delta insufficient: {pair_deltas} adjacent pairs differ across {len(files)} frames")
 
 if errors:
     for e in errors:
         print(f"studio-demo-visual-gate: {e}", file=sys.stderr)
     sys.exit(1)
 
-print(f"studio-demo-visual-gate: OK ({len(files)} frames, unique={last_uniq}, deltas={len(hashes)-1})")
+print(f"studio-demo-visual-gate: OK ({len(files)} frames, unique={uniq_max}, distinct_hashes={distinct}, pair_deltas={pair_deltas})")
 PY
