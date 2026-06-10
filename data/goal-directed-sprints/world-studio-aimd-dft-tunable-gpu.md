@@ -17,11 +17,11 @@ Post-W7 pilot: make **DFT eval frequency tunable** (dev `dft_stride=50` → 101 
 
 | WP | Deliverable | Status |
 |----|-------------|--------|
-| W8a | `dft_stride` via MCP/scenario JSON/env (`REAL_AIMD=1` → 1) | in_progress |
-| W8b | Batch honors stride=1 → `dft_calls=5000` | in_progress |
+| W8a | `dft_stride` via MCP/scenario JSON/env (`REAL_AIMD=1` → 1) | done |
+| W8b | Batch honors stride=1 → `dft_calls=5000` | done |
 | W8c | Engine GPU hot path `gpu_path=1` | pending |
-| W8d | Hero demo trace documents stride + dft_calls | in_progress |
-| W8e | Completion gate (fast 50 / optional slow 1) | in_progress |
+| W8d | Hero demo trace documents stride + dft_calls | done |
+| W8e | Completion gate (fast 50 / optional slow 1) | done |
 
 ## Progress gate
 

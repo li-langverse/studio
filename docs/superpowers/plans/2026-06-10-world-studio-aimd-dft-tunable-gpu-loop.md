@@ -4,19 +4,19 @@ overview: Post-W7 sprint — tunable DFT eval frequency (dev stride 50 vs produc
 todos:
   - id: aimd-w8a-stride-config
     content: "W8a — dft_stride tunable via MCP/scenario JSON/env (default 50 dev, 1 for real)"
-    status: in_progress
+    status: completed
   - id: aimd-w8b-batch-stride1
     content: "W8b — Batch runner honors stride=1 → 5000 DFT calls when configured"
-    status: in_progress
+    status: completed
   - id: aimd-w8c-gpu-hot-path
     content: "W8c — GPU hot path on engine (gpu_path=1, chem_dft_gpu_path_available)"
     status: pending
   - id: aimd-w8d-hero-trace
     content: "W8d — Hero demo + trace manifest documents stride + dft_calls honestly"
-    status: in_progress
+    status: completed
   - id: aimd-w8e-completion-gate
     content: "W8e — Completion gate (stride=50 fast vs optional REAL_AIMD=1 slow 5000-DFT)"
-    status: in_progress
+    status: completed
 isProject: false
 ---
 
@@ -73,11 +73,11 @@ batch-result.json + latest-demo-trace.json (dft_stride, dft_calls)
 
 | WP | Scope | Status |
 |----|-------|--------|
-| **W8a** | MCP + scenario JSON + env stride | in_progress |
-| **W8b** | Batch stride=1 → 5000 DFT calls | in_progress |
+| **W8a** | MCP + scenario JSON + env stride | done |
+| **W8b** | Batch stride=1 → 5000 DFT calls | done |
 | **W8c** | Engine `gpu_path=1` | pending |
-| **W8d** | Hero trace honesty | in_progress |
-| **W8e** | Completion gate | in_progress |
+| **W8d** | Hero trace honesty | done |
+| **W8e** | Completion gate | done |
 
 ---
 

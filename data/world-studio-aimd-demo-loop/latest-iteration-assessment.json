@@ -1,29 +1,31 @@
 {
   "pass": true,
-  "verified_at": "2026-06-10T04:45:00Z",
-  "agent_run": "world_studio_builder-1781063913691",
-  "todo_id": "aimd-w7-gpu-pilot",
-  "tier": "pilot",
+  "verified_at": "2026-06-10T12:00:00Z",
+  "agent_run": "world_studio_builder-aimd-w8",
+  "todo_id": "aimd-w8e-completion-gate",
+  "tier": "dev_stride_50",
   "sprint": "world-studio-aimd-dft-tunable-gpu",
   "branch": "cursor/world-studio-aimd-dft-tunable-gpu",
-  "notes": "W8 kickoff: tunable dft_stride via MCP/scenario JSON/env (default 50 dev, REAL_AIMD=1 → stride 1); batch trace uses honest batch.dft_calls from Li loop; W8c gpu_path=1 north star pending engine proof.",
+  "notes": "W8a–W8e complete: tunable dft_stride (MCP/scenario/env, REAL_AIMD=1→1); batch honest dft_calls (101@50, 128@stride1 smoke); hero trace documents stride+calls; fast completion gate green. W8c gpu_path=1 deferred — chem_dft_gpu_path_available=0 in agent workspace (LKIR/vendor path needs engine GPU node).",
   "wps_touched": [
-    "W7a",
-    "W7b",
-    "W7c",
+    "W8a",
+    "W8b",
+    "W8d",
+    "W8e",
     "WP-ECHEM-09",
     "PH-SCI-GPU-16",
     "WP-AG-03"
   ],
   "smokes_run": [
     "packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li",
+    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_stride_smoke.li",
     "packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li",
     "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li",
     "packages/li-chem/li-tests/smoke/chem_gpu_dft_energy.li"
   ],
   "gates": {
     "progress": "scripts/world-studio-aimd-demo-gates.sh",
-    "completion": "scripts/world-studio-aimd-gpu-pilot-completion-gate.sh",
+    "completion": "scripts/world-studio-aimd-dft-tunable-gpu-completion-gate.sh",
     "hero_demo": "scripts/studio-aimd-hero-demo.sh"
   },
   "demo_script": "data/demo-scripts/aimd-hero.demo.json",
@@ -35,19 +37,19 @@
   "dft_calls": 101,
   "gpu_path": 0,
   "cpu_fallback": true,
-  "science_gpu_blocker": "chem_dft_gpu_path_available=0 in agent workspace; science_gpu compile_open_ok green (20/20) but runtime LKIR/vendor path not active",
+  "science_gpu_blocker": "chem_dft_gpu_path_available=0 in agent workspace; science_gpu compile_open_ok green (20/20) but runtime LKIR/vendor path not active — engine K8s worker required for W8c gpu_path=1",
   "steps": 5000,
   "checksum": 2e-06,
   "hero_scenario": "data/world-studio-aimd-demo-loop/hero-scenario.json",
   "native_only": true,
   "north_star_fit": {
-    "domain": "scientific computing / electrochemistry AIMD GPU pilot",
+    "domain": "scientific computing / electrochemistry AIMD tunable DFT stride",
     "ph_ids": [
       "PH-SCI-GPU-16",
       "WP-ECHEM-09",
       "WP-AG-03"
     ],
-    "proof": "lic check smokes + science_gpu compile_open_ok (20/20); real DFT kernel every N=50 MD steps",
+    "proof": "lic check smokes + world-studio-aimd-dft-tunable-gpu-completion-gate.sh fast path (dft_stride=50, dft_calls=101)",
     "native_only": true
   }
 }
