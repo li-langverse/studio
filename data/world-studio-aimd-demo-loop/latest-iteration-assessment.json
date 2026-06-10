@@ -4,7 +4,9 @@
   "agent_run": "world_studio_builder-1781063913691",
   "todo_id": "aimd-w7-gpu-pilot",
   "tier": "pilot",
-  "notes": "W7 GPU pilot (world_studio_builder-1781063913691): W7a ph-sci-gpu-chem-gates pilot subset (science_gpu 20/20 compile_open_ok); W7b echem_aimd_batch_run calls chem_dft_energy_kernel_hartree every dft_stride=50 steps (101 DFT calls @ 5000 MD steps); W7c hero demo exit 0. Honest CPU fallback: gpu_path=0, trace tier mvp_stub — chem_dft_gpu_path_available()=0 in CI workspace (no vendor GPU/LKIR hot path). science_gpu_blocker documented; pilot gate proves compile_open_ok path when engine GPU available.",
+  "sprint": "world-studio-aimd-dft-tunable-gpu",
+  "branch": "cursor/world-studio-aimd-dft-tunable-gpu",
+  "notes": "W8 kickoff: tunable dft_stride via MCP/scenario JSON/env (default 50 dev, REAL_AIMD=1 → stride 1); batch trace uses honest batch.dft_calls from Li loop; W8c gpu_path=1 north star pending engine proof.",
   "wps_touched": [
     "W7a",
     "W7b",

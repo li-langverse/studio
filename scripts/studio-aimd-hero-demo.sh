@@ -17,6 +17,8 @@ AIMD_VIZ_SMOKE="packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li"
 [[ -f "$DEMO_JSON" ]] || { echo "studio-aimd-hero-demo: missing $DEMO_JSON" >&2; exit 1; }
 [[ -f "$SCENARIO" ]] || { echo "studio-aimd-hero-demo: missing $SCENARIO" >&2; exit 1; }
 mkdir -p "$OUT_DIR"
+# shellcheck source=_studio-aimd-env.sh
+source "$ROOT/scripts/_studio-aimd-env.sh"
 
 LIC_BIN=""
 LIC_BIN="$(resolve_lic 2>/dev/null || true)"
@@ -32,16 +34,7 @@ done
 (cd "$LIC_ROOT" && "$LIC_BIN" check "$AIMD_VIZ_SMOKE") \
   || { echo "studio-aimd-hero-demo: studio_aimd_hero_e2e smoke failed" >&2; exit 3; }
 
-STEPS="$(python3 - "$SCENARIO" <<'PY'
-import json, sys
-from pathlib import Path
-data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-print(int(data.get("steps", 5000)))
-PY
-)"
-export STUDIO_AIMD_BATCH_STEPS="$STEPS"
-export STUDIO_AIMD_PILOT="${STUDIO_AIMD_PILOT:-1}"
-export STUDIO_AIMD_DFT_STRIDE="${STUDIO_AIMD_DFT_STRIDE:-50}"
+studio_aimd_export_batch_env "$SCENARIO"
 
 if [[ ! -x "$HERO_RUNNER" ]]; then
   (cd "$LIC_ROOT" && "$LIC_BIN" build --allow-open-vc --no-lean-verify "$HERO_RUNNER_SRC" -o "$HERO_RUNNER")

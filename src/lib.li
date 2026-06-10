@@ -310,6 +310,23 @@ extern proc li_rt_studio_aimd_scenario_configure(steps: int, temperature_k: int,
   ensures result <= 1
   decreases steps
 
+extern proc li_rt_studio_aimd_scenario_set_dft_stride(dft_stride: int) -> int
+  requires dft_stride >= 1
+  ensures result == 1
+  decreases dft_stride
+
+extern proc li_rt_studio_aimd_scenario_get_dft_stride() -> int
+  requires true
+  ensures result >= 1
+  ensures result <= 1000
+  decreases 0
+
+extern proc li_rt_studio_aimd_dft_stride_from_env() -> int
+  requires true
+  ensures result >= 1
+  ensures result <= 1000
+  decreases 0
+
 extern proc li_rt_studio_aimd_scenario_reset() -> int
   requires true
   ensures result == 0
@@ -320,7 +337,7 @@ extern proc li_rt_studio_aimd_batch_steps_from_env() -> int
   ensures result >= 64
   decreases 0
 
-extern proc li_rt_studio_aimd_batch_write_json(path: str, steps: int, ok: int, checksum: float, energy_drift: float, gpu_path: int) -> int raises IO, Alloc
+extern proc li_rt_studio_aimd_batch_write_json(path: str, steps: int, ok: int, checksum: float, energy_drift: float, gpu_path: int, dft_stride: int, dft_calls: int) -> int raises IO, Alloc
   requires true
   ensures result >= 0
   ensures result <= 1
@@ -2988,6 +3005,7 @@ type StudioAimdScenario = object
   public temperature_k: int
   public potential_mv: int
   public algo_id: int
+  public dft_stride: int
 
 def studio_aimd_algo_echem_interface() -> int
   requires true
@@ -3010,6 +3028,32 @@ def studio_aimd_default_steps() -> int
 =
   return 5000
 
+def studio_aimd_default_dft_stride() -> int
+  requires true
+  ensures result == 50
+  decreases 0
+=
+  return 50
+
+def studio_aimd_real_dft_stride() -> int
+  requires true
+  ensures result == 1
+  decreases 0
+=
+  return 1
+
+def studio_aimd_dft_stride_valid(dft_stride: int) -> int
+  requires true
+  ensures result >= 0
+  ensures result <= 1
+  decreases dft_stride
+=
+  if dft_stride < 1:
+    return 0
+  if dft_stride > 1000:
+    return 0
+  return 1
+
 def studio_aimd_scenario_none() -> StudioAimdScenario
   requires true
   ensures result.configured == 0
@@ -3022,6 +3066,7 @@ def studio_aimd_scenario_none() -> StudioAimdScenario
   out.temperature_k = 0
   out.potential_mv = 0
   out.algo_id = 0
+  out.dft_stride = 0
   return out
 
 def studio_aimd_scenario_default() -> StudioAimdScenario
@@ -3036,6 +3081,7 @@ def studio_aimd_scenario_default() -> StudioAimdScenario
   out.temperature_k = studio_aimd_default_temperature_k()
   out.potential_mv = 0
   out.algo_id = studio_aimd_algo_echem_interface()
+  out.dft_stride = studio_aimd_default_dft_stride()
   return out
 
 def studio_aimd_scenario_valid(steps: int, temperature_k: int, algo_id: int) -> int
@@ -3065,8 +3111,25 @@ def studio_aimd_scenario_configure(steps: int, temperature_k: int, potential_mv:
   ensures result.algo_id == algo_id
   decreases steps
 =
+  return studio_aimd_scenario_configure_stride(steps, temperature_k, potential_mv, algo_id, studio_aimd_default_dft_stride())
+
+def studio_aimd_scenario_configure_stride(steps: int, temperature_k: int, potential_mv: int, algo_id: int, dft_stride: int) -> StudioAimdScenario raises IO
+  requires steps >= 1
+  requires temperature_k >= 1
+  requires algo_id >= 1
+  requires dft_stride >= 1
+  ensures result.steps == steps
+  ensures result.temperature_k == temperature_k
+  ensures result.algo_id == algo_id
+  ensures result.dft_stride == dft_stride
+  decreases steps
+=
   var out: StudioAimdScenario = studio_aimd_scenario_none()
   if studio_aimd_scenario_valid(steps, temperature_k, algo_id) != 1:
+    return out
+  if studio_aimd_dft_stride_valid(dft_stride) != 1:
+    return out
+  if li_rt_studio_aimd_scenario_set_dft_stride(dft_stride) != 1:
     return out
   if li_rt_studio_aimd_scenario_configure(steps, temperature_k, potential_mv, algo_id) != 1:
     return out
@@ -3075,6 +3138,7 @@ def studio_aimd_scenario_configure(steps: int, temperature_k: int, potential_mv:
   out.temperature_k = temperature_k
   out.potential_mv = potential_mv
   out.algo_id = algo_id
+  out.dft_stride = li_rt_studio_aimd_scenario_get_dft_stride()
   return out
 
 def studio_aimd_scenario_get() -> StudioAimdScenario raises IO
@@ -3091,6 +3155,7 @@ def studio_aimd_scenario_get() -> StudioAimdScenario raises IO
   out.temperature_k = li_rt_studio_aimd_scenario_temperature_k()
   out.potential_mv = li_rt_studio_aimd_scenario_potential_mv()
   out.algo_id = li_rt_studio_aimd_scenario_algo_id()
+  out.dft_stride = li_rt_studio_aimd_scenario_get_dft_stride()
   return out
 
 def studio_aimd_scenario_checksum(scenario: StudioAimdScenario) -> int
@@ -3105,6 +3170,7 @@ def studio_aimd_scenario_checksum(scenario: StudioAimdScenario) -> int
   mix = mix + scenario.temperature_k * 17
   mix = mix + scenario.algo_id * 31
   mix = mix + scenario.potential_mv
+  mix = mix + scenario.dft_stride * 7
   return mix
 
 def studio_aimd_batch_run(steps: int) -> AimdBatchResult
@@ -3127,7 +3193,7 @@ def studio_aimd_batch_write_json(path: str, batch: AimdBatchResult) -> int raise
   ensures result <= 1
   decreases batch.steps
 =
-  return li_rt_studio_aimd_batch_write_json(path, batch.steps, batch.ok, batch.checksum, batch.energy_drift, batch.gpu_path)
+  return li_rt_studio_aimd_batch_write_json(path, batch.steps, batch.ok, batch.checksum, batch.energy_drift, batch.gpu_path, batch.dft_stride, batch.dft_calls)
 
 def studio_aimd_final_tick_from_batch(batch: AimdBatchResult) -> int
   requires batch.ok >= 0
@@ -3381,9 +3447,19 @@ def studio_mcp_tool_dispatch_aimd_configure(steps: int, temperature_k: int, pote
   ensures result.tool_id == studio_mcp_aimd_configure_scenario()
   decreases steps
 =
+  return studio_mcp_tool_dispatch_aimd_configure_stride(steps, temperature_k, potential_mv, algo_id, studio_aimd_default_dft_stride())
+
+def studio_mcp_tool_dispatch_aimd_configure_stride(steps: int, temperature_k: int, potential_mv: int, algo_id: int, dft_stride: int) -> StudioAgentToolRequest raises IO
+  requires steps >= 1
+  requires temperature_k >= 1
+  requires algo_id >= 1
+  requires dft_stride >= 1
+  ensures result.tool_id == studio_mcp_aimd_configure_scenario()
+  decreases steps
+=
   var out: StudioAgentToolRequest = studio_agent_tool_request_none()
   out.tool_id = studio_mcp_aimd_configure_scenario()
-  var scen: StudioAimdScenario = studio_aimd_scenario_configure(steps, temperature_k, potential_mv, algo_id)
+  var scen: StudioAimdScenario = studio_aimd_scenario_configure_stride(steps, temperature_k, potential_mv, algo_id, dft_stride)
   if scen.configured != 1:
     out.status = studio_mcp_tool_status_failed()
     out.result_code = studio_mcp_tool_result_err_io()

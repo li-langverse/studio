@@ -20,12 +20,16 @@ sync_studio_to_lic() {
 }
 
 PLAN="$STUDIO_ROOT/docs/superpowers/plans/2026-06-06-world-studio-aimd-demo-loop.md"
+PLAN_W8="$STUDIO_ROOT/docs/superpowers/plans/2026-06-10-world-studio-aimd-dft-tunable-gpu-loop.md"
+GOAL_W8="$STUDIO_ROOT/data/goal-directed-sprints/world-studio-aimd-dft-tunable-gpu.md"
 GOAL_PILOT="$STUDIO_ROOT/data/goal-directed-sprints/world-studio-aimd-gpu-pilot.md"
 GOAL="$STUDIO_ROOT/data/goal-directed-sprints/world-studio-aimd-demo.md"
 HERO="$STUDIO_ROOT/data/world-studio-aimd-demo-loop/hero-scenario.json"
 DEMO_JSON="$STUDIO_ROOT/data/demo-scripts/aimd-hero.demo.json"
 
 [[ -f "$PLAN" ]] || fail "missing plan"
+[[ -f "$PLAN_W8" ]] || warn "missing W8 plan: $PLAN_W8"
+[[ -f "$GOAL_W8" ]] || warn "missing W8 goal: $GOAL_W8"
 [[ -f "$GOAL" ]] || fail "missing goal"
 [[ -f "$HERO" ]] || fail "missing hero scenario"
 [[ -f "$DEMO_JSON" ]] || fail "missing aimd-hero.demo.json (W5)"
@@ -50,6 +54,11 @@ run_smoke() {
     return 0
   fi
   if [[ "$path" == "$LIC_ROOT/packages/"* ]]; then
+    rel="${path#"$LIC_ROOT/"}"
+    (cd "$LIC_ROOT" && "$LIC_BIN" check "$rel") || fail "lic check $rel"
+    return 0
+  fi
+  if [[ "$path" == "$LIC_ROOT/"* ]]; then
     rel="${path#"$LIC_ROOT/"}"
     (cd "$LIC_ROOT" && "$LIC_BIN" check "$rel") || fail "lic check $rel"
     return 0
@@ -91,6 +100,14 @@ if [[ -n "$LIC_BIN" && -f "$LIC_ROOT/packages/li-sim-scientific/li-tests/smoke/e
   ok "W7a pilot batch trace smoke green"
 fi
 
+# W8b stride=1 smoke (128 steps — fast path; REAL 5000-DFT is optional completion)
+if [[ -n "$LIC_BIN" && -f "$LIC_ROOT/packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_stride_smoke.li" ]]; then
+  (cd "$LIC_ROOT" && "$LIC_BIN" check packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_stride_smoke.li) \
+    || fail "W8b echem_aimd_batch_stride_smoke (dft_stride=1)"
+  ok "W8b stride=1 batch smoke green"
+fi
+
 [[ -f "$GOAL_PILOT" ]] || warn "missing W7 pilot goal: $GOAL_PILOT"
+[[ -f "$GOAL_W8" ]] || warn "missing W8 goal: $GOAL_W8"
 
 ok "world-studio-aimd-demo progress gates finished"

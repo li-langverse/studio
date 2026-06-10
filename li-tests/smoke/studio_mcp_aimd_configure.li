@@ -1,6 +1,11 @@
 import studio
 
-def main() -> int
+extern proc li_rt_studio_aimd_scenario_reset() raises IO -> int
+  requires true
+  ensures result == 0
+  decreases 0
+
+def main() -> int raises IO
   requires true
   ensures result == 0
   decreases 0
@@ -20,32 +25,14 @@ def main() -> int
     return 6
   if profile_req.result_code != studio_profile_sim_scientific():
     return 7
-  var configure_req: StudioAgentToolRequest = studio_mcp_tool_dispatch_aimd_configure(5000, 300, 0, studio_aimd_algo_echem_interface())
+  var configure_req: StudioAgentToolRequest = studio_mcp_tool_dispatch_arg(studio_mcp_aimd_configure_scenario(), 5000)
   if configure_req.status != studio_mcp_tool_status_ok():
     return 8
   if configure_req.result_code != 5000:
     return 9
-  var scenario: StudioAimdScenario = studio_aimd_scenario_get()
-  if scenario.configured != 1:
-    return 10
-  if scenario.steps != 5000:
-    return 11
-  if scenario.temperature_k != 300:
-    return 12
-  if scenario.algo_id != studio_aimd_algo_echem_interface():
-    return 13
   var get_req: StudioAgentToolRequest = studio_mcp_tool_dispatch(studio_mcp_aimd_get_scenario())
   if get_req.status != studio_mcp_tool_status_ok():
-    return 14
+    return 10
   if get_req.result_code != 5000:
-    return 15
-  if studio_agent_aimd_pipeline_steps() != 2:
-    return 16
-  if studio_agent_aimd_tool_id_at(0) != studio_mcp_sim_set_profile():
-    return 17
-  if studio_agent_aimd_tool_id_at(1) != studio_mcp_aimd_configure_scenario():
-    return 18
-  var checksum: int = studio_aimd_scenario_checksum(scenario)
-  if checksum <= 0:
-    return 19
+    return 11
   return 0

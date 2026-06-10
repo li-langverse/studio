@@ -11,7 +11,7 @@ extern proc li_rt_studio_aimd_batch_steps_from_env() -> int
   ensures result >= 64
   decreases 0
 
-extern proc li_rt_studio_aimd_batch_write_json(path: str, steps: int, ok: int, checksum: float, energy_drift: float, gpu_path: int) -> int raises IO
+extern proc li_rt_studio_aimd_batch_write_json(path: str, steps: int, ok: int, checksum: float, energy_drift: float, gpu_path: int, dft_stride: int, dft_calls: int) -> int raises IO
   requires true
   ensures result >= 0
   ensures result <= 1
@@ -34,7 +34,7 @@ def main() -> int raises IO, Alloc
     return 4
   if batch.checksum_ok != 1:
     return 5
-  if li_rt_studio_aimd_batch_write_json("build/aimd-demo/out/batch-result.json", batch.steps, batch.ok, batch.checksum, batch.energy_drift, batch.gpu_path) != 1:
+  if li_rt_studio_aimd_batch_write_json("build/aimd-demo/out/batch-result.json", batch.steps, batch.ok, batch.checksum, batch.energy_drift, batch.gpu_path, batch.dft_stride, batch.dft_calls) != 1:
     return 6
   if studio_aimd_final_viz_ok(batch, "build/aimd-demo/out/final-frame.ppm", 1280, 720) != 1:
     return 7
