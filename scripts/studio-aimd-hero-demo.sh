@@ -22,8 +22,7 @@ LIC_BIN=""
 LIC_BIN="$(resolve_lic 2>/dev/null || true)"
 [[ -n "$LIC_BIN" && -x "$LIC_BIN" ]] || { echo "studio-aimd-hero-demo: lic not found" >&2; exit 2; }
 
-# Sync studio sources into lic package tree for smokes.
-cp -f "$STUDIO_ROOT/src/lib.li" "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null || true
+# Sync studio smokes into lic package tree (lib.li stays on lic — full studio lib breaks lig imports).
 for smoke in studio_aimd_hero_e2e.li studio_aimd_hero_runner.li studio_aimd_final_viz.li; do
   if [[ -f "$STUDIO_ROOT/li-tests/smoke/$smoke" ]]; then
     cp -f "$STUDIO_ROOT/li-tests/smoke/$smoke" "$LIC_ROOT/packages/li-studio/li-tests/smoke/$smoke" 2>/dev/null || true
@@ -41,10 +40,11 @@ print(int(data.get("steps", 5000)))
 PY
 )"
 export STUDIO_AIMD_BATCH_STEPS="$STEPS"
+export STUDIO_AIMD_PILOT="${STUDIO_AIMD_PILOT:-1}"
+export STUDIO_AIMD_DFT_STRIDE="${STUDIO_AIMD_DFT_STRIDE:-50}"
 
 if [[ ! -x "$HERO_RUNNER" ]]; then
-  (cd "$LIC_ROOT" && studio_lic_build "$HERO_RUNNER_SRC" "$HERO_RUNNER" \
-    "$LIC_BIN" build --allow-open-vc --no-lean-verify "$HERO_RUNNER_SRC" -o "$HERO_RUNNER")
+  (cd "$LIC_ROOT" && "$LIC_BIN" build --allow-open-vc --no-lean-verify "$HERO_RUNNER_SRC" -o "$HERO_RUNNER")
   chmod +x "$HERO_RUNNER" 2>/dev/null || true
 fi
 
@@ -77,6 +77,8 @@ trace = {
     "checksum": meta.get("checksum"),
     "gpu_path": meta.get("gpu_path", 0),
     "tier": meta.get("tier", "stub"),
+    "dft_stride": meta.get("dft_stride"),
+    "dft_calls": meta.get("dft_calls"),
     "energy_drift": meta.get("energy_drift"),
     "batch_result": str(batch_meta.relative_to(out_dir.parent.parent)) if batch_meta.is_file() else None,
     "final_frame": str(final.relative_to(out_dir.parent.parent)) if final.is_file() else None,

@@ -21,7 +21,7 @@ def main() -> int raises IO, Alloc
     return 5
   if batch.steps != steps:
     return 6
-  if batch.checksum <= 0.0:
+  if batch.checksum_ok != 1:
     return 7
   var expect_gpu: int = echem_aimd_batch_gpu_path_select()
   if batch.gpu_path != expect_gpu:

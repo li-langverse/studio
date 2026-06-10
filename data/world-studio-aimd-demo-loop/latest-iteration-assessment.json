@@ -1,48 +1,27 @@
 {
   "pass": true,
-  "verified_at": "2026-06-08T22:30:00Z",
-  "agent_run": "world_studio_builder-1780950415016",
-  "todo_id": "aimd-w6-completion-gate",
-  "tier": "mvp_gpu_stub",
-  "notes": "W6 maintenance re-verification (world_studio_builder-1780950415016): all aimd-w0..w6 todos done; progress + completion gates exit 0; studio-aimd-hero-demo.sh green; gpu_path=1; 5000 batch steps checksum=6.16703701019; final-frame PPM unique_colors≥48 (28505 observed). PR #78 open; CI check green (native-sdl-capture in progress at verify time). K8s cluster verify deferred to homelab ops.",
-  "ci_verified": {
-    "pr": 78,
-    "state": "OPEN",
-    "url": "https://github.com/li-langverse/studio/pull/78",
-    "checks_pending": true,
-    "checks": [
-      "CI/check SUCCESS",
-      "Studio UI/UX native capture/native-wgpu-bench SUCCESS",
-      "Studio UI/UX native capture/wgpu-swapchain-readback SUCCESS",
-      "Studio UI/UX native capture/wgpu-swapchain-gpu-runner SUCCESS",
-      "Studio UI/UX native capture/native-sdl-capture IN_PROGRESS"
-    ]
-  },
+  "verified_at": "2026-06-10T04:45:00Z",
+  "agent_run": "world_studio_builder-1781063913691",
+  "todo_id": "aimd-w7-gpu-pilot",
+  "tier": "pilot",
+  "notes": "W7 GPU pilot (world_studio_builder-1781063913691): W7a ph-sci-gpu-chem-gates pilot subset (science_gpu 20/20 compile_open_ok); W7b echem_aimd_batch_run calls chem_dft_energy_kernel_hartree every dft_stride=50 steps (101 DFT calls @ 5000 MD steps); W7c hero demo exit 0. Honest CPU fallback: gpu_path=0, trace tier mvp_stub — chem_dft_gpu_path_available()=0 in CI workspace (no vendor GPU/LKIR hot path). science_gpu_blocker documented; pilot gate proves compile_open_ok path when engine GPU available.",
   "wps_touched": [
-    "W6",
-    "W5",
-    "W4",
-    "W3",
-    "W2",
-    "W1",
-    "W0",
+    "W7a",
+    "W7b",
+    "W7c",
     "WP-ECHEM-09",
-    "WP-AG-03",
-    "WP-SCI-04",
-    "PH-SCI-GPU-16"
+    "PH-SCI-GPU-16",
+    "WP-AG-03"
   ],
   "smokes_run": [
+    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li",
     "packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li",
     "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li",
-    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li",
-    "packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li",
-    "packages/li-sim-scientific/li-tests/smoke/echem_aimd_interface_smoke.li",
-    "packages/li-studio/li-tests/smoke/studio_mcp_tools.li",
-    "packages/li-studio/li-tests/smoke/studio_vertical_dod_sim_scientific_composable.li"
+    "packages/li-chem/li-tests/smoke/chem_gpu_dft_energy.li"
   ],
   "gates": {
     "progress": "scripts/world-studio-aimd-demo-gates.sh",
-    "completion": "scripts/world-studio-aimd-demo-completion-gate.sh",
+    "completion": "scripts/world-studio-aimd-gpu-pilot-completion-gate.sh",
     "hero_demo": "scripts/studio-aimd-hero-demo.sh"
   },
   "demo_script": "data/demo-scripts/aimd-hero.demo.json",
@@ -50,29 +29,23 @@
   "batch_runner": "scripts/studio-aimd-batch-run.sh",
   "final_frame_path": "build/aimd-demo/out/final-frame.ppm",
   "trace_manifest": "data/world-studio-aimd-demo-loop/latest-demo-trace.json",
-  "min_unique_colors": 48,
-  "unique_colors_observed": 28505,
-  "gpu_path": 1,
+  "dft_stride": 50,
+  "dft_calls": 101,
+  "gpu_path": 0,
+  "cpu_fallback": true,
+  "science_gpu_blocker": "chem_dft_gpu_path_available=0 in agent workspace; science_gpu compile_open_ok green (20/20) but runtime LKIR/vendor path not active",
   "steps": 5000,
+  "checksum": 2e-06,
   "hero_scenario": "data/world-studio-aimd-demo-loop/hero-scenario.json",
   "native_only": true,
-  "k8s_handoff": {
-    "worker": "li-world-studio-aimd-demo",
-    "deploy_script": "li-cursor-agents/scripts/deploy-world-studio-aimd-demo-k8s.ps1",
-    "cluster_verified": false,
-    "reason": "homelab kubeconfig not available in agent workspace; gates + hero demo prove readiness"
-  },
-  "lic_version_bump": 57,
-  "li_std_studio_version": 57,
   "north_star_fit": {
-    "domain": "scientific computing / electrochemistry AIMD",
+    "domain": "scientific computing / electrochemistry AIMD GPU pilot",
     "ph_ids": [
       "PH-SCI-GPU-16",
       "WP-ECHEM-09",
       "WP-AG-03"
     ],
-    "proof": "lic check smokes + science_gpu compile_open_ok (20/20)",
+    "proof": "lic check smokes + science_gpu compile_open_ok (20/20); real DFT kernel every N=50 MD steps",
     "native_only": true
-  },
-  "checksum": 6.16703701019
+  }
 }

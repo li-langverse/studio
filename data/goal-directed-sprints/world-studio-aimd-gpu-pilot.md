@@ -17,9 +17,9 @@ Advance from stub-tier AIMD (W0–W6 merged on `main`) to **GPU pilot**: real `c
 
 | WP | Deliverable | Status |
 |----|-------------|--------|
-| W7a | Pilot gate: `ph-sci-gpu-chem-gates.sh` subset + `gpu_path` trace on main | pending |
-| W7b | Batch loop calls real DFT kernel every N steps (not every step) | pending |
-| W7c | `latest-iteration-assessment.json` tier=`pilot`; hero demo re-run on GPU when available | pending |
+| W7a | Pilot gate: `ph-sci-gpu-chem-gates.sh` subset + `gpu_path` trace on main | done |
+| W7b | Batch loop calls real DFT kernel every N steps (not every step) | done |
+| W7c | `latest-iteration-assessment.json` tier=`pilot`; hero demo re-run on GPU when available | done |
 
 ## Progress gate
 

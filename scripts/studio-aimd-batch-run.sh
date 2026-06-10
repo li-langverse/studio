@@ -28,13 +28,14 @@ PY
 )"
 
 export STUDIO_AIMD_BATCH_STEPS="$STEPS"
+export STUDIO_AIMD_PILOT="${STUDIO_AIMD_PILOT:-1}"
+export STUDIO_AIMD_DFT_STRIDE="${STUDIO_AIMD_DFT_STRIDE:-50}"
 
 (cd "$LIC_ROOT" && "$LIC_BIN" check packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li) \
   || { echo "studio-aimd-batch-run: echem_aimd_batch_smoke failed" >&2; exit 2; }
 
 if [[ ! -x "$RUNNER" ]]; then
-  (cd "$LIC_ROOT" && studio_lic_build "$RUNNER_SRC" "$RUNNER" \
-    "$LIC_BIN" build --allow-open-vc --no-lean-verify "$RUNNER_SRC" -o "$RUNNER")
+  (cd "$LIC_ROOT" && "$LIC_BIN" build --allow-open-vc --no-lean-verify "$RUNNER_SRC" -o "$RUNNER")
   chmod +x "$RUNNER" 2>/dev/null || true
 fi
 
@@ -59,10 +60,16 @@ if int(data.get("ok", 0)) != 1:
 if float(data.get("checksum", 0)) <= 0:
     raise SystemExit("batch checksum invalid")
 tier = data.get("tier", "")
-if tier not in ("mvp_stub", "mvp_gpu_stub"):
-    raise SystemExit(f"batch tier must be mvp_stub or mvp_gpu_stub, got {tier!r}")
-if int(data.get("gpu_path", 0)) == 1 and tier != "mvp_gpu_stub":
-    raise SystemExit("gpu_path=1 requires tier mvp_gpu_stub")
+if tier not in ("mvp_stub", "mvp_gpu_stub", "pilot"):
+    raise SystemExit(f"batch tier must be mvp_stub, mvp_gpu_stub, or pilot, got {tier!r}")
+if int(data.get("gpu_path", 0)) == 1 and tier not in ("mvp_gpu_stub", "pilot"):
+    raise SystemExit("gpu_path=1 requires tier mvp_gpu_stub or pilot")
+dft_stride = int(data.get("dft_stride", 0))
+if tier == "pilot" and dft_stride < 1:
+    raise SystemExit("pilot tier requires dft_stride >= 1")
+dft_calls = int(data.get("dft_calls", 0))
+if tier == "pilot" and dft_calls < 1:
+    raise SystemExit("pilot tier requires dft_calls >= 1")
 print("studio-aimd-batch-run: OK", path)
 PY
 
@@ -80,8 +87,7 @@ CAPTURE_RUNNER="$STUDIO_ROOT/build/aimd-final-viz-capture"
 CAPTURE_SRC="$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz_capture.li"
 if [[ -f "$CAPTURE_SRC" ]]; then
   if [[ ! -x "$CAPTURE_RUNNER" ]]; then
-    (cd "$LIC_ROOT" && studio_lic_build "$CAPTURE_SRC" "$CAPTURE_RUNNER" \
-      "$LIC_BIN" build --allow-open-vc --no-lean-verify "$CAPTURE_SRC" -o "$CAPTURE_RUNNER")
+    (cd "$LIC_ROOT" && "$LIC_BIN" build --allow-open-vc --no-lean-verify "$CAPTURE_SRC" -o "$CAPTURE_RUNNER")
     chmod +x "$CAPTURE_RUNNER" 2>/dev/null || true
   fi
   mkdir -p "$OUT_DIR"

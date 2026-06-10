@@ -10,7 +10,17 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 warn() { echo "WARN: $*" >&2; }
 ok() { echo "OK: $*"; }
 
+sync_studio_to_lic() {
+  for smoke in studio_mcp_aimd_configure.li studio_aimd_hero_e2e.li studio_aimd_hero_runner.li \
+    studio_aimd_final_viz.li studio_aimd_final_viz_capture.li; do
+    if [[ -f "$STUDIO_ROOT/li-tests/smoke/$smoke" ]]; then
+      cp -f "$STUDIO_ROOT/li-tests/smoke/$smoke" "$LIC_ROOT/packages/li-studio/li-tests/smoke/$smoke" 2>/dev/null || true
+    fi
+  done
+}
+
 PLAN="$STUDIO_ROOT/docs/superpowers/plans/2026-06-06-world-studio-aimd-demo-loop.md"
+GOAL_PILOT="$STUDIO_ROOT/data/goal-directed-sprints/world-studio-aimd-gpu-pilot.md"
 GOAL="$STUDIO_ROOT/data/goal-directed-sprints/world-studio-aimd-demo.md"
 HERO="$STUDIO_ROOT/data/world-studio-aimd-demo-loop/hero-scenario.json"
 DEMO_JSON="$STUDIO_ROOT/data/demo-scripts/aimd-hero.demo.json"
@@ -26,6 +36,8 @@ resolve_lic_bin() {
 
 LIC_BIN=""
 if LIC_BIN="$(resolve_lic_bin)"; then ok "lic=$LIC_BIN"; else warn "lic not found — skipping smokes"; fi
+
+sync_studio_to_lic
 
 run_smoke() {
   local path="$1"
@@ -64,11 +76,21 @@ for s in \
   run_smoke "$s"
 done
 
-# W3 GPU path — chem DFT kernel + science_gpu PH-SCI-GPU-16
-if [[ -x "$LIC_ROOT/scripts/ph-sci-gpu-chem-gates.sh" ]]; then
-  bash "$LIC_ROOT/scripts/ph-sci-gpu-chem-gates.sh" || fail "ph-sci-gpu-chem-gates.sh failed (W3 GPU path)"
+# W3 / W7a GPU path — chem DFT kernel + science_gpu PH-SCI-GPU-16
+if [[ -f "$LIC_ROOT/scripts/ph-sci-gpu-chem-gates.sh" ]]; then
+  PH_SCI_GPU_PILOT_SUBSET="${PH_SCI_GPU_PILOT_SUBSET:-1}" \
+    bash "$LIC_ROOT/scripts/ph-sci-gpu-chem-gates.sh" || fail "ph-sci-gpu-chem-gates.sh failed (W3/W7a GPU path)"
 else
-  fail "ph-sci-gpu-chem-gates.sh not found — W3 GPU gate required"
+  fail "ph-sci-gpu-chem-gates.sh not found — W3/W7a GPU gate required"
 fi
+
+# W7a pilot trace — gpu_path must match selector (honest CPU fallback when science_gpu absent)
+if [[ -n "$LIC_BIN" && -f "$LIC_ROOT/packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li" ]]; then
+  (cd "$LIC_ROOT" && "$LIC_BIN" check packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li) \
+    || fail "W7a echem_aimd_batch_smoke (gpu_path + dft_stride)"
+  ok "W7a pilot batch trace smoke green"
+fi
+
+[[ -f "$GOAL_PILOT" ]] || warn "missing W7 pilot goal: $GOAL_PILOT"
 
 ok "world-studio-aimd-demo progress gates finished"
