@@ -39,6 +39,8 @@ import sys
 steps = int(sys.argv[1])
 stride = max(1, int(sys.argv[2]))
 calls = sum(1 for md_step in range(steps) if md_step % stride == 0)
+if stride > 1 and steps > 0 and steps % stride == 0:
+    calls += 1
 print(calls)
 PY
 }
