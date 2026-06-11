@@ -86,7 +86,10 @@ fi
 
 CAPTURE_RUNNER="$STUDIO_ROOT/build/aimd-final-viz-capture"
 CAPTURE_SRC="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_aimd_final_viz_capture.li"
-if [[ -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz_capture.li" ]]; then
+# REAL_AIMD slow path validates batch JSON only — skip redundant final-frame re-run.
+if [[ "${REAL_AIMD:-0}" == "1" || "${STUDIO_AIMD_SKIP_FINAL_VIZ:-0}" == "1" ]]; then
+  echo "studio-aimd-batch-run: skipping final-frame capture (REAL_AIMD or STUDIO_AIMD_SKIP_FINAL_VIZ)"
+elif [[ -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz_capture.li" ]]; then
   cp -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz_capture.li" "$CAPTURE_SRC" 2>/dev/null || true
   if [[ ! -x "$CAPTURE_RUNNER" ]]; then
     (cd "$LIC_ROOT" && "$LIC_BIN" build --allow-open-vc --no-lean-verify "$CAPTURE_SRC" -o "$CAPTURE_RUNNER")

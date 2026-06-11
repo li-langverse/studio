@@ -1,12 +1,12 @@
 {
   "pass": true,
-  "verified_at": "2026-06-11T12:00:00Z",
-  "agent_run": "world_studio_builder-1781144959400",
+  "verified_at": "2026-06-11T02:36:00Z",
+  "agent_run": "world_studio_builder-1781145124853",
   "todo_id": "aimd-w8e-completion-gate",
   "tier": "pilot",
   "sprint": "world-studio-aimd-dft-tunable-gpu",
   "branch": "cursor/world-studio-aimd-dft-tunable-gpu",
-  "notes": "W8 sprint complete — all aimd-w8* todos done. Tunable dft_stride (dev 50→100 calls, REAL_AIMD=1→5000); STUDIO_AIMD_GPU=1 → gpu_path=1 tier=pilot via chem_dft_gpu_path_available(); progress + fast completion gates exit 0.",
+  "notes": "W8 sprint verified — fast + slow completion gates exit 0. Fixed studio_aimd_final_viz_capture (hero configure + inline PPM path); REAL_AIMD batch-run skips redundant final-frame re-run. Tunable dft_stride (dev 50→100 calls, REAL_AIMD=1→5000); STUDIO_AIMD_GPU=1 → gpu_path=1 tier=pilot.",
   "wps_touched": [
     "W8a",
     "W8b",
@@ -23,11 +23,13 @@
     "packages/li-chem/li-tests/smoke/chem_dft_gpu_path_probe.li",
     "packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li",
     "packages/li-studio/li-tests/smoke/studio_mcp_aimd_configure.li",
+    "packages/li-studio/li-tests/smoke/studio_aimd_final_viz_capture.li",
     "packages/li-chem/li-tests/smoke/chem_gpu_dft_energy.li"
   ],
   "gates": {
     "progress": "scripts/world-studio-aimd-demo-gates.sh",
     "completion": "scripts/world-studio-aimd-dft-tunable-gpu-completion-gate.sh",
+    "completion_slow": "REAL_AIMD_COMPLETION=1 scripts/world-studio-aimd-dft-tunable-gpu-completion-gate.sh",
     "hero_demo": "scripts/studio-aimd-hero-demo.sh"
   },
   "demo_script": "data/demo-scripts/aimd-hero.demo.json",
@@ -37,6 +39,8 @@
   "trace_manifest": "data/world-studio-aimd-demo-loop/latest-demo-trace.json",
   "dft_stride": 50,
   "dft_calls": 100,
+  "dft_stride_real": 1,
+  "dft_calls_real": 5000,
   "gpu_path": 1,
   "gpu_path_dev_default": 0,
   "cpu_fallback": false,
@@ -52,7 +56,7 @@
       "WP-ECHEM-09",
       "WP-AG-03"
     ],
-    "proof": "lic check smokes + world-studio-aimd-dft-tunable-gpu-completion-gate.sh (dft_stride=50 dft_calls=100; STUDIO_AIMD_GPU=1 gpu_path=1)",
+    "proof": "lic check smokes + world-studio-aimd-dft-tunable-gpu-completion-gate.sh (fast dft_stride=50 dft_calls=100; slow REAL_AIMD=1 dft_calls=5000; STUDIO_AIMD_GPU=1 gpu_path=1)",
     "native_only": true
   }
 }
