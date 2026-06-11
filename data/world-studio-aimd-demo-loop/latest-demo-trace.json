@@ -9,7 +9,7 @@
   "gpu_path": 0,
   "tier": "mvp_stub",
   "dft_stride": 50,
-  "dft_calls": 101,
+  "dft_calls": 100,
   "energy_drift": 1e-06,
   "batch_result": "aimd-demo/out/batch-result.json",
   "final_frame": "aimd-demo/out/final-frame.ppm",

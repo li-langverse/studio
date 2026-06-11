@@ -13,23 +13,18 @@ BATCH_JSON="$OUT_DIR/batch-result.json"
 RUNNER_SRC="$LIC_ROOT/packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_runner.li"
 
 [[ -f "$SCENARIO" ]] || { echo "studio-aimd-batch-run: missing scenario $SCENARIO" >&2; exit 1; }
+# shellcheck source=_studio-aimd-env.sh
+source "$ROOT/scripts/_studio-aimd-env.sh"
 mkdir -p "$OUT_DIR"
 
 LIC_BIN=""
 LIC_BIN="$(resolve_lic 2>/dev/null || true)"
 [[ -n "$LIC_BIN" && -x "$LIC_BIN" ]] || { echo "studio-aimd-batch-run: lic not found" >&2; exit 1; }
 
-STEPS="$(python3 - "$SCENARIO" <<'PY'
-import json, sys
-from pathlib import Path
-data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-print(int(data.get("steps", 5000)))
-PY
-)"
-
-export STUDIO_AIMD_BATCH_STEPS="$STEPS"
-export STUDIO_AIMD_PILOT="${STUDIO_AIMD_PILOT:-1}"
-export STUDIO_AIMD_DFT_STRIDE="${STUDIO_AIMD_DFT_STRIDE:-50}"
+studio_aimd_export_batch_env "$SCENARIO"
+STEPS="$STUDIO_AIMD_BATCH_STEPS"
+DFT_STRIDE="$STUDIO_AIMD_DFT_STRIDE"
+EXPECTED_DFT_CALLS="$(studio_aimd_expected_dft_calls "$STEPS" "$DFT_STRIDE")"
 
 (cd "$LIC_ROOT" && "$LIC_BIN" check packages/li-sim-scientific/li-tests/smoke/echem_aimd_batch_smoke.li) \
   || { echo "studio-aimd-batch-run: echem_aimd_batch_smoke failed" >&2; exit 2; }
@@ -47,8 +42,9 @@ if [[ ! -f "$BATCH_JSON" ]]; then
   exit 4
 fi
 
+export STUDIO_AIMD_EXPECTED_DFT_CALLS="$EXPECTED_DFT_CALLS"
 python3 - "$BATCH_JSON" "$STEPS" <<'PY'
-import json, sys
+import json, os, sys
 from pathlib import Path
 path = Path(sys.argv[1])
 steps = int(sys.argv[2])
@@ -70,7 +66,13 @@ if tier == "pilot" and dft_stride < 1:
 dft_calls = int(data.get("dft_calls", 0))
 if tier == "pilot" and dft_calls < 1:
     raise SystemExit("pilot tier requires dft_calls >= 1")
-print("studio-aimd-batch-run: OK", path)
+expected_stride = int(os.environ.get("STUDIO_AIMD_DFT_STRIDE", "50"))
+expected_calls = int(os.environ.get("STUDIO_AIMD_EXPECTED_DFT_CALLS", "0"))
+if int(data.get("dft_stride", 0)) != expected_stride:
+    raise SystemExit(f"dft_stride {data.get('dft_stride')} != expected {expected_stride}")
+if expected_calls > 0 and dft_calls != expected_calls:
+    raise SystemExit(f"dft_calls {dft_calls} != expected {expected_calls}")
+print("studio-aimd-batch-run: OK", path, f"dft_stride={expected_stride}", f"dft_calls={dft_calls}")
 PY
 
 FINAL_PPM="$OUT_DIR/final-frame.ppm"
@@ -78,14 +80,17 @@ AIMD_VIZ_SMOKE="packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li"
 if [[ -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz.li" ]]; then
   cp -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz.li" \
     "$LIC_ROOT/$AIMD_VIZ_SMOKE" 2>/dev/null || true
-  cp -f "$STUDIO_ROOT/src/lib.li" "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null || true
   (cd "$LIC_ROOT" && "$LIC_BIN" check "$AIMD_VIZ_SMOKE") \
     || { echo "studio-aimd-batch-run: studio_aimd_final_viz smoke failed" >&2; exit 5; }
 fi
 
 CAPTURE_RUNNER="$STUDIO_ROOT/build/aimd-final-viz-capture"
-CAPTURE_SRC="$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz_capture.li"
-if [[ -f "$CAPTURE_SRC" ]]; then
+CAPTURE_SRC="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_aimd_final_viz_capture.li"
+# REAL_AIMD slow path validates batch JSON only — skip redundant final-frame re-run.
+if [[ "${REAL_AIMD:-0}" == "1" || "${STUDIO_AIMD_SKIP_FINAL_VIZ:-0}" == "1" ]]; then
+  echo "studio-aimd-batch-run: skipping final-frame capture (REAL_AIMD or STUDIO_AIMD_SKIP_FINAL_VIZ)"
+elif [[ -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz_capture.li" ]]; then
+  cp -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz_capture.li" "$CAPTURE_SRC" 2>/dev/null || true
   if [[ ! -x "$CAPTURE_RUNNER" ]]; then
     (cd "$LIC_ROOT" && "$LIC_BIN" build --allow-open-vc --no-lean-verify "$CAPTURE_SRC" -o "$CAPTURE_RUNNER")
     chmod +x "$CAPTURE_RUNNER" 2>/dev/null || true
