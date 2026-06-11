@@ -80,14 +80,14 @@ AIMD_VIZ_SMOKE="packages/li-studio/li-tests/smoke/studio_aimd_final_viz.li"
 if [[ -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz.li" ]]; then
   cp -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz.li" \
     "$LIC_ROOT/$AIMD_VIZ_SMOKE" 2>/dev/null || true
-  cp -f "$STUDIO_ROOT/src/lib.li" "$LIC_ROOT/packages/li-studio/src/lib.li" 2>/dev/null || true
   (cd "$LIC_ROOT" && "$LIC_BIN" check "$AIMD_VIZ_SMOKE") \
     || { echo "studio-aimd-batch-run: studio_aimd_final_viz smoke failed" >&2; exit 5; }
 fi
 
 CAPTURE_RUNNER="$STUDIO_ROOT/build/aimd-final-viz-capture"
-CAPTURE_SRC="$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz_capture.li"
-if [[ -f "$CAPTURE_SRC" ]]; then
+CAPTURE_SRC="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_aimd_final_viz_capture.li"
+if [[ -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz_capture.li" ]]; then
+  cp -f "$STUDIO_ROOT/li-tests/smoke/studio_aimd_final_viz_capture.li" "$CAPTURE_SRC" 2>/dev/null || true
   if [[ ! -x "$CAPTURE_RUNNER" ]]; then
     (cd "$LIC_ROOT" && "$LIC_BIN" build --allow-open-vc --no-lean-verify "$CAPTURE_SRC" -o "$CAPTURE_RUNNER")
     chmod +x "$CAPTURE_RUNNER" 2>/dev/null || true

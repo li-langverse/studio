@@ -11,7 +11,7 @@ SCENARIO="$STUDIO_ROOT/data/world-studio-aimd-demo-loop/hero-scenario.json"
 OUT_DIR="$STUDIO_ROOT/build/aimd-demo/out"
 TRACE="$STUDIO_ROOT/data/world-studio-aimd-demo-loop/latest-demo-trace.json"
 HERO_RUNNER="$STUDIO_ROOT/build/aimd-hero-runner"
-HERO_RUNNER_SRC="$STUDIO_ROOT/li-tests/smoke/studio_aimd_hero_runner.li"
+HERO_RUNNER_SRC="$LIC_ROOT/packages/li-studio/li-tests/smoke/studio_aimd_hero_runner.li"
 AIMD_VIZ_SMOKE="packages/li-studio/li-tests/smoke/studio_aimd_hero_e2e.li"
 
 [[ -f "$DEMO_JSON" ]] || { echo "studio-aimd-hero-demo: missing $DEMO_JSON" >&2; exit 1; }
@@ -24,12 +24,13 @@ LIC_BIN=""
 LIC_BIN="$(resolve_lic 2>/dev/null || true)"
 [[ -n "$LIC_BIN" && -x "$LIC_BIN" ]] || { echo "studio-aimd-hero-demo: lic not found" >&2; exit 2; }
 
-# Sync studio smokes into lic package tree (lib.li stays on lic — full studio lib breaks lig imports).
+# Sync studio smokes into lic package tree — never overwrite lic lib.li (ligpu vs lig imports).
 for smoke in studio_aimd_hero_e2e.li studio_aimd_hero_runner.li studio_aimd_final_viz.li; do
   if [[ -f "$STUDIO_ROOT/li-tests/smoke/$smoke" ]]; then
     cp -f "$STUDIO_ROOT/li-tests/smoke/$smoke" "$LIC_ROOT/packages/li-studio/li-tests/smoke/$smoke" 2>/dev/null || true
   fi
 done
+[[ -f "$HERO_RUNNER_SRC" ]] || { echo "studio-aimd-hero-demo: missing $HERO_RUNNER_SRC (sync failed)" >&2; exit 2; }
 
 (cd "$LIC_ROOT" && "$LIC_BIN" check "$AIMD_VIZ_SMOKE") \
   || { echo "studio-aimd-hero-demo: studio_aimd_hero_e2e smoke failed" >&2; exit 3; }
