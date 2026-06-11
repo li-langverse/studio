@@ -1,12 +1,12 @@
 {
   "pass": true,
-  "verified_at": "2026-06-11T03:00:00Z",
-  "agent_run": "world_studio_builder-1781144704690",
+  "verified_at": "2026-06-11T12:00:00Z",
+  "agent_run": "world_studio_builder-1781144959400",
   "todo_id": "aimd-w8e-completion-gate",
   "tier": "pilot",
   "sprint": "world-studio-aimd-dft-tunable-gpu",
   "branch": "cursor/world-studio-aimd-dft-tunable-gpu",
-  "notes": "W8 complete: tunable dft_stride (100 calls@stride50); STUDIO_AIMD_GPU=1 → gpu_path=1 tier=pilot; hero demo builds from lic ligpu lib (never overwrite lic lib.li with studio lig imports); completion gate exit 0.",
+  "notes": "W8 sprint complete — all aimd-w8* todos done. Tunable dft_stride (dev 50→100 calls, REAL_AIMD=1→5000); STUDIO_AIMD_GPU=1 → gpu_path=1 tier=pilot via chem_dft_gpu_path_available(); progress + fast completion gates exit 0.",
   "wps_touched": [
     "W8a",
     "W8b",
