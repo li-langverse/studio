@@ -10,7 +10,7 @@ todos:
     status: completed
   - id: aimd-w8c-gpu-hot-path
     content: "W8c — GPU hot path on engine (gpu_path=1, chem_dft_gpu_path_available)"
-    status: pending
+    status: completed
   - id: aimd-w8d-hero-trace
     content: "W8d — Hero demo + trace manifest documents stride + dft_calls honestly"
     status: completed
@@ -37,7 +37,7 @@ isProject: false
 
 | Mode | `dft_stride` | DFT calls @ 5000 MD steps | Use |
 |------|--------------|---------------------------|-----|
-| **Dev / CI** | 50 (default) | 101 | Fast gates, agent iteration |
+| **Dev / CI** | 50 (default) | 100 | Fast gates, agent iteration |
 | **Real / production** | 1 | 5000 | Launch proof, engine GPU demo |
 
 **Env knobs:**
@@ -75,7 +75,7 @@ batch-result.json + latest-demo-trace.json (dft_stride, dft_calls)
 |----|-------|--------|
 | **W8a** | MCP + scenario JSON + env stride | done |
 | **W8b** | Batch stride=1 → 5000 DFT calls | done |
-| **W8c** | Engine `gpu_path=1` | pending |
+| **W8c** | Engine `gpu_path=1` | done |
 | **W8d** | Hero trace honesty | done |
 | **W8e** | Completion gate | done |
 

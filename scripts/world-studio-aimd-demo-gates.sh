@@ -107,6 +107,13 @@ if [[ -n "$LIC_BIN" && -f "$LIC_ROOT/packages/li-sim-scientific/li-tests/smoke/e
   ok "W8b stride=1 batch smoke green"
 fi
 
+# W8c GPU path probe — science_gate + LKIR scaffold (vendor optional)
+if [[ -n "$LIC_BIN" && -f "$LIC_ROOT/packages/li-chem/li-tests/smoke/chem_dft_gpu_path_probe.li" ]]; then
+  (cd "$LIC_ROOT" && "$LIC_BIN" check packages/li-chem/li-tests/smoke/chem_dft_gpu_path_probe.li) \
+    || fail "W8c chem_dft_gpu_path_probe"
+  ok "W8c GPU path probe smoke green"
+fi
+
 [[ -f "$GOAL_PILOT" ]] || warn "missing W7 pilot goal: $GOAL_PILOT"
 [[ -f "$GOAL_W8" ]] || warn "missing W8 goal: $GOAL_W8"
 

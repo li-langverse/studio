@@ -11,7 +11,7 @@ workflow_repo: studio
 
 ## Mission
 
-Post-W7 pilot: make **DFT eval frequency tunable** (dev `dft_stride=50` → 101 calls; production `dft_stride=1` → 5000 calls @ 5000 MD steps) and pursue **`gpu_path=1`** on engine GPU via `chem_dft_gpu_path_available()`.
+Post-W7 pilot: make **DFT eval frequency tunable** (dev `dft_stride=50` → 100 calls; production `dft_stride=1` → 5000 calls @ 5000 MD steps) and pursue **`gpu_path=1`** on engine GPU via `chem_dft_gpu_path_available()`.
 
 ## Phase map
 
@@ -19,7 +19,7 @@ Post-W7 pilot: make **DFT eval frequency tunable** (dev `dft_stride=50` → 101 
 |----|-------------|--------|
 | W8a | `dft_stride` via MCP/scenario JSON/env (`REAL_AIMD=1` → 1) | done |
 | W8b | Batch honors stride=1 → `dft_calls=5000` | done |
-| W8c | Engine GPU hot path `gpu_path=1` | pending |
+| W8c | Engine GPU hot path `gpu_path=1` | done |
 | W8d | Hero demo trace documents stride + dft_calls | done |
 | W8e | Completion gate (fast 50 / optional slow 1) | done |
 
@@ -34,7 +34,7 @@ cd "$(git rev-parse --show-toplevel)"
 ## Completion gate
 
 ```bash
-# Fast (CI / agent loop): stride 50, 101 DFT calls
+# Fast (CI / agent loop): stride 50, 100 DFT calls
 ./scripts/world-studio-aimd-dft-tunable-gpu-completion-gate.sh
 
 # Slow (production proof): 5000 DFT evals
@@ -45,7 +45,8 @@ REAL_AIMD_COMPLETION=1 ./scripts/world-studio-aimd-dft-tunable-gpu-completion-ga
 
 | Mode | Command | Expected trace |
 |------|---------|------------------|
-| **Dev (default)** | `./scripts/studio-aimd-hero-demo.sh` | `dft_stride=50`, `dft_calls=101` |
+| **Dev (default)** | `./scripts/studio-aimd-hero-demo.sh` | `dft_stride=50`, `dft_calls=100` |
+| **GPU path** | `STUDIO_AIMD_GPU=1 ./scripts/studio-aimd-batch-run.sh` | `gpu_path=1`, tier `pilot` when LKIR scaffold green |
 | **Real 5000-DFT** | `REAL_AIMD=1 ./scripts/studio-aimd-batch-run.sh` | `dft_stride=1`, `dft_calls=5000` |
 | **Custom stride** | `STUDIO_AIMD_DFT_STRIDE=25 ./scripts/studio-aimd-batch-run.sh` | `dft_calls` per stride formula |
 

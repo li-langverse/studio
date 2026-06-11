@@ -42,3 +42,11 @@ calls = sum(1 for md_step in range(steps) if md_step % stride == 0)
 print(calls)
 PY
 }
+
+# STUDIO_AIMD_GPU=1 — enable honest gpu_path via chem_dft_gpu_path_available() (LKIR scaffold).
+# Unset or 0 keeps dev/CI CPU stub (gpu_path=0) for fast gates.
+studio_aimd_gpu_env_note() {
+  if [[ "${STUDIO_AIMD_GPU:-0}" == "1" ]]; then
+    echo "studio-aimd: STUDIO_AIMD_GPU=1 — batch will report gpu_path when LKIR path available"
+  fi
+}
