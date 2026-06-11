@@ -1,17 +1,17 @@
 import sim.scientific
 import studio
 
-extern proc li_rt_studio_aimd_scenario_reset() -> int
+extern def li_rt_studio_aimd_scenario_reset() -> int
   requires true
   ensures result >= 0
   decreases 0
 
-extern proc li_rt_studio_aimd_batch_steps_from_env() -> int
+extern def li_rt_studio_aimd_batch_steps_from_env() -> int
   requires true
   ensures result >= 64
   decreases 0
 
-extern proc li_rt_studio_aimd_batch_write_json(path: str, steps: int, ok: int, checksum: float, energy_drift: float, gpu_path: int, dft_stride: int, dft_calls: int) -> int raises IO
+extern def li_rt_studio_aimd_batch_write_json(path: str, steps: int, ok: int, checksum: float, energy_drift: float, gpu_path: int, dft_stride: int, dft_calls: int) -> int raises IO
   requires true
   ensures result >= 0
   ensures result <= 1

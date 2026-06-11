@@ -1,16 +1,16 @@
 import studio
 
-extern proc li_rt_studio_aimd_scenario_reset() raises IO -> int
+extern def li_rt_studio_aimd_scenario_reset() raises IO -> int
   requires true
   ensures result == 0
   decreases 0
 
-extern proc li_rt_studio_aimd_scenario_set_dft_stride(dft_stride: int) raises IO -> int
+extern def li_rt_studio_aimd_scenario_set_dft_stride(dft_stride: int) raises IO -> int
   requires dft_stride >= 1
   ensures result == 1
   decreases dft_stride
 
-extern proc li_rt_studio_aimd_scenario_get_dft_stride() raises IO -> int
+extern def li_rt_studio_aimd_scenario_get_dft_stride() raises IO -> int
   requires true
   ensures result >= 1
   ensures result <= 1000

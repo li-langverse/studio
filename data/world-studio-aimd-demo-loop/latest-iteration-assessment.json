@@ -1,12 +1,12 @@
 {
   "pass": true,
-  "verified_at": "2026-06-11T02:36:00Z",
-  "agent_run": "world_studio_builder-1781145124853",
+  "verified_at": "2026-06-11T02:45:00Z",
+  "agent_run": "world_studio_builder-1781145508914",
   "todo_id": "aimd-w8e-completion-gate",
   "tier": "pilot",
   "sprint": "world-studio-aimd-dft-tunable-gpu",
   "branch": "cursor/world-studio-aimd-dft-tunable-gpu",
-  "notes": "W8 sprint verified — fast + slow completion gates exit 0. Fixed studio_aimd_final_viz_capture (hero configure + inline PPM path); REAL_AIMD batch-run skips redundant final-frame re-run. Tunable dft_stride (dev 50→100 calls, REAL_AIMD=1→5000); STUDIO_AIMD_GPU=1 → gpu_path=1 tier=pilot.",
+  "notes": "W8 sprint re-verified after lic compiler rebuild (extern def) + runtime link fixes. Restored cfd_lid_cavity_checksum in li-physics-fluids; li_rt_studio_aimd.c linked via compile.cpp + CMakeLists. Fast gate dft_stride=50 dft_calls=100; slow REAL_AIMD=1 dft_calls=5000; STUDIO_AIMD_GPU=1 gpu_path=1.",
   "wps_touched": [
     "W8a",
     "W8b",
